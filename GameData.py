@@ -1,4 +1,5 @@
 import pygame, os
+from collections import namedtuple
 from pygame.local import *
 
 class resource_handler(object):
@@ -55,15 +56,25 @@ class game_data(object):
         self.backgrounds = image_data(os.path.join(data_dir, "backgrounds"))
         self.sounds = sound_data(os.path.join(data_dir, "sounds"))
 
+position = namedtuple("position", ['x', 'y'])
+
 class meta_sprite(pygame.sprite.Sprite):
 
-    def __init__(self, imagename, layer, **kwargs):
+    def __init__(self, imagename, is_animated, layer, pos, **kwargs):
         pygame.sprite.Sprite.__init__(self)
         
         self.imagename = imagename
+        self.animated= is_animated
         self.layer = layer 
-        if 'sounds' in kwargs.keys():
+        self.pos = pos
+        self.frame = 0;
+
+        if 'sounds' in sorted(kwargs.keys()):
             self.sounds = kwargs['sounds']
+
+
+    def facing(compass_dir):
+        self.facing = compass_dir
 
     def move(self, dx, dy, sprites):
         rect = self.get_rect()
@@ -73,8 +84,15 @@ class meta_sprite(pygame.sprite.Sprite):
                 if rect1.right >= rect.left + dx & rect1.bottom <= rect.top + dy:
                     return False
         self.rect.move(dx, dy)
+        self.moving = True
         return True
-
+    
+    def update(self, *args):
+        if self.is_animated & moving:
+            if self.facing == "left":
+            self.image.blit(self.animation[compass_dir][self.frame])
+            self.frame = 
+        
 
 
      

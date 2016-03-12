@@ -1,0 +1,107 @@
+music:
+	Por una cabeza -  ballroom
+	Oceanus - cycle lane
+	Bach prelude in C minor - home 
+	moonlight sonarta bach - moonlight sene
+
+stats:
+	the game will be based on a theese attributes:
+		speed
+		determination(health)
+		hope
+		enlightenment
+
+battles:
+	emotion - you have to fight to get the right outcome. 
+	if win get DROP. else get LOSS
+
+		cycle lane - minigame hit a rock; fight 'pain'
+			DROPS: sympathy -4 attack, +10 defence, +5 enlightenment
+			LOSS: -2 attack, -5 hope 
+
+		home - parents splitting up, grief.
+			DROPS: guide to relationships +5 hope, +10 enlightment
+			LOSS: -10 determination, -5 attack, +10 defence, +5 enlightenment
+
+		school exam - stress.
+			DROPS: gcse +10 enlightenment, +25 hope
+			LOSS: -25 determination, +10 attack, +10 enlightenment			
+		
+		ballroom, prom - lust, if lose, date thinks ur gross.
+			DROPS: fanfiction +8 attack, +20 determination
+			LOSS: -10 hope, +5 enlightenment
+		
+story senes:
+	
+	cycle lane - the utopian socierty 
+		agree: +5 hope, +5 enligtenment learn idealogy: Form theory
+		disagree: +10 defence, +5 determination learn idealogy: Realism
+
+
+idealogys:
+	like poitions but have to use them in battle. have a perminent effect on stats.
+	
+	anticonformism:
+		rejecting soceity and its norms you open your mind to a larger world.
+			buff: +20 determination, +40 hope, +15 enlightenment
+
+	Realism:
+		you admit to the hashness of life.
+			buff: -5 determination, -5 hope, +30 enligtenment
+	
+	Libertarianism:
+		only you can tell you what to do!
+			buff: +50 determination, +25 enlightenment, +15 defense	
+
+	nihilism:
+		you belive in nothing. nothing matters. nothing hurts you.
+			buff: -50 determination, +10 enlightenment
+			temporay buff: +100 defense, 5 turns.
+	
+	theism:
+		your belif in a devine being gives you hope.
+			buff: +5 enlightenment, +5 determination, +10 hope
+	
+	atheism:
+		God is no longer a credable source for morals.
+		"God is dead. God remains dead. And we have killed him."
+			buff: +20 enlightenment, -5 determination, -10 hope
+
+	Cartesian doubt:
+		 I think therefore i am, but i can't be sure of anything else.
+			buff: -10 determination, +20 defense, +10 enlightenment
+
+	Form theory:
+		you are guided by your visions of a perfect world,
+			buff: +20 hope, +5 determination, +15 enligenment
+	
+	Eightfold Path:
+		see things as they truly are.
+			buff: +100 enlightenment
+
+	philla: 
+		the power of friendship gives you hope to carry on.
+			buff: +10 hope, +20 determination, +5 enlightenment	
+
+		transends to: Agape
+		
+	Agape:
+		your heart is filled with love transending all circumstances.
+			buff: +50 determination, +40 enlightenment, +20 hope
+
+weapons:
+	
+	headphones:
+		music drowns out the enemys attacks while hurting thier ears.
+		buff: +20 zen, +10 defense
+
+	fanfiction:
+		it erm.. distracts the enemy.
+		buff: +50 zen.
+	
+	book:
+		zzzzz....
+		buff: +25 zen
+
+	
+	

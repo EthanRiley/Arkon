@@ -29,13 +29,6 @@ class entity(meta_sprite):
         self.remove_from_inventory(item_meta)
         self.add_to_inventory(item_meta1)
 
-    def use_item(self, item, entity, game):
-        if item.type != "potion":
-            item.use(entity)
-        else:
-            item.use(self)
-        
-
 class Game(object):
 
     def __init__(self, name):
@@ -49,13 +42,33 @@ class Game(object):
     
     def init_meta_sprite(self, meta_sprite):
         meta_sprite.image = self.data.sprites.get_data(meta_sprite.imagename)
-        meta_sprite.rect = sprite.image.get_rect()
+        meta_sprite.rect = meta_sprite.image.get_rect()
+        meta_sprite.rect.x = meta_sprite.pos.x
+        meta_sprite.rect.y = meta_sprite.pos.y
+
+        del meta_sprite.pos
+
         meta_sprite.sounds = self.data.sounds.get_data_array(meta_sprite.sounds)
         
         self.sprites.add(meta_sprite, layer = meta_sprite.layer)
         return meta_sprite
             
     def update(self):
+        slef.sprites.update(self.data)
         self.sprites.draw()
         pygame.display.update()
+
+class player(entity):
+
+    def __init__(self):
+        player.name = name
+
+    def is_player(self):
+        return True;
+
+    def use_item(self, item, game):
+        for buff in self.buffs:
+           self.basestat[buff.stat] += buff.value * potency
+        item.effect(game)
+
 
