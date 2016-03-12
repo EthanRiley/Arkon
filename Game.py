@@ -1,60 +1,12 @@
-import GameData
-from collections import namedtuple
-import json
-
-class item_meta:
-    def __init__(self, quantity, name):
-        self.quantity = quantity
-        self.name = name
-
-buff = namedtuple('buff', ['stat', 'buff'])
-
-class potion(item_meta):
-    def __init__(self, quantity, name, potency):
-        item_meta.__init__(self, name)
-        self.type = "potion"
-        self.potion = self.__class__.__name__
-        self.potency = potency
-
-    def drink(self, entity):
-        for buff in self.buffs:
-            entity.basestat[buff.stat] += buff.value * potency
-        if entity.player:
-            self.potion_effect(entity)
-        
-
-class alchol(potion):
-    def __init__(self, quantity, name, potency):
-        item_meta.__init__(self, quantity, name, potency)
-        self.buffs = [ 
-            buff("speed", -5),
-            buff("attack", 5)
-        ]
-
-    def potion_effect(player):
-        pygame.transform.rotate(pygame.window, 360);
-
-
-class mysterious(potion):
-
-    def __init__(self, quantity, name, potency):
-        item_meta.__init__(self, quantity, name, potency)
-        self.buffs = [
-            buff("speed", 4000),
-            buff("attack", 4000)
-        ]
-
-    def potion_effect(player):
-        fun = os.path.join("data", "fun") 
-        temmie = get_image(os.path.join(fun, "temmie.png"))
-        temmie_sound = pygame.mixer.Sound(os.path.join(fun, "temmie.ogg"))
-        for sprite in player.game.data.sprites.spites:
-            sprite = temmie
-        for background in player.game.data.backgrounds:
-            background = temmie
-        pygame.rotate 
+import GameData, items
 
 class entity(meta_sprite):
+
+    def __init__(self, name, basestat, **kwargs):
+        self.basestat = basestat
+        for key in ordered(kwargs.keys()):
+            self.basestat[key] = kwargs[key]
+        self.health = 100
 
     def equip(self, item):
         if item.type != "armor":
@@ -78,25 +30,10 @@ class entity(meta_sprite):
         self.add_to_inventory(item_meta1)
 
     def use_item(self, item, entity, game):
-        if item.type == "weapon":
-            if entity.takes_damage:
-                entity.damage(item.attack)
-        elif item.type == "potion":
-            if item.potion == "speed":
-                self.basestat.speed += item.buff
-            elif item.potion == "alcohol":
-                self.basestat.speed -= item.debuff
-                self.basestat.attack += item.buff
-                self.setEffect("drunk")
-            elif item.potion == "health":
-                self.recover(item.buff)
-            elif item.potion == "magic":
-                self.setEffect("high")
-            else:
-                if takes_damage:
-                    self.damage(item.debuff)
-        elif entity.speech:
-            entity.dialog(item.name)
+        if item.type != "potion":
+            item.use(entity)
+        else:
+            item.use(self)
         
 
 class Game(object):
@@ -121,3 +58,4 @@ class Game(object):
     def update(self):
         self.sprites.draw()
         pygame.display.update()
+
