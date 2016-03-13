@@ -10,6 +10,7 @@ stats:
 		determination(health)
 		hope
 		enlightenment
+		zen(attack)
 
 battles:
 	emotion - you have to fight to get the right outcome. 
@@ -19,23 +20,35 @@ battles:
 			DROPS: sympathy -4 attack, +10 defence, +5 enlightenment
 			LOSS: -2 attack, -5 hope 
 
-		home - parents splitting up, grief.
-			DROPS: guide to relationships +5 hope, +10 enlightment
+		the flu - its not nice, if lose you throw up.
+			DROPS:  +5 hope, +10 enlightment
 			LOSS: -10 determination, -5 attack, +10 defence, +5 enlightenment
 
-		school exam - stress.
-			DROPS: gcse +10 enlightenment, +25 hope
+		exam - stress.
+			DROPS: diploma +10 enlightenment, +25 hope
 			LOSS: -25 determination, +10 attack, +10 enlightenment			
 		
-		ballroom, prom - lust, if lose, date thinks ur gross.
+		moonlight scene - lust.
 			DROPS: fanfiction +8 attack, +20 determination
 			LOSS: -10 hope, +5 enlightenment
 		
+		
+losing:
+	after losing a number of battles there was an idea that you would have to fight depression after losing
+	more battles you would have to fight him more frequently until another amount of losses til cronic depression
+	and suicide. this was scrapped beacuse it was too dark, so instead we will do something else.
+	
+	
 story senes:
 	
 	cycle lane - the utopian socierty 
 		agree: +5 hope, +5 enligtenment learn idealogy: Form theory
 		disagree: +10 defence, +5 determination learn idealogy: Realism
+	
+	moonlight scene - nightime walk with date coming back from a party.
+	
+	THOM(the hall of materialsm, a shopping centre) - get items.
+		
 
 
 idealogys:
@@ -48,6 +61,8 @@ idealogys:
 	Realism:
 		you admit to the hashness of life.
 			buff: -5 determination, -5 hope, +30 enligtenment
+			
+		transends to: eightfold path
 	
 	Libertarianism:
 		only you can tell you what to do!
@@ -59,7 +74,7 @@ idealogys:
 			temporay buff: +100 defense, 5 turns.
 	
 	theism:
-		your belif in a devine being gives you hope.
+		your belif in a devine being gives you hope. 
 			buff: +5 enlightenment, +5 determination, +10 hope
 	
 	atheism:
