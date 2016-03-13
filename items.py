@@ -1,55 +1,57 @@
 from collections import namedtuple
 import json, time
 
-class effector:
+class item:
 
-    def __init__(self, quantity, name):
+    def __init__(self, quantity, name, **kwargs):
         self.quantity = quantity
         self.name = name
+        self.is_consumable = False
+        if 'discription' in sorted(kwargs.keys()):
+            self.discription = kwargs['discription']
 
 buff = namedtuple('buff', ['stat', 'buff'])
 
-class potion(item_meta):
+class consumable(item):
 
     def __init__(self, quantity, name, potency):
-        item_meta.__init__(self, name)
-        self.type = "potion"
-        self.potion = self.__class__.__name__
+        item.__init__(self, quantity, name)
+        item.is_consumable = True
         self.potency = potency
 
            
-class alchol(potion):
+class alchol(consumable):
 
     def __init__(self, quantity, name, potency):
-        item_meta.__init__(self, quantity, name, potency)
+        consumable.__init__(self, quantity, name, potency)
         self.buffs = [ 
             buff("speed", -5),
-            buff("attack", 5)
+            buff("zen", 5)
         ]
 
     def effect(self, player):
         pygame.transform.rotate(player.game.window, 360);
-
-class health(potion):
+ 
+class health(consumable):
 
     def __init__(self, quantity, name, potency):
-        item_meta.__init__(self, quantity, name, potency)
+        consumable.__init__(self, quantity, name, potency)
         self.buffs = [
             buff("health", 10)
         ]
 
-class speed(potion):
+class speed(consumable):
 
     def __init__(self, quantity, name, potency):
-        item_meta.__init__(self, quantity, name, potency)
+        consumable.__init__(self, quantity, name, potency)
         self.buffs = [
             buff("speed", 5)
         ]
 
-class hope(potion):
+class hope(consumable):
 
     def __init__(self, quantity, name, potency):
-        item_meta.__init__(self, quantity, name, potency)
+        consumable.__init__(self, quantity, name, potency)
         self.buffs = [
             buff("hope", 5), 
             buff("enlightenment", 2)
@@ -60,7 +62,7 @@ class hope(potion):
         time.sleep(0.25)
         game.window.get_rect().move(0, -5)
 
-class mysterious(potion):
+class mysterious(consumable):
 
     def __init__(self, quantity, name, potency):
         item_meta.__init__(self, quantity, name, potency)

@@ -70,5 +70,7 @@ class player(entity):
         for buff in self.buffs:
            self.basestat[buff.stat] += buff.value * potency
         item.effect(game)
+        if item.type == "consumable":
+            del item 
 
 

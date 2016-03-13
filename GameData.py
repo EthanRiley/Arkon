@@ -86,17 +86,29 @@ class meta_sprite(pygame.sprite.Sprite):
         self.rect.move(dx, dy)
         self.moving = True
         return True
-    
+
+    def animate_frame(self, dir,  flipped_dir):
+        if self.facing == dir | self.facing == flipped_dir:
+            self.image.blit(self.animation[dir][self.frame])
+            if self.facing == dir ^ self.flipped:
+                pygame.transform.flip(self.image, True, False)
+                self.flipped = True
+            elif self.flipped:
+                pygame.transform.flip(self.image, True, False)
+                self.flipped = False
+
     def update(self, *args):
         if self.is_animated & moving:
-            if self.facing == "left":
-            self.image.blit(self.animation[compass_dir][self.frame])
-            self.frame = 
+            self.animate_frame("right", "left")
+            self.animate_frame("forward", "backward") 
+
+
+
+            
         
 
 
      
-
 
 
 

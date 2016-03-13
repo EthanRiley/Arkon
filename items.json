@@ -1,0 +1,47 @@
+{
+	"consumables":{
+		"alchol":[
+			{
+				"name" : "wisky",
+				"potency": 5,
+				"discription": "garenteed to get you drunk."
+			}
+		],
+		
+		"health":[
+			{
+				"name": "veggie smoothie",
+				"potency": 2,
+				"discription": "it's healthy 'cus it's got vegatbles!"
+			},
+			{
+				"name": "chocolate",
+				"potency": 1,
+				"discription": "were not sure how this heals you, just take dialy mirrors word for it."
+			},
+			{
+				"name": "carrot",
+				"potency": 3,
+				"discription": "yup it's a carrot, alright."
+			}
+		],
+
+		"speed":[
+			{
+				"name": "coffie",
+				"potency": 2,
+				"discription": "a getup 'n' go hot beverage."
+			},
+			{
+				"name": "tea",
+				"potency": 1,
+				"discription": "a hot drink which the britsh are famed for drinking"
+			},
+			{
+				"name": "energy drink No 3000",
+				"potency": 5,
+				"discription": "a drink with so much caffine that it makes you think that time has slowed down around you"
+			}
+		]
+	}
+}
