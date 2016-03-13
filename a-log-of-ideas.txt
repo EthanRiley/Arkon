@@ -1,0 +1,288 @@
+@UNKDevE Al co hol. And nice story. Says a lot.
+UNKDevE - Yesterday at 11:18 AM
+lel
+@charlesstewart hmm... wht is the age demographic for the game?
+charlesstewart - Yesterday at 11:30 AM
+"young people"
+I'd go ~year 8.
+UNKDevE - Yesterday at 11:30 AM
+okay... then my game is wwaaaay to dark.
+charlesstewart - Yesterday at 11:31 AM
+Yes. That's why mine has no... lore, or story, of any kind.
+UNKDevE - Yesterday at 11:31 AM
+eh... i keep it as satire.
+ukw, we could see "young people" as teenagers.
+so im fine then
+charlesstewart - Yesterday at 1:07 PM
+@UNKDevE You've seen kivy, haven't you? Python lib. Looks great.
+Just ordered 7inch touch screen for Pi, gonna have fun.
+UNKDevE - Yesterday at 1:09 PM
+yup.
+March 13, 2016
+UNKDevE - Today at 1:52 AM
+some sprites+walk anims me been working on.
+UNKDevE - Today at 6:32 PM
+thought i reposed.
+charlesstewart - Today at 10:29 PM
+@UNKDevE Looking over Arkon repo, hope you don't mind me critiquing it: the ideologies (great idea, btw), a) shouldn't they be mutually exclusive? b) some look quite unbalanced? and c) there are quite a few. Do you aquire the ability to use each over time, or are you presented with all from the start?
+UNKDevE - Today at 10:37 PM
+no not at all critque away.
+i was worried that they might be unbalenced
+any way the idea is that an idealogy on lasts for a certain amount of turns
+i was basing  them around spells etc...
+the ones that confilicti will be mutlally exclusive to each other e.g. theism and atheism
+also you can have multiple idealogies.
+charlesstewart - Today at 10:40 PM
+So I'm looking in story.txt - what about realism and the eightfold path?
+UNKDevE - Today at 10:40 PM
+hmm...
+i don't know.(edited)
+eightfold path is more extensialism.
+but ur  right.
+charlesstewart - Today at 10:41 PM
+Beside the point that many people who follow the eightfold path would probably describe themselves as realistic, more importantly, why choose realism when there is eightfold?(edited)
+UNKDevE - Today at 10:42 PM
+ah beacuse eightfold will be later on in the game.
+charlesstewart - Today at 10:42 PM
+ah...ok...
+But anyway - if it were not a GCSE project and were slightly less angsty, I would be inclined to attempt to persuade you to let me help out. You've got some really good ideas so far.(edited)
+UNKDevE - Today at 10:45 PM
+yeh it is very angsty.
+jamierocks - Today at 10:45 PM
+@UNKDevE when I was looking over it I found some bugs btw
+https://github.com/EthanRiley/Arkon/commit/d50a77d1ae157d15610ec4da184caf54ba2447fe#diff-9666772b6587917ae22b99f215ac2f5cR67
+GitHub
+do more stuffs · EthanRiley/Arkon@d50a77d
+Arkon - a game I am making for my GCSE
+
+https://github.com/EthanRiley/Arkon/commit/d50a77d1ae157d15610ec4da184caf54ba2447fe#diff-3c5ffaf353c5b5332641129d2f50a306R70
+GitHub
+do more stuffs · EthanRiley/Arkon@d50a77d
+Arkon - a game I am making for my GCSE
+
+(semi-colons - there are more but I won't link them :P)
+although pythons does compile them :S
+UNKDevE - Today at 10:46 PM
+oh 😛
+well that does not really matter.
+charlesstewart - Today at 10:46 PM
+Not really a bug.
+forgetten word
+UNKDevE - Today at 10:47 PM
+any way of making less angsty?
+jamierocks - Today at 10:47 PM
+I also noticed you spelt self wrong in a commit
+but i can't fint it
+UNKDevE - Today at 10:48 PM
+i think i fixed that, i am using a linter soo....
+charlesstewart - Today at 10:48 PM
+Just tried to search repo for "self", then realised what a stupid idea that was.
+jamierocks - Today at 10:49 PM
+suprised the linter doesn't moan about ;
+UNKDevE - Today at 10:49 PM
+it wouldn't.
+it obvously uses the python interpriter as a backend.
+jamierocks - Today at 10:49 PM
+oh of course
+charlesstewart - Today at 10:49 PM
+@UNKDevE this.
+
+UNKDevE - Today at 10:50 PM
+thought so.
+right - how are we going to refactor the story.
+hmm... i was going to add story as the good bits.
+i think we should remove home and prom
+jamierocks - Today at 10:52 PM
+btw go is awesome 😄 https://git.lexteam.xyz/PastPapers/Site
+charlesstewart - Today at 10:52 PM
+Sorry, just found an interesting track. Erm... so these are like events, but you describe them as "battles". And the story is like a series of them. Is this a finished list?
+UNKDevE - Today at 10:53 PM
+No.
+the "battles" will be somewhat of a typical RPG fight.
+charlesstewart - Today at 10:53 PM
+So the story doesn't happen in the battles.
+jamierocks - Today at 10:53 PM
+I thought your game would be similar to the yawhg
+that's what I got from the spec
+UNKDevE - Today at 10:54 PM
+that would be easier.
+and i should probably do, but it does not have much gameplay elements.
+charlesstewart - Today at 10:55 PM
+The Yawhg: the RPG.
+UNKDevE - Today at 10:55 PM
+lel.
+should i remove battles then?
+jamierocks - Today at 10:55 PM
+speaking of the yawhg - that's be a very simple game to clone 😛
+charlesstewart - Today at 10:56 PM
+Garh! Trying to watch a livestream, (psycho)analyse a video game design and listen to bass-y high-volume music is tough!
+Maybe.
+jamierocks - Today at 10:56 PM
+lol
+UNKDevE - Today at 10:57 PM
+ah lel.
+charlesstewart - Today at 10:57 PM
+Don't remove the battles.
+RPGs are cool and this is a great design.
+UNKDevE - Today at 10:57 PM
+ok... good point it is a unqiue part of the game.
+hmm....
+charlesstewart - Today at 10:59 PM
+So how relevant are the events in the snippet to the story?
+UNKDevE - Today at 11:00 PM
+they change the charicter stats while giving them key items.
+if you keep on losing them,
+charlesstewart - Today at 11:00 PM
+Not the game, the plot.
+Are they major points?
+UNKDevE - Today at 11:00 PM
+depends how dark the game can be.
+charlesstewart - Today at 11:00 PM
+7
+UNKDevE - Today at 11:01 PM
+ok.
+charlesstewart - Today at 11:01 PM
+... I don't know.
+UNKDevE - Today at 11:01 PM
+after a certain amount of losses in battles, the player would get frequent battles with depression.
+then cronic depression.
+which would then lead to self harm and suicide.
+and thats a very very sad way of losing a game.
+charlesstewart - Today at 11:03 PM
+Basically, you don't want teachers or examiners to send you to a psychiatrist. But you want to... discuss, or raise, your themes.
+So... subtly and reference are key.(edited)
+Subtly?(edited)
+UNKDevE - Today at 11:03 PM
+yes you are right.
+charlesstewart - Today at 11:04 PM
+brb
+UNKDevE - Today at 11:04 PM
+mkay.
+charlesstewart - Today at 11:05 PM
+So the depression idea's good.
+UNKDevE - Today at 11:06 PM
+yes it is.
+charlesstewart - Today at 11:06 PM
+Don't call it depression.
+UNKDevE - Today at 11:06 PM
+good idea.
+why not instead make the player relive the battle
+but every time they lose it gets darker.
+until the can't see and the game ends.
+charlesstewart - Today at 11:06 PM
+Could it extend the length of the battle?
+Because they're gonna be re-doing them anyway, if they keep losing?
+UNKDevE - Today at 11:07 PM
+hmmm.....
+lets make it so you can't lose a battle.
+charlesstewart - Today at 11:08 PM
+Well that's... upbeat?
+UNKDevE - Today at 11:09 PM
+no, in my game they're are no temporary debuffs or buffs.
+charlesstewart - Today at 11:09 PM
+I just mean the idea that you can't lose a battle is suprisingly positive.
+I guess you... win badly?
+Which is kind of... not good?
+UNKDevE - Today at 11:10 PM
+you will lose determination perminently.
+so when you have lost all you determination,(edited)
+charlesstewart - Today at 11:11 PM
+ya die.
+UNKDevE - Today at 11:11 PM
+yeah thats how it was going to be.
+or we could have it that an external source always helps you out.
+for example; a stranger helps you up in the cycle ride
+charlesstewart - Today at 11:13 PM
+Can I ask why a ballroom?
+UNKDevE - Today at 11:14 PM
+oh that, beacuse of the music i was listening to at the time
+and i needed inspritation
+charlesstewart - Today at 11:14 PM
+Level of surreal-itude?
+UNKDevE - Today at 11:14 PM
+its pixel art
+here is one of them(edited)
+
+it's mid-surreal.
+also the ballroom will be replaced with this scene.
+charlesstewart - Today at 11:16 PM
+this ^
+?
+UNKDevE - Today at 11:16 PM
+ah.
+it was going to be a cutscene(edited)
+where the girl and the boy met.
+from walk anims
+charlesstewart - Today at 11:17 PM
+Well they sound like interesting characters?
+UNKDevE - Today at 11:17 PM
+they're not.
+charlesstewart - Today at 11:17 PM
+Oh.
+OK.
+UNKDevE - Today at 11:17 PM
+you see, that was not my intention.(edited)
+i wanted this game to be a dark, satirical representation of life
+very angsty i know.
+charlesstewart - Today at 11:19 PM
+I mean, you could just embrace the angst.
+Some satir-y stuff works well like that.
+UNKDevE - Today at 11:19 PM
+i don't really want to lose meaning from it though
+which is that philosphy and belifs can help you with your life.
+maybe to go on futher to be your life.
+charlesstewart - Today at 11:21 PM
+Er, also, do you think a piece of coursework is the best way to express this?
+UNKDevE - Today at 11:21 PM
+no.
+charlesstewart - Today at 11:21 PM
+Wait, what? One's life, or mine?
+Er, yes, no, it's not.
+UNKDevE - Today at 11:22 PM
+hmm... not to another person.
+what people you percive is what you are.
+to everyone else but you.
+charlesstewart - Today at 11:23 PM
+OK. I'm sure that's deep, but... I mean, you could make this engine type thing and use it for GSCE and then make this later?
+UNKDevE - Today at 11:23 PM
+yes i could.
+and that is what i am doing(ish)
+charlesstewart - Today at 11:24 PM
+Oh?
+UNKDevE - Today at 11:24 PM
+it's mainly resource classes.
+charlesstewart - Today at 11:24 PM
+Is this part of somehing bigger?
+Oh, yeah, atm.
+UNKDevE - Today at 11:24 PM
+yeah, items would be loaded from json files.
+so would be 'moves' or idealogy
+allthough the base types of theese would still be loaded
+e.g. health poition
+charlesstewart - Today at 11:26 PM
+OK. I'm gonna go now/soon. Basically, make it less obviously angsty, is my advice.
+UNKDevE - Today at 11:26 PM
+yes i agree, but how?(edited)
+remove exam and ballroom?
+remove the battles?(edited)
+charlesstewart - Today at 11:27 PM
+Eh... subdue the themes.
+UNKDevE - Today at 11:27 PM
+yes agreed.
+charlesstewart - Today at 11:27 PM
+I guess when the ideas are written down, they're easier to... er... see.
+UNKDevE - Today at 11:28 PM
+yup.
+charlesstewart - Today at 11:28 PM
+So dress it up.
+Bye.
+UNKDevE - Today at 11:28 PM
+OK.
+jamierocks - Today at 11:28 PM
+see ya
+charlesstewart - Today at 11:28 PM
+To anybody else reading this: you saw nothing.
+jamierocks - Today at 11:29 PM
+lol
+UNKDevE - Today at 11:29 PM
+lel.(edited)
