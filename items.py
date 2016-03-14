@@ -12,6 +12,11 @@ class item:
 
 buff = namedtuple('buff', ['stat', 'buff'])
 
+class uniques(item):
+    
+    def __init__(self, name, buffs, **kwargs):
+        item.__init__(self, 1, name, **kwargs)
+        
 class consumable(item):
 
     def __init__(self, quantity, name, potency):
