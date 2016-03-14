@@ -44,4 +44,12 @@
 			}
 		]
 	}
+	"uniques":[
+		{
+			"name":"fanfiction",
+			"discription": "it erm.. distracts the enemy."
+			"buffs":[
+				]
+		}
+	]
 }
