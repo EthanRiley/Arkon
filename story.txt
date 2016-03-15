@@ -45,11 +45,25 @@ story senes:
 		agree: +5 hope, +5 enligtenment learn idealogy: Form theory
 		disagree: +10 defence, +5 determination learn idealogy: Realism
 	
+	the nightclub - 
+	
 	moonlight scene - nightime walk with date coming back from a party.
 	
-	THOM(the hall of materialsm, a shopping centre) - get items.
+	home - party get told goal and setting:
+		you have just finished your GCSE's some friends have invited you to a party;
+		it is located in the nightclub aptly named 'the nightclub'
 		
-
+	THOM(the hall of materialsm, a shopping centre) - get items.
+	
+	spanish inqasistion
+		
+plot:
+	
+	1) get home (home)
+	2) go though cycle lane to nightclub (cycle lane) - battle
+	3) late for nightclub, find friend going home, walk with (moonlight scene) - battle 
+	4) friends home lives in church have tea with them vicor asks question
+	5) goes home gets attacked by spanish inqsatition 
 
 idealogys:
 	like poitions but have to use them in battle. have a perminent effect on stats.
@@ -58,7 +72,7 @@ idealogys:
 		rejecting soceity and its norms you open your mind to a larger world.
 			buff: +20 determination, +40 hope, +15 enlightenment
 
-	Realism:
+	Realism (done):
 		you admit to the hashness of life.
 			buff: -5 determination, -5 hope, +30 enligtenment
 			
@@ -73,11 +87,11 @@ idealogys:
 			buff: -50 determination, +10 enlightenment
 			temporay buff: +100 defense, 5 turns.
 	
-	theism:
+	theism (done):
 		your belif in a devine being gives you hope. 
 			buff: +5 enlightenment, +5 determination, +10 hope
 	
-	atheism:
+	atheism (done):
 		God is no longer a credable source for morals.
 		"God is dead. God remains dead. And we have killed him."
 			buff: +20 enlightenment, -5 determination, -10 hope
@@ -86,7 +100,7 @@ idealogys:
 		 I think therefore i am, but i can't be sure of anything else.
 			buff: -10 determination, +20 defense, +10 enlightenment
 
-	Form theory:
+	Form theory (done):
 		you are guided by your visions of a perfect world,
 			buff: +20 hope, +5 determination, +15 enligenment
 	
@@ -118,5 +132,4 @@ weapons:
 		zzzzz....
 		buff: +25 zen
 
-	
 	
