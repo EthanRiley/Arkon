@@ -7,13 +7,12 @@ class entity(meta_sprite):
         for key in ordered(kwargs.keys()):
             self.basestat[key] = kwargs[key]
         self.health = 100
+        self.equipped = []
 
     def equip(self, item):
-        if item.type != "armor":
-            self.equipped = item
-        else:
-            self.armor.append(item)
-    
+        if item.is_equipabble:
+            self.equipped.append(item)
+
     def add_to_inventory(self, item_meta):
         self.inventory[item_meta.name] += item_meta.quantity
 
@@ -72,5 +71,3 @@ class player(entity):
         item.effect(game)
         if item.type == "consumable":
             del item 
-
-
