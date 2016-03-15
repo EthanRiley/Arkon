@@ -80,7 +80,7 @@
 			}
 		]
 				
-	}
+	},
 	"equipabble":[
 		{
 			"name": "fanfiction",
@@ -99,7 +99,7 @@
 		},
 		{
 			"name": "headphones",
-			"discription" : "music drowns out the enemys attacks while hurting thier ears."
+			"discription" : "music drowns out the enemys attacks while hurting thier ears.",
 			"buffs":{
 				"zen": 20,
 				"defense": 10
