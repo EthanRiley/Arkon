@@ -6,17 +6,20 @@ class item:
     def __init__(self, quantity, name, **kwargs):
         self.quantity = quantity
         self.name = name
+        self.buffs = []
         self.is_consumable = False
         if 'discription' in sorted(kwargs.keys()):
             self.discription = kwargs['discription']
 
 buff = namedtuple('buff', ['stat', 'buff'])
 
-class uniques(item):
+class equipabble(item):
     
     def __init__(self, name, buffs, **kwargs):
         item.__init__(self, 1, name, **kwargs)
-        
+        self.buffs = buffs
+        item.is_equipabble = True
+                
 class consumable(item):
 
     def __init__(self, quantity, name, potency):
@@ -24,14 +27,14 @@ class consumable(item):
         item.is_consumable = True
         self.potency = potency
 
-           
 class alchol(consumable):
 
     def __init__(self, quantity, name, potency):
         consumable.__init__(self, quantity, name, potency)
         self.buffs = [ 
             buff("speed", -5),
-            buff("zen", 5)
+            buff("determination", 5)
+            buff("enlightenment", -5)
         ]
 
     def effect(self, player):
@@ -42,7 +45,7 @@ class health(consumable):
     def __init__(self, quantity, name, potency):
         consumable.__init__(self, quantity, name, potency)
         self.buffs = [
-            buff("health", 10)
+            buff("determination", 10)
         ]
 
 class speed(consumable):
@@ -84,5 +87,3 @@ class mysterious(consumable):
         for background in game.data.backgrounds:
             background = temmie
         pygame.transform.rotate(player.window, 360*4000)
-
-
