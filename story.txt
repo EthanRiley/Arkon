@@ -81,13 +81,13 @@ idealogys:
 		rejecting soceity and its norms you open your mind to a larger world.
 			buff: +20 determination, +40 hope, +15 enlightenment
 
-	Realism (done):
+	realism (done):
 		you admit to the hashness of life.
 			buff: -5 determination, -5 hope, +30 enligtenment
 			
 		transends to: eightfold path
 	
-	Libertarianism:
+	libertarianism:
 		only you can tell you what to do!
 			buff: +50 determination, +25 enlightenment, +15 defense	
 
@@ -140,8 +140,6 @@ weapons:
 	book:
 		zzzzz....
 		buff: +25 zen
-
-	
 
 hidden sh*t:
 	more scenes

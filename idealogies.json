@@ -1,4 +1,41 @@
 [
-  {
-    "name": "cartiasiain doubt",
-    "discription": 
+	{
+		"name": "cartiasiain doubt",
+		"discription":  "I think therefore i am, but i can't be sure of anything else.",
+		"buffs" : {
+			"determination" : -10,
+			"defense" : 20,
+			"enlightenment": 10
+		}
+	},
+	{
+		"name": "atheism",
+		"discription": "God is no longer a credable source for morals.",
+		"buffs" : {
+			"enlightenment" : 20,
+			"hope" : -10,
+			"determintion" : -5
+		}
+	},
+	{
+		"name": "theism",
+		"discription" : "your belif in a devine being gives you hope.",
+		"buffs" : {
+			"enlightenment": 5,
+			"determination" : 5.
+			"hope" : 10
+		}
+	},
+	{
+		"name": "Form theory",
+		"discription":"you are guided by your visions of a perfect world.",
+		"buffs" : {
+			"hope": 20,
+			"determination": 5,
+			"enlightenment": 15
+		}
+	}
+
+]
+
+
