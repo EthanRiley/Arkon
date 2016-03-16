@@ -45,17 +45,24 @@ story senes:
 		agree: +5 hope, +5 enligtenment learn idealogy: Form theory
 		disagree: +10 defence, +5 determination learn idealogy: Realism
 	
-	the nightclub - 
+	the nightclub - is missed
 	
 	moonlight scene - nightime walk with date coming back from a party.
 	
+	exam room - 
+	
 	home - party get told goal and setting:
+		starts with headphones on + clothes on.
 		you have just finished your GCSE's some friends have invited you to a party;
 		it is located in the nightclub aptly named 'the nightclub'
+		put on nice clothes for occastion
 		
 	THOM(the hall of materialsm, a shopping centre) - get items.
 	
-	spanish inqasistion
+	spanish inqasistion - 
+		join: 
+		does not care anymore: nihlism
+		
 		
 plot:
 	
@@ -64,6 +71,8 @@ plot:
 	3) late for nightclub, find friend going home, walk with (moonlight scene) - battle 
 	4) friends home lives in church have tea with them vicor asks question
 	5) goes home gets attacked by spanish inqsatition 
+	6) at home has flsahback of test.
+	7) end game?
 
 idealogys:
 	like poitions but have to use them in battle. have a perminent effect on stats.
@@ -82,7 +91,7 @@ idealogys:
 		only you can tell you what to do!
 			buff: +50 determination, +25 enlightenment, +15 defense	
 
-	nihilism:
+	nihilism (done):
 		you belive in nothing. nothing matters. nothing hurts you.
 			buff: -50 determination, +10 enlightenment
 			temporay buff: +100 defense, 5 turns.
@@ -133,3 +142,7 @@ weapons:
 		buff: +25 zen
 
 	
+
+hidden sh*t:
+	more scenes
+	mysterious potions
