@@ -117,7 +117,7 @@
 			"determination" : 5,
 			"hope" : 15,
 			"enlightenment" : 10
-		}
+		},
 		"temporary_buffs" : {
 			"determination" : 15,
 			"hope" : 35,
@@ -127,15 +127,15 @@
 	},
 	{ 
 		"name" :  "Realism",
-		"discrption" : "you admit to the hashness of life."
+		"discrption" : "you admit to the hashness of life.",
 		"temporary_buffs" : {
 			"determination" : -5,
 			"hope" : -2,
 			"enlightenment" : 20,
 			"turns" : 10
-		}
+		},
 		"buffs" : {
-			"hope" : -4
+			"hope" : -4,
 			"enlightenment" : 10
 		}
 	}	
