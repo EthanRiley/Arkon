@@ -64,15 +64,14 @@ class meta_sprite(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         
         self.imagename = imagename
-        self.animated= is_animated
+        self.animated = is_animated
         self.layer = layer 
         self.pos = pos
         self.frame = 0;
 
         if 'sounds' in sorted(kwargs.keys()):
             self.sounds = kwargs['sounds']
-
-
+	
     def facing(compass_dir):
         self.facing = compass_dir
 
@@ -101,14 +100,3 @@ class meta_sprite(pygame.sprite.Sprite):
         if self.is_animated & moving:
             self.animate_frame("right", "left")
             self.animate_frame("forward", "backward") 
-
-
-
-            
-        
-
-
-     
-
-
-
