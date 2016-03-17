@@ -86,7 +86,7 @@
 		"name" : "Nihilism",
 		"discription" : "you belive in nothing. nothing matters. nothing hurts you.",
 		"buffs" : {
-			"determination" : -40
+			"determination" : -40,
 			"enlightenment" : 10
 		},			
 		"temporary_buffs":{
@@ -121,7 +121,7 @@
 		"temporary_buffs" : {
 			"determination" : 15,
 			"hope" : 35,
-			"enlightenment" : 5
+			"enlightenment" : 5,
 			"turns" : 4
 		}
 	},
