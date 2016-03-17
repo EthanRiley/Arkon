@@ -22,7 +22,7 @@
 		"discription" : "your belif in a devine being gives you hope.",
 		"buffs" : {
 			"enlightenment": 5,
-			"determination" : 5.
+			"determination" : 5,
 			"hope" : 10
 		}
 	},
