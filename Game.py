@@ -6,9 +6,14 @@ class entity(meta_sprite):
         self.basestat = basestat
         for key in ordered(kwargs.keys()):
             self.basestat[key] = kwargs[key]
-        self.health = 100
+        self.determination = 100
         self.equipped = []
-
+	
+	def update_sprites(self, data):
+		self.image = data.sprites.get_data(self.imagename)
+		self.animation = data.sprites.get_data_array(self.
+		
+		
     def equip(self, item):
         if item.is_equipabble:
             self.equipped.append(item)
@@ -27,6 +32,22 @@ class entity(meta_sprite):
     def trade(self, item_meta, item_meta1):
         self.remove_from_inventory(item_meta)
         self.add_to_inventory(item_meta1)
+	
+	def use_item(self, item, game):
+        for buff in self.buffs:
+           self.basestat[buff.stat] += buff.value * potency
+        item.effect(game)
+        if item.type == "consumable":
+            del item 
+			
+	def fight(self, enemy, game):
+		self.imagename = imagename+"_battle"
+		self.update_sprites()
+		
+	def attack(self, enemy, game):
+		enemy.fight(self, game)
+		self.fight(enemy, game)
+		
 
 class Game(object):
 
@@ -40,7 +61,7 @@ class Game(object):
         self.window.blit(self.data.backgrounds.get_data(name))
     
     def init_meta_sprite(self, meta_sprite):
-        meta_sprite.image = self.data.sprites.get_data(meta_sprite.imagename)
+        meta_sprite.image = self.
         meta_sprite.rect = meta_sprite.image.get_rect()
         meta_sprite.rect.x = meta_sprite.pos.x
         meta_sprite.rect.y = meta_sprite.pos.y
@@ -52,22 +73,19 @@ class Game(object):
         self.sprites.add(meta_sprite, layer = meta_sprite.layer)
         return meta_sprite
             
+	def set_sprite(self, sprite, name):
+		sprite.image = self.data.sprites.get_data(name)
+		
     def update(self):
-        slef.sprites.update(self.data)
+        self.sprites.update(self.data)
         self.sprites.draw()
         pygame.display.update()
-
+			
 class player(entity):
 
-    def __init__(self):
+    def __init__(self, name):
         player.name = name
 
     def is_player(self):
         return True;
-
-    def use_item(self, item, game):
-        for buff in self.buffs:
-           self.basestat[buff.stat] += buff.value * potency
-        item.effect(game)
-        if item.type == "consumable":
-            del item 
+			
