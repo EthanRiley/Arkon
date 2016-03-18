@@ -1,4 +1,4 @@
-import pygame, os
+import pygame, os, re
 from collections import namedtuple
 from pygame.local import *
 
@@ -16,15 +16,15 @@ class resource_handler(object):
         self.__data = self.get_data_from_folder(data_dir, extension, iterfunc);
 
     def get_data(self, name):
-        for data in self.__data:
-            if data['name'] == name:
+         for data in self.__data:
+            if re.compile(name).match(data['name']):
                 return data['data']
 
     def get_data_array(self, names):
-        name = [];
+        data = [];
         for name in names:
-            name.append(self.get_data(name))
-        return names
+            data.append(self.get_data(name))
+        return data 
 
     def get_name(self, data):
         for data in self.__data:
@@ -71,7 +71,11 @@ class meta_sprite(pygame.sprite.Sprite):
 
         if 'sounds' in sorted(kwargs.keys()):
             self.sounds = kwargs['sounds']
-	
+    
+    
+    def load_data(self, data):
+        self.image = data.sprites.get_data(self.imagename)
+
     def facing(compass_dir):
         self.facing = compass_dir
 
