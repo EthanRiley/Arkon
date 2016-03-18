@@ -16,6 +16,14 @@ class item(game_object):
         self.quantity = quantity
         self.is_consumable = False
         
+class move(game_object):
+
+    def __init__(self, name, buffs, temp_buffs, turns, **kwargs):
+        game_object.__init__(name, **kwargs)
+        self.buffs = buffs
+        self.temp_buffs = temp_buffs
+        self.turns = turns
+        
 buff = namedtuple('buff', ['stat', 'buff'])
 
 class equipabble(item):
