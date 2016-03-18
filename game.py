@@ -1,4 +1,4 @@
-import GameData, items
+import game_data, game_objects
 
 class entity(meta_sprite):
 
@@ -50,25 +50,17 @@ class Game(object):
         self.data = GameData("data")
         self.sprites = pygame.sprite.LayeredUpdates()
         self.window = pygame.display.setmode([680, 480])
+        self.background_music = pygame.mixer.channel(0)
         pygame.display.caption(name)
     
     def set_background(self, name):
         self.window.blit(self.data.backgrounds.get_data(name))
+        self.background_music.play(self.data.sounds.get_data(name))
     
-    def init_meta_sprite(self, meta_sprite):
-        meta_sprite.rect = meta_sprite.image.get_rect()
-        meta_sprite.rect.x = meta_sprite.pos.x
-        meta_sprite.rect.y = meta_sprite.pos.y
-
-        del meta_sprite.pos
-
-        meta_sprite.sounds = self.data.sounds.get_data_array(meta_sprite.sounds)
-        
+    def load_sprite(self, meta_sprite):
+        meta_sprite.load_data(self.data)
         self.sprites.add(meta_sprite, layer = meta_sprite.layer)
         return meta_sprite
-            
-    def set_sprite(self, sprite, name):
-        sprite.image = self.data.sprites.get_data(name)
             
     def update(self):
         self.sprites.update(self.data)

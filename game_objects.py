@@ -1,16 +1,21 @@
 from collections import namedtuple
 import json, time
 
-class item:
+class game_object:
 
-    def __init__(self, quantity, name, **kwargs):
-        self.quantity = quantity
+    def __init__(self, name, **kwargs):
         self.name = name
         self.buffs = []
-        self.is_consumable = False
         if 'discription' in sorted(kwargs.keys()):
             self.discription = kwargs['discription']
 
+class item(game_object):
+
+    def __init__(self, quantity, name, **kwargs):
+        game_object.__init__(self, name, kwargs)
+        self.quantity = quantity
+        self.is_consumable = False
+        
 buff = namedtuple('buff', ['stat', 'buff'])
 
 class equipabble(item):
@@ -33,7 +38,7 @@ class alchol(consumable):
         consumable.__init__(self, quantity, name, potency)
         self.buffs = [ 
             buff("speed", -5),
-            buff("determination", 5)
+            buff("determination", 5),
             buff("enlightenment", -5)
         ]
 
@@ -82,8 +87,7 @@ class mysterious(consumable):
         fun = os.path.join("data", "fun") 
         temmie = get_image(os.path.join(fun, "temmie.png"))
         temmie_sound = pygame.mixer.Sound(os.path.join(fun, "temmie.ogg"))
-        for sprite in game.data.sprites.sprites:
-            sprite = temmie
-        for background in game.data.backgrounds:
-            background = temmie
+        for sprite in game.sprites.sprites:
+            sprite.image = temmie
+        self.window.blit(temmie)
         pygame.transform.rotate(player.window, 360*4000)
