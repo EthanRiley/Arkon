@@ -73,7 +73,7 @@ class meta_sprite(pygame.sprite.Sprite):
             self.sounds = kwargs['sounds']
     
     def load_data(self, data):
-        self.image = data.sprites.get_data(self.__imagename)
+        self.image = data.sprites.get_data(self._imagename)
         self.rect = self.image.get_rect()
 
         self.rect.x = self.__pos.x 
@@ -88,7 +88,7 @@ class meta_sprite(pygame.sprite.Sprite):
 
             self.animation = {}
             for direction in directions:        
-                self.animation[direction] = data.get_data_array(self.__imagename 
+                self.animation[direction] = data.get_data_array(self._imagename 
                         + "_anim_" + direction + "_\d")
 
         self.sounds = data.sounds.get_data_array(self.sounds)
