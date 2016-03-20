@@ -1,48 +1,4 @@
-import game_data, game_objects
-
-class entity(meta_sprite):
-
-    def __init__(self, name, basestat, **kwargs):
-        self.basestat = basestat
-        for key in ordered(kwargs.keys()):
-            self.basestat[key] = kwargs[key]
-        self.determination = 100
-        self.equipped = []
-	
-    def equip(self, item):
-        if item.is_equipabble:
-            self.equipped.append(item)
-
-    def add_to_inventory(self, item_meta):
-        self.inventory[item_meta.name] += item_meta.quantity
-
-    def remove_from_inventory(self, item_meta):
-        self.inventory[item_meta.name] -= item_meta.quantity
-        if self.inventory[item_meta.name] <= 0:
-            self.inventory.pop(item_meta.name)
-
-    def get_inventory(self):
-        return self.inventory
-   
-    def trade(self, item_meta, item_meta1):
-        self.remove_from_inventory(item_meta)
-        self.add_to_inventory(item_meta1)
-	
-    def use_item(self, item, game):
-        for buff in self.buffs:
-           self.basestat[buff.stat] += buff.value * potency
-        item.effect(game)
-        if item.type == "consumable":
-            del item 
-                        
-    def fight(self, enemy, game):
-            self.imagename = imagename+"_battle"
-            self.update_sprites()
-            
-    def attack(self, enemy, game):
-            enemy.fight(self, game)
-            self.fight(enemy, game)
-            
+import game_data, game_objects 
 
 class Game(object):
 
@@ -66,7 +22,59 @@ class Game(object):
         self.sprites.update(self.data)
         self.sprites.draw()
         pygame.display.update()
-			
+
+class entity(meta_sprite):
+
+    def __init__(self, name, basestat, **kwargs):
+        self.__basestat = basestat
+        for key in ordered(kwargs.keys()):
+            self.basestat[key] = kwargs[key]
+        self.__determination = 100
+        self.__equipped = {} 
+        self.__inventory = {}
+        self.__moves = {}
+
+    def add_move(self, move):
+        self.__moves[move["name"]] = move
+
+    def add_to_inventory(self, item):
+        self.__inventory[item["name"]] += item["quantity"]
+
+    def remove_from_inventory(self, item):
+        self.__inventory[item["name"]] -= item["quantity"]
+        if self.__inventory[item["name"]] <= 0:
+            self.__inventory.pop(item["name"])
+
+    def get_inventory(self):
+        return self.__inventory
+   
+    def trade(self, item, item1):
+        self.remove_from_inventory(item)
+        self.add_to_inventory(item1)
+	
+    def use_item(self, itemname, game):
+        for buff in self.__inventory[itemname]["buffs"]:
+           self.basestat[buff] +=  self.__inventory[itemname]["buffs"][buff] * self.inventory[itemname]["potency"]
+        if self.__inventory[itemname][effect] != None:
+            self.__inventory[itemname][effect](game)
+        if self.__inventory[itemname]["equipabble"]:
+            self.__equipped[itemname] = self.__inventory[itemname]
+        if self.__inventory[itemname]["equipabble"] | self.inventory[itemname]["consumable"]:
+            self.remove_from_inventory(self.__inventory[itemname])
+
+    def use_move(self, movename, game):
+        for buff in self.moves[movename]["buffs"]:
+            self.basestat += self.__inventory[itemname]["buffs"][buffs]
+        self.temp_buffs.append(self.moves[movename]["temporary_buffs"])
+
+    def unequip(itemname):
+        self.__equipped.pop(itemname)
+
+    def battle(self, enemy, game):
+            self._imagename = imagename+"_battle"
+            self.load_sprite(game.data)
+            self.fighting = True
+		
 class player(entity):
 
     def __init__(self, name):
@@ -75,3 +83,9 @@ class player(entity):
     def is_player(self):
         return True;
 			
+class battle:
+    def __init__(self, entity, entity1, game):
+            entity.fight(entity1, game)
+            game.set_background("battle")
+
+

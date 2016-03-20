@@ -1,0 +1,321 @@
+{
+	"default": { 
+		"consumable": true,
+		"equipabble": false,
+		"idealogy": false
+	},
+	"types" : [
+		{
+			"name": "equipabble",
+			"equipabble": true,
+			"consumable": false
+		},
+		{
+			"name": "alcohol",
+			"buffs": {
+				"speed" : -5,
+				"determination": 5,
+				"enligtenment": -5
+			}
+		},
+		{
+			"name": "health",
+		   	"buffs": {
+				"determination": 10
+			}
+		},
+		{
+			"name": "speed",
+			"buffs": { 
+				"speed": 5
+			}
+		},
+		{
+			"name": "hope",
+			"buffs": {
+				"hope": 5,
+				"enlightenment": 2
+			}
+		},
+		{
+			"name" : "mysterious",
+			"buffs": {
+				"enlighenment": 100
+			}
+		}
+	],		
+
+	"alchol":[
+		{
+			"name" : "wisky",
+			"potency": 5,
+			"discription": "garenteed to get you drunk."
+		},
+		{
+			"name" : "beer",
+			"potency": 2,
+			"discription": "do not consume between 2 and 3 AM."
+		},
+		{
+			"name" : "red wine",
+			"potency": 2,
+			"discription": "useful for romantic dinners."
+		}
+	],
+	
+	"health":[
+		{
+			"name": "veggie smoothie",
+			"potency": 2,
+			"discription": "it's healthy 'cus it's got vegatbles!"
+		},
+		{
+			"name": "chocolate",
+			"potency": 1,
+			"discription": "were not sure how this heals you, just take dialy mirrors word for it."
+		},
+		{
+			"name": "carrot",
+			"potency": 3,
+			"discription": "yup it's a carrot, alright."
+		}
+	],
+
+	"speed":[
+		{
+			"name": "coffie",
+			"potency": 2,
+			"discription": "a getup 'n' go hot beverage."
+		},
+		{
+			"name": "tea",
+			"potency": 1,
+			"discription": "a hot drink which the britsh are famed for drinking"
+		},
+		{
+			"name": "energy drink No 3000",
+			"potency": 5,
+			"discription": "a drink with so much caffine that it makes you think that time has slowed down around you"
+		}
+	],
+	
+	"hope":[
+		{
+			"name": "liquid joy",
+			"potency": 4,
+			"discription" : "make you smile."
+		},
+		{
+			"name": "hot chocolate",
+			"potency": 2,
+			"discription": "a choclatey hot beverage."
+		},
+		{
+			"name": "herbal tea",
+			"potency": 1,
+			"discription": "the herbality gives you hope to never taste it again."
+		}
+	],
+	
+	"mysterious":[
+		{
+			"name": "holy water of TEM.",
+			"potency": 20,
+			"discription": "use on your own velition"
+		}
+	],
+			
+
+	"equipabble":[
+		{
+			"name": "fanfiction",
+			"discription": "it erm.. distracts the enemy.",
+			"buffs":{
+				"hope": 30,
+				"zen": 50
+			}
+		},
+		{
+			"name": "book",
+			"discription" : "zzz...",
+			"buffs":{
+				"zen":  25
+			}
+		},
+		{
+			"name": "headphones",
+			"discription" : "music drowns out the enemys attacks while hurting thier ears.",
+			"buffs":{
+				"zen": 20,
+				"defense": 10
+			}
+		},
+		{
+			"name" : "darth vader armor",
+			"discription" : " der. der. de.der.derde dER, DER DER DER(imerial theme intersifies",
+			"buffs":{
+				"defense": 15,
+				"zen" : 5
+			}
+		},
+		{
+			"name" : "clothes",
+			"discription" : "you wear them.",
+			"buffs":{
+				"defense": 5
+			}
+		},
+		{
+			"name" : "nice clothes",
+			"discription" : "they smell nice, they look nice, they are nice!",
+			"buffs":{
+				"defense": 7,
+				"zen" : 2,
+				"hope" : 5
+			}
+		} 
+	],
+	"idealogies" : [
+		{
+			"name": "Cartiasiain doubt",
+			"discription":  "I think therefore i am, but i can't be sure of anything else.",
+			"buffs" : {
+				"determination" : -10,
+				"defense" : 5,
+				"enlightenment": 5
+			},
+			"temporary_buffs" : {
+				"defense" : 15,
+				"enlightenment": 5,
+				"turns" : 10
+			}
+		},
+		{
+			"name": "Atheism",
+			"discription": "God is no longer a credable source for morals.",
+			"buffs" : {
+				"enlightenment" : 5
+			},
+			"temporary_buffs" : {
+				"hope" : -10,
+				"determintion" : -5,
+				"enlightenment" : 15,
+				"turns": 10
+			}
+		},
+		{
+			"name": "Theism",
+			"discription" : "your belif in a devine being gives you hope.",
+			"buffs" : {
+				"enlightenment": 5,
+				"determination" : 5,
+				"hope" : 10
+			},
+			"temporary_buffs" : {}
+		},
+		{
+			"name": "Form theory",
+			"discription":"you are guided by your visions of a perfect world.",
+			"buffs" : {
+				"hope": 5,
+				"determination": 5,
+				"enlightenment": 5
+			},
+			"temporary_buffs" : {
+				"enlightenment" : 10,
+				"hope": 15,
+				"turns" : 5
+			}
+		},
+		{
+			"name" : "Agape",
+			"discription" : "your heart is filled with love transending all circumstances.",
+			"buffs" : {
+				"enlightenment" : 5,
+				"hope" : 5
+			},
+			"temporary_buffs" : {
+				"determintaion" : 50,
+				"enlightenment" :  35,
+				"hope" : 15,
+				"turns" : 5
+			}
+		},
+		{
+			"name" : "Eightfold Path",
+			"discription" : "see things as they truly are.",
+			"temporary_buffs" : {
+				"enlightenment" : 100,
+				"turns" : 2
+			}
+		},
+		{
+			"name": "Philla",
+			"discription" : "the power of friendship gives you hope to carry on.",
+			"buffs" : {
+				"hope" : 10,
+				"determination" : 20,
+				"enlightenment" : 5
+			},
+			"temporary_buffs" : {}
+		},
+		{
+			"name" : "Nihilism",
+			"discription" : "you belive in nothing. nothing matters. nothing hurts you.",
+			"buffs" : {
+				"determination" : -40,
+				"enlightenment" : 10
+			},			
+			"temporary_buffs":{
+				"determination" : -10,
+				"defense" : 100,
+				"turns" : 5
+			}
+		},
+		{
+			"name" : "Libertarianism",
+			"discription" : "only you can tell you what to do!",
+			"buffs" : {
+				"determination" : 10,
+				"enlightenment" : 15,
+				"defense" : 5
+			},
+			"temporary_buffs" : {
+				"determination" : 40,
+				"enlightenment" : 10,
+				"defense" : 10,
+				"turns" : 3
+			}
+		},
+		{
+			"name" : "Anticonformism",
+			"discription" : "rejecting soceity and its norms you open your mind to a larger world.",
+			"buffs" : {
+				"determination" : 5,
+				"hope" : 15,
+				"enlightenment" : 10
+			},
+			"temporary_buffs" : {
+				"determination" : 15,
+				"hope" : 35,
+				"enlightenment" : 5,
+				"turns" : 4
+			}
+		},
+		{ 
+			"name" :  "Realism",
+			"discrption" : "you admit to the hashness of life.",
+			"temporary_buffs" : {
+				"determination" : -5,
+				"hope" : -2,
+				"enlightenment" : 20,
+				"turns" : 10
+			},
+			"buffs" : {
+				"hope" : -4,
+				"enlightenment" : 10
+			}
+		}	
+	]
+}
+
