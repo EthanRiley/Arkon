@@ -29,7 +29,7 @@ class entity(meta_sprite):
         self.__basestat = basestat
         for key in ordered(kwargs.keys()):
             self.basestat[key] = kwargs[key]
-        self.__determination = 100
+        self.__basestat['determination'] = 100
         self.__equipped = {} 
         self.__inventory = {}
         self.__moves = {}
