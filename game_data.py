@@ -60,12 +60,11 @@ position = namedtuple("position", ['x', 'y'])
 
 class meta_sprite(pygame.sprite.Sprite):
 
-    def __init__(self, imagename, is_animated, layer, pos, **kwargs):
+    def __init__(self, imagename, is_animated, pos, **kwargs):
         pygame.sprite.Sprite.__init__(self)
         
         self._imagename = imagename
         self.animated = is_animated
-        self.layer = layer 
         self.__pos = pos
         self.__frame = 0;
 
@@ -83,7 +82,8 @@ class meta_sprite(pygame.sprite.Sprite):
         if self.animated:
             directions = [
                     "right",
-                    "forward"
+                    "forward",
+                    "backward"
             ]
 
             self.animation = {}
@@ -102,23 +102,24 @@ class meta_sprite(pygame.sprite.Sprite):
             rect1 = sprite.get_rect()
             if rect1.left <= rect.right + dx & rect1.top >= rect.bottom + dy:
                 if rect1.right >= rect.left + dx & rect1.bottom <= rect.top + dy:
+                    self.moving = False
                     return False
-        self.rect.move(dx, dy)
+        self.rect.move_ip(dx, dy)
         self.moving = True
         return True
 
-    def animate_frame(self, direction,  flipped_dir):
-        if self.facing == direction | self.facing == flipped_dir:
-            self.image.blit(self.animation[direction][self.__frame])
-            if self.facing == direction ^ self.flipped:
-                pygame.transform.flip(self.image, True, False)
-                self.flipped = True
-            elif self.flipped:
-                pygame.transform.flip(self.image, True, False)
-                self.flipped = False
-            ++self.__frame%len(self.animation[direction])
-
     def update(self, *args):
         if self.is_animated & moving:
-            self.animate_frame("right", "left")
-            self.animate_frame("forward", "backward") 
+            if self.facing == "right" | self.facing == "left":
+                self.image.blit(self.animation["right"][self.__frame])
+                if self.facing == "left":
+                    pygame.transform.flip(self.image, True, False)
+                    
+            else:
+                 self.image.blit(self.animation[self.facing][self.__frame])
+                 
+            self.__frame += 1
+            self.__frame = self.__frame%len(self.animation[direction])
+            self.moving = False
+        
+            
