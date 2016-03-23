@@ -26,6 +26,7 @@ class Game(object):
 class entity(meta_sprite):
 
     def __init__(self, name, basestat, **kwargs):
+        meta_sprite.__init__(self, name, True)
         self.__basestat = basestat
         for key in ordered(kwargs.keys()):
             self.basestat[key] = kwargs[key]
@@ -37,6 +38,19 @@ class entity(meta_sprite):
     def add_move(self, move):
         self.__moves[move["name"]] = move
 
+    def get_moves(self):
+        return self.__move
+
+    def unequip(itemname):
+        self.inventory[itemname] = self.__equppped[itemname]
+        for buff in self.inventory[itemname]:
+            self.basestat[buff] -= self.__inventory[itemname]["buffs"][buff] * self.inventory[itemname]["potency"]
+        self.__equipped.pop(itemname)
+
+    def equip(itemname):
+        self.__equipped[itemname] = self.__inventory[itemname]
+        self.__inventory.pop(itemname)
+        
     def add_to_inventory(self, item):
         self.__inventory[item["name"]] += item["quantity"]
 
@@ -58,17 +72,14 @@ class entity(meta_sprite):
         if self.__inventory[itemname][effect] != None:
             self.__inventory[itemname][effect](game)
         if self.__inventory[itemname]["equipabble"]:
-            self.__equipped[itemname] = self.__inventory[itemname]
-        if self.__inventory[itemname]["equipabble"] | self.inventory[itemname]["consumable"]:
+            self.equip(itemname)
+        if  self.inventory[itemname]["consumable"]:
             self.remove_from_inventory(self.__inventory[itemname])
 
     def use_move(self, movename, game):
         for buff in self.moves[movename]["buffs"]:
             self.basestat += self.__inventory[itemname]["buffs"][buffs]
         self.temp_buffs.append(self.moves[movename]["temporary_buffs"])
-
-    def unequip(itemname):
-        self.__equipped.pop(itemname)
 
     def battle(self, enemy, game):
             self._imagename = imagename+"_battle"
@@ -86,7 +97,4 @@ class player(entity):
 class battle:
     def __init__(self, entity, entity1, game):
             entity.fight(entity1, game)
-            game.set_background("battle")
-
-
-
+            game.set_background("battle")   
