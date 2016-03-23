@@ -35,6 +35,9 @@ class entity(meta_sprite):
         self.__inventory = {}
         self.__moves = {}
 
+    def get_basestats(self):
+        return self.__basestat
+
     def add_move(self, move):
         self.__moves[move["name"]] = move
 
@@ -78,14 +81,14 @@ class entity(meta_sprite):
 
     def use_move(self, movename, game):
         for buff in self.moves[movename]["buffs"]:
-            self.basestat += self.__inventory[itemname]["buffs"][buffs]
+            self.basestat += self.moves[movename]["buffs"][buffs]
         self.temp_buffs.append(self.moves[movename]["temporary_buffs"])
 
-    def battle(self, enemy, game):
+    def load_battle_assets(self, game):
             self._imagename = imagename+"_battle"
             self.load_sprite(game.data)
             self.fighting = True
-		
+
 class player(entity):
 
     def __init__(self, name):
@@ -94,7 +97,32 @@ class player(entity):
     def is_player(self):
         return True;
 			
+class battle_entity(Thread):
+   
+    def __init__(self, entity):
+        self.__entity = entity
+        self.__func_queue = queue.Queue()
+
+    def use_item(self, itemname):
+        self.__entity.use_item(itemname)
+
+    def use_move(self, movename):
+        self.__entity.use_move(movename)
+
+    def get_basestats(self):
+        return self.__basestat
+
 class battle:
     def __init__(self, entity, entity1, game):
-            entity.fight(entity1, game)
+            entity.load_battle_assets(entity1, game)
             game.set_background("battle")   
+            entity1.load_battle_assets(entity, game)
+            entity_queuefuncs = []
+            entity1_queuefuncs = []
+            if entity.get_basestats()["speed"] < entity1.get_basestats()["speed"]:
+                self.entity_turn = False
+            else:
+                self.entity_turn = True
+
+    def entity_do(self, entityNo, do_func):
+            self.entity_queuefuncs.append(do_func)
