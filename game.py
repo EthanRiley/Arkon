@@ -20,8 +20,14 @@ def deconcat_dicts(*dicts):
 
 class moveable(meta_sprite):
     def __init__(self, imagename, pos, **kwargs):
-        meta_sprite.__init__(self, imagename, pos, **kwargs)
-        self.__frame = 0;
+        meta_sprite.__init__(self, imagename, pos)
+        sounds.append("collide_beep")
+        self.__frame = 0
+
+        if 'sounds' in sorted(kwargs.keys()):
+            self.sounds = kwargs['sounds']
+    
+
 
     def load_data(self, data):
         meta_sprite.load_data(self, data)
@@ -46,6 +52,7 @@ class moveable(meta_sprite):
                 rect1 = sprite.get_rect()
                 if rect1.left <= rect.right + dx & rect1.top >= rect.bottom + dy:
                     if rect1.right >= rect.left + dx & rect1.bottom <= rect.top + dy:
+                        self.sounds["collide_beep"].play()
                         self.moving = False
                         return False
         self.rect.move_ip(dx, dy)
@@ -61,11 +68,76 @@ class moveable(meta_sprite):
                     
             else:
                  self.image.blit(self.animation[self.facing][self.__frame])
-                 
+
+            self.dirty = 1  
             self.__frame += 1
             self.__frame = self.__frame%len(self.animation[direction])
             self.moving = False
 
+
+text_data = namedtuple("text_data", ['text', 'font_size', 'font_name'])
+
+class text_box(object):
+    def __init__(self, pos, data_dir, **kwargs):
+        self.border = meta_sprite("textbox_border", pos)
+        rect = self.border.get_rect()
+        self.text_box = meta_sprite(self, "textbox", (pos.x - rect.x, pos.y - rect.y))
+        self.text_box.sounds.append("activate_beep")
+        self.text_to_render = collections.deque()
+        self.fonts = font_data(os.path.join(data_dir, "fonts"))
+
+    def word_wrap(self, text, font_name, font_size):
+        if self.get_rect().x < self.fonts.get_data(font_name).get_rect(text, 
+                size = font_size).x:
+            x = 0
+            output = ""
+            for word in text.split(' '):
+                word_rect = self.get_data(font_name).get_rect(text, 
+                        size = font_size)
+                if x + word_rect.x > rect.x: 
+                    output += '\n'
+                    x = 0
+                output += word
+            return output
+        else:
+            return text
+    
+    def load_data(self, data):
+        self.border.load_data(data)
+        self.text_box.load_data(data)
+
+    def next_page(self):
+      self.txt_data = self.text_to_render.pop()
+      self.text_box.sounds["activate_beep"].play()
+
+    def say(self, text, font_name, font_size):
+        text = self.word_wrap(text, font_name, font_size)
+        rect = self.get_rect()
+        y = 0
+        output = ""
+        font = self.fonts.get_data(font_name)
+        for line in text.split('\n'):
+            if y + font.get_rect(line, 
+                    size=font_size).y < y:
+                output += line + '\n'
+            else:
+                self.text_to_render.append(text_data(output, font_size, 
+                    font_name)) 
+                output = line 
+        self.next_page()
+
+    def draw(self, surface):
+        if len(self.text_to_render) != 0 | self.visible:
+          surface.blit(self.text_box.image)
+          surface.blit(self.border.image)
+          self.fonts.get_data(self.txt_data.font_name).render_to(self.text_box,
+                  (0, 0), self.txt_data.text, size = self.txt_data.font_size)      
+
+    def show(self):
+        self.visible = True
+
+    def hide(self):
+        self.visible = False
 
 class Game(object):
 
@@ -75,6 +147,9 @@ class Game(object):
         self.window = pygame.display.setmode([680, 480])
         self.background_music = pygame.mixer.channel(0)
         pygame.display.caption(name)
+
+        self.textbox = text_box((0,0), "data") 
+        self.textbox.load_data(self.data)
     
     def set_background(self, name):
         self.window.blit(self.data.backgrounds.get_data(name))
@@ -87,7 +162,8 @@ class Game(object):
             
     def update(self):
         self.sprites.update(self.data)
-        self.sprites.draw()
+        self.sprites.draw(self.window)
+        self.textbox.draw(self.window)
         pygame.display.update()
 
 class entity(moveable):
@@ -178,6 +254,13 @@ class entity(moveable):
             self.load_sprite(game.data)
             self.fighting = True
 
+    def is_hopeful(self):
+        if self.get_stats()["hope"]) > random.randrange(1, 500): 
+            return True
+        else:
+            return False
+        
+
 class player(entity):
 
     def __init__(self, name):
@@ -185,52 +268,6 @@ class player(entity):
 
     def is_player(self):
         return True;
-			
-class textbox(object):
-    def __init__(self, pos, size, **kwargs):
-        self.border = meta_sprite("textbox_border", pos, **kwargs)
-        rect = self.border.get_rect()
-        meta_sprite.__init__(self, "textbox", False, (pos.x - rect.x, pos.y - rect.y))
-        self.text_to_render = collections.deque()
-
-    def word_wrap(self, text, font_name, font_size, game):
-        if self.get_rect().x < game.data.fonts[font_name].get_rect(text, 
-                size = font_size).x:
-            x = 0
-            output = ""
-            for word in text.split(' '):
-                word_rect = game.data.fonts[font_name].get_rect(text, 
-                        size = font_size)
-                if x + word_rect.x > rect.x: 
-                    output += '\n'
-                    x = 0
-                output += word
-            return output
-        else:
-            return text
-
-    def say(self, text, font_name, font_size, game):
-        text = self.word_wrap(text, font_name, font_size, game)
-        rect = self.get_rect()
-        y = 0
-        output = ""
-        for line in text.split('\n'):
-            if y + game.data.fonts[font_name].get_rect(line, 
-                    size=font_size).y < y:
-                output += line + '\n'
-            else:
-               self.text_to_render.append(output) 
-               output = line 
-    
-    def update(self):
-        if len(self.text_to_render) == 0:
-            self.visible = 0
-
-    def show(self):
-        self.visible = 1
-
-    def hide(self):
-        self.visible = 0
 
 class battle_entity:
     def __init__(self, entity, game):
@@ -245,9 +282,9 @@ class battle_entity:
         self.__func_queue.append({"func" : self.__entity.use_move, "args" : movename})
 
     def do_queued(self):
-            function = self.queue.pop()
-            function["func"]("args")
-            self.turns += 1
+        function = self.queue.pop()
+        function["func"]("args")
+        self.turns += 1
 
     def ready(self):
         if len(self.__func_queue) > 0:
@@ -256,9 +293,9 @@ class battle_entity:
 
     def get_stats(self):
         return self.__entity.get_stats()
-
-    def is_criticalhit(self):
-        return self.critcal
+    
+    def is_hopeful(self):
+        return self.is_hopeful()
 
 class battle(threading.Thread):
     def __init__(self, entity, entity1, game):

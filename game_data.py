@@ -20,8 +20,14 @@ class resource_handler(object):
             if re.compile(name).match(data['name']):
                 return data['data']
 
-    def get_data_array(self, names):
-        data = [];
+    def get_data_dict(self, names):
+        data = {} 
+        for name in names:
+            data[name] = self.get_data(name)
+        return data 
+    
+    def get_data_dict(self, names):
+        data = [] 
         for name in names:
             data.append(self.get_data(name))
         return data 
@@ -58,7 +64,6 @@ class game_data(object):
         self.sprites = image_data(os.path.join(data_dir, "sprites"))
         self.backgrounds = image_data(os.path.join(data_dir, "backgrounds"))
         self.sounds = sound_data(os.path.join(data_dir, "sounds"))
-        self.fonts = font_data(os.path.join(data_dir, "fonts"))
 
 position = namedtuple("position", ['x', 'y'])
 
@@ -70,9 +75,6 @@ class meta_sprite(pygame.sprite.DirtySprite):
         self._imagename = imagename
         self.__pos = pos
 
-        if 'sounds' in sorted(kwargs.keys()):
-            self.sounds = kwargs['sounds']
-    
     def load_data(self, data):
         self.image = data.sprites.get_data(self._imagename)
         self.rect = self.image.get_rect()
@@ -81,6 +83,6 @@ class meta_sprite(pygame.sprite.DirtySprite):
         self.rect.y = self.__pos.y
         del self.__pos
         
-        self.sounds = data.sounds.get_data_array(self.sounds)
+        self.sounds = data.sounds.get_data_dict(self.sounds)
 
 
