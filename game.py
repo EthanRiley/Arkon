@@ -1,5 +1,5 @@
 import game_data, game_objects 
-import threading
+import threading, random
 
 def concat_dicts(*dicts, **kwargs):
     output = {}
@@ -17,11 +17,61 @@ def deconcat_dicts(*dicts):
             output = {k: output.get(k, kwargs["default"]) - dic.get(k, kwargs["default"]) for k in keys }
     return output
 
+
+class moveable(meta_sprite):
+    def __init__(self, imagename, pos, **kwargs):
+        meta_sprite.__init__(self, imagename, pos, **kwargs)
+        self.__frame = 0;
+
+    def load_data(self, data):
+        meta_sprite.load_data(self, data)
+        directions = [
+                "right",
+                "forward",
+                "backward"
+        ]
+
+        self.animation = {}
+        for direction in directions:        
+            self.animation[direction] = data.get_data_array(self._imagename 
+                    + "_anim_" + direction + "_\d")
+
+    def facing(self, direction):
+        self.facing = direction 
+
+    def move(self, dx, dy, game):
+        rect = self.get_rect()
+        for sprite in game.sprites.sprites():
+            if sprite != self:
+                rect1 = sprite.get_rect()
+                if rect1.left <= rect.right + dx & rect1.top >= rect.bottom + dy:
+                    if rect1.right >= rect.left + dx & rect1.bottom <= rect.top + dy:
+                        self.moving = False
+                        return False
+        self.rect.move_ip(dx, dy)
+        self.moving = True
+        return True
+
+    def update(self, *args):
+        if moving:
+            if self.facing == "right" | self.facing == "left":
+                self.image.blit(self.animation["right"][self.__frame])
+                if self.facing == "left":
+                    pygame.transform.flip(self.image, True, False)
+                    
+            else:
+                 self.image.blit(self.animation[self.facing][self.__frame])
+                 
+            self.__frame += 1
+            self.__frame = self.__frame%len(self.animation[direction])
+            self.moving = False
+
+
 class Game(object):
 
     def __init__(self, name):
         self.data = GameData("data")
-        self.sprites = pygame.sprite.LayeredUpdates()
+        self.sprites = pygame.sprite.LayeredDirty()
         self.window = pygame.display.setmode([680, 480])
         self.background_music = pygame.mixer.channel(0)
         pygame.display.caption(name)
@@ -32,7 +82,7 @@ class Game(object):
     
     def load_sprite(self, meta_sprite):
         meta_sprite.load_data(self.data)
-        self.sprites.add(meta_sprite, layer = meta_sprite.layer)
+        self.sprites.add(meta_sprite)
         return meta_sprite
             
     def update(self):
@@ -40,10 +90,10 @@ class Game(object):
         self.sprites.draw()
         pygame.display.update()
 
-class entity(meta_sprite):
+class entity(moveable):
 
-    def __init__(self, name, basestat, **kwargs):
-        meta_sprite.__init__(self, name, True)
+    def __init__(self, name, pos,  basestat, **kwargs):
+        meta_sprite.__init__(self, name, pos, **kwargs)
         self.__basestat = basestat
         for key in ordered(kwargs.keys()):
             self.basestat[key] = kwargs[key]
@@ -136,8 +186,53 @@ class player(entity):
     def is_player(self):
         return True;
 			
+class textbox(object):
+    def __init__(self, pos, size, **kwargs):
+        self.border = meta_sprite("textbox_border", pos, **kwargs)
+        rect = self.border.get_rect()
+        meta_sprite.__init__(self, "textbox", False, (pos.x - rect.x, pos.y - rect.y))
+        self.text_to_render = collections.deque()
+
+    def word_wrap(self, text, font_name, font_size, game):
+        if self.get_rect().x < game.data.fonts[font_name].get_rect(text, 
+                size = font_size).x:
+            x = 0
+            output = ""
+            for word in text.split(' '):
+                word_rect = game.data.fonts[font_name].get_rect(text, 
+                        size = font_size)
+                if x + word_rect.x > rect.x: 
+                    output += '\n'
+                    x = 0
+                output += word
+            return output
+        else:
+            return text
+
+    def say(self, text, font_name, font_size, game):
+        text = self.word_wrap(text, font_name, font_size, game)
+        rect = self.get_rect()
+        y = 0
+        output = ""
+        for line in text.split('\n'):
+            if y + game.data.fonts[font_name].get_rect(line, 
+                    size=font_size).y < y:
+                output += line + '\n'
+            else:
+               self.text_to_render.append(output) 
+               output = line 
+    
+    def update(self):
+        if len(self.text_to_render) == 0:
+            self.visible = 0
+
+    def show(self):
+        self.visible = 1
+
+    def hide(self):
+        self.visible = 0
+
 class battle_entity:
-   
     def __init__(self, entity, game):
         entity.load_battle_assets(game)
         self.__entity = entity
@@ -162,6 +257,9 @@ class battle_entity:
     def get_stats(self):
         return self.__entity.get_stats()
 
+    def is_criticalhit(self):
+        return self.critcal
+
 class battle(threading.Thread):
     def __init__(self, entity, entity1, game):
             threading.Thread.__init__(self)
@@ -175,4 +273,3 @@ class battle(threading.Thread):
             self.entity.do_queued()
         if not self.__entity_turn & self.entity1.ready():
             self.entity1.do_queued()
-

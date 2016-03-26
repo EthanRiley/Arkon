@@ -4,16 +4,16 @@ from pygame.local import *
 
 class resource_handler(object):
 
-    def get_data_from_folder(self, data_direction, extension, iterfunc):
+    def get_data_from_folder(self, data_dir, extension, iterfunc):
         data = []
-        for file in os.listdirection(data_dir):
+        for file in os.listdir(data_dir):
             if extension in file:
                 data.append({ 'name': file, 
                     'data': iterfunc(os.path.join(data_direction, file))})
         return data
 
-    def __init__(self, data_direction, extension, iterfunc):
-        self.__data = self.get_data_from_folder(data_direction, extension, iterfunc);
+    def __init__(self, data_dir, extension, iterfunc):
+        self.__data = self.get_data_from_folder(data_dir, extension, iterfunc);
 
     def get_data(self, name):
          for data in self.__data:
@@ -37,12 +37,15 @@ def get_image(self, file):
     image.convert()
     return image
 
-def image_data(data_direction):
-    return resource_handler(data_direction, '.png', get_image)
+def image_data(data_dir):
+    return resource_handler(data_dir, '.png', get_image)
 
-def sound_data(data_direction):
+def sound_data(data_dir):
     return resource_handler(data_direction, '.ogg', pygame.mixer.load)
-    
+
+def font_data(data_dir):
+    return resource_handler(data_dir,'.fft', pygame.freetype.Font)
+
 def boundboxcol(rect, rect1):
     if rect1.left <= rect.right & rect1.top >= rect.bottom:
         if rect1.right >= rect.left & rect1.bottom <= rect.top:
@@ -51,22 +54,21 @@ def boundboxcol(rect, rect1):
 
 class game_data(object):
 
-    def __init__(self, data_direction):
-        self.sprites = image_data(os.path.join(data_direction, "sprites"))
-        self.backgrounds = image_data(os.path.join(data_direction, "backgrounds"))
-        self.sounds = sound_data(os.path.join(data_direction, "sounds"))
+    def __init__(self, data_dir):
+        self.sprites = image_data(os.path.join(data_dir, "sprites"))
+        self.backgrounds = image_data(os.path.join(data_dir, "backgrounds"))
+        self.sounds = sound_data(os.path.join(data_dir, "sounds"))
+        self.fonts = font_data(os.path.join(data_dir, "fonts"))
 
 position = namedtuple("position", ['x', 'y'])
 
-class meta_sprite(pygame.sprite.Sprite):
+class meta_sprite(pygame.sprite.DirtySprite):
 
-    def __init__(self, imagename, is_animated, pos, **kwargs):
+    def __init__(self, imagename, pos, **kwargs):
         pygame.sprite.Sprite.__init__(self)
         
         self._imagename = imagename
-        self.animated = is_animated
         self.__pos = pos
-        self.__frame = 0;
 
         if 'sounds' in sorted(kwargs.keys()):
             self.sounds = kwargs['sounds']
@@ -79,47 +81,6 @@ class meta_sprite(pygame.sprite.Sprite):
         self.rect.y = self.__pos.y
         del self.__pos
         
-        if self.animated:
-            directions = [
-                    "right",
-                    "forward",
-                    "backward"
-            ]
-
-            self.animation = {}
-            for direction in directions:        
-                self.animation[direction] = data.get_data_array(self._imagename 
-                        + "_anim_" + direction + "_\d")
-
         self.sounds = data.sounds.get_data_array(self.sounds)
 
-    def facing(direction):
-        self.facing = direction 
 
-    def move(self, dx, dy, sprites):
-        rect = self.get_rect()
-        for sprite in sprites:
-            rect1 = sprite.get_rect()
-            if rect1.left <= rect.right + dx & rect1.top >= rect.bottom + dy:
-                if rect1.right >= rect.left + dx & rect1.bottom <= rect.top + dy:
-                    self.moving = False
-                    return False
-        self.rect.move_ip(dx, dy)
-        self.moving = True
-        return True
-
-    def update(self, *args):
-        if self.is_animated & moving:
-            if self.facing == "right" | self.facing == "left":
-                self.image.blit(self.animation["right"][self.__frame])
-                if self.facing == "left":
-                    pygame.transform.flip(self.image, True, False)
-                    
-            else:
-                 self.image.blit(self.animation[self.facing][self.__frame])
-                 
-            self.__frame += 1
-            self.__frame = self.__frame%len(self.animation[direction])
-            self.moving = False
-        
-            

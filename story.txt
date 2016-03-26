@@ -144,3 +144,20 @@ weapons:
 hidden sh*t:
 	more scenes
 	mysterious potions
+
+GUI:
+	▶ will be used to select stuff
+	four spaces will space out moves/ things to in battle like so:
+
+	    ▶ nilism    catasian doubt    realism    Agape 
+	
+	the third space will be used for the arrow.
+	
+	in the menu for the game it will be like so:
+			
+      ▶ stats
+        iventory
+        save
+        quit
+
+	but with 1.5 or 1.25 line spaceing
