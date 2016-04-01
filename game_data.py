@@ -69,9 +69,9 @@ position = namedtuple("position", ['x', 'y'])
 
 class meta_sprite(pygame.sprite.DirtySprite):
 
-    def __init__(self, imagename, pos, **kwargs):
+    def __init__(self, imagename, pos):
         pygame.sprite.Sprite.__init__(self)
-        
+        self.sounds = [] 
         self._imagename = imagename
         self.__pos = pos
 
@@ -84,5 +84,4 @@ class meta_sprite(pygame.sprite.DirtySprite):
         del self.__pos
         
         self.sounds = data.sounds.get_data_dict(self.sounds)
-
 
