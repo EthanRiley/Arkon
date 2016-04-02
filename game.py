@@ -1,33 +1,58 @@
-import game_data, game_objects, threading, random, time
+import game_data, game_objects, threading, random, time, collections, sys
 
-def concat_dicts(*dicts, **kwargs):
-    output = {}
-    for dic in dicts:
-        if len(dic) > 0:
-            keys = output.keys() | dic.keys()
-            output = {k: output.get(k, kwargs["default"]) + dic.get(k, kwargs["default"]) for k in keys }
-    return output
+#(0, 0) is top left corner in pygame.
 
-def deconcat_dicts(*dicts, **kwargs):
-    output = {}
-    for dic in dicts:
-        if len(dic) > 0:
-            keys = output.keys() | dic.keys()
-            output = {k: output.get(k, kwargs["default"]) - dic.get(k, kwargs["default"]) for k in keys }
-    return output
+this = sys.modules[__name__]
 
-class moveable(meta_sprite):
+this.data = game_data.game_data("data")
+this.sprites = pygame.sprite.LayeredDirty()
+this.battle_sprites = pygame.sprite.LayeredDirty()
+this.window = pygame.display.setmode([680, 480])
+this.background_music = pygame.mixer.channel(0)
+
+def set_background(name):
+    this.window.blit(self.data.backgrounds.get_data(name))
+    self.background_music.play(self.data.sounds.get_data(name))
+
+position = collections.namedtuple("position", ['x', 'y'])
+
+class sprite(pygame.sprite.DirtySprite):
+
     def __init__(self, imagename, pos, **kwargs):
-        meta_sprite.__init__(self, imagename, pos)
-        sounds.append("collide_beep")
-        self.__frame = 0
+        pygame.sprite.Sprite.__init__(self)
+        self.sounds = [] 
 
         if 'sounds' in sorted(kwargs.keys()):
             self.sounds = kwargs['sounds']
             kwargs.pop('sounds')
 
-    def load_data(self, data):
-        meta_sprite.load_data(self, data)
+
+        self._imagename = imagename
+
+        self.image = this.data.sprites.get_data(self._imagename)
+        self.rect = self.image.get_rect()
+
+        self.rect.x = pos.x
+        self.rect.y = pos.y
+        
+        self.sounds = this.data.sounds.get_data_dict(self.sounds)
+        if 'battle' in sorted(kwargs.keys()):
+            if kwargs['battle']:
+                this.battle_sprites.add(self)
+            else:
+                this.sprites.add(self)
+        else:
+            this.sprites.add(self)
+
+class moveable(sprite):
+    def __init__(self, imagename, pos, **kwargs):
+        sounds = ["collide_beep"]
+        if 'sounds' in sorted(kwargs.keys()):
+            sounds += kwargs['sounds']
+
+        sprite.__init__(self, imagename, pos, sounds = sounds)
+        self.__frame = 0
+
         directions = [
                 "right",
                 "forward",
@@ -36,15 +61,15 @@ class moveable(meta_sprite):
 
         self.animation = {}
         for direction in directions:
-            self.animation[direction] = data.get_data_array(self._imagename
+            self.animation[direction] = this.data.get_data_array(self._imagename
                     + "_anim_" + direction + "_\d")
 
     def facing(self, direction):
         self.facing = direction
 
-    def move(self, dx, dy, game):
+    def move(self, dx, dy):
         rect = self.get_rect()
-        for sprite in game.sprites.sprites():
+        for sprite in this.sprites.sprites():
             if sprite != self:
                 rect1 = sprite.get_rect()
                 if rect1.left <= rect.right + dx & rect1.top >= rect.bottom + dy:
@@ -72,15 +97,22 @@ class moveable(meta_sprite):
             self.moving = False
 
 
-text_data = namedtuple("text_data", ['text', 'font_size', 'font_name'])
+text_data = collections.namedtuple("text_data", ['text', 'font_size', 'font_name'])
 
 class basic_text_box(object):
+
     def __init__(self, pos, data_dir):
-        self.border = meta_sprite("textbox_border", pos)
+        self.border = game_data.sprite("textbox_border", pos)
         rect = self.border.get_rect()
-        self.text_box = meta_sprite(self, "textbox", (pos.x - rect.x, pos.y - rect.y))
+        self.text_box = game_data.sprite(self, "textbox", (pos.x - 6, pos.y - 6))
         self.text_box.sounds.append("activate_beep")
-        self.fonts = font_data(os.path.join(data_dir, "fonts"))
+        self.fonts = game_data.font_data(os.path.join(data_dir, "fonts"))
+
+    def set_pos(self, pos):
+        self.border.rect.x = pos.x
+        self.border.rect.y = pos.y
+        self.text_box.rect.x = pos.x - 6
+        self.text_box.rect.y = pos.y - 6
 
     def word_wrap(self, text, font_name, font_size):
         if self.get_rect().x < self.fonts.get_data(font_name).get_rect(text,
@@ -110,10 +142,6 @@ class basic_text_box(object):
                 pages.append(page_text)
                 page_text = line
         return pages
-
-    def load_data(self, data):
-        self.border.load_data(data)
-        self.text_box.load_data(data)
 
     def draw(self, surface):
         if len(self.text_to_render) != 0 | self.visible:
@@ -149,7 +177,7 @@ class text_box(basic_text_box):
             self.text_to_render.append(text_data(page, font_size, font_name))
         next_page()
 
-font_data = namedtuple('font_data', ['font_name', 'font_size'])
+font = collections.namedtuple('font', ['name', 'size'])
 
 class text_menu(basic_text_box):
 
@@ -159,8 +187,8 @@ class text_menu(basic_text_box):
         for item_name in sorted(self.items.keys()):
             self.text += "    " + item_name + self.end_formatting
         if self.end_formatting != '\n':
-            self.text = self.word_wrap(text, self.font_data.font_name, self.font_data.font_size)
-        self.render_text = self.page_wrap(self.text, self.font_data.font_name, font_size)
+            self.text = self.word_wrap(text, self.font.name, self.font.size)
+        self.render_text = self.page_wrap(self.text, self.font.name, self.font.size)
 
     def __deselect(self, item_name):
         self.text[self.render_text.find(item_name) - 2] = ' '
@@ -177,7 +205,7 @@ class text_menu(basic_text_box):
         self.selected = item_name
         self.page_number = int(self.text.find(selected)/self.rows_in_page)
 
-    def __init__(self, items, pos, data_dir, font_data, **kwargs):
+    def __init__(self, items, pos, data_dir, Font, **kwargs):
         text_box.__init__(self, pos, data_dir)
         self.text_box.sounds.append("select_beep")
         self.text_box.sounds.append("back_beep")
@@ -189,7 +217,7 @@ class text_menu(basic_text_box):
         self.items = items
         self.data_dir = data_dir
         self.pos = pos
-        self.font_data = font_data
+        self.font = Font
 
         if 'end_formatting' in sorted(kwargs.keys()):
             self.end_formatting = kwargs['end_formatting']
@@ -199,7 +227,7 @@ class text_menu(basic_text_box):
         self.render()
 
         self.rows_in_page = len(render_text)/len(self.page_wrap(render_text,
-            font_data.font_name, font_data.font_size))
+            Font_data.name, Font_data.size))
 
         self.select(0)
 
@@ -216,9 +244,12 @@ class text_menu(basic_text_box):
         selected = self.get_selected()
         if self.items[selected].__class__.__name__ != 'dict':
             if self.items[selected] != None:
-                self.items[selected](selected, *args)
-            else:
+                if self.items[selected](selected, *args) == "previous":
+                    self.previous_menu()
+            elif self.items[selected] != "previous":
                 self.text_box.sounds["back_beep"].play()
+            else:
+                self.previous_menu()
         else:
             self.previous = self.items
             self.items = self.items[selected]
@@ -232,40 +263,32 @@ class text_menu(basic_text_box):
             self.hide()
 
     def draw_func(self, surface):
-        self.fonts.get_data(self.font_data.font_name).render_to(self.text_box,
-                (0, 0), self.render_text[self.page_number], size = self.font_data.font_size)
+        self.fonts.get_data(self.font.name).render_to(self.text_box,
+                (0, 0), self.render_text[self.page_number], size = self.font.size)
 
-def text_martrix(items, pos, data_dir, font_data):
-    return text_menu(items, pos, data_dir, font_data, end_formatting = '')
+def text_martrix(items, pos, data_dir, Font_data):
+    return text_menu(items, pos, data_dir, Font_data, end_formatting = '')
 
-class Game(object):
+this.textbox = text_box((0 , 0), "data")
+this.textbox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
 
-    def __init__(self, name):
-        self.data = GameData("data")
-        self.sprites = pygame.sprite.LayeredDirty()
-        self.window = pygame.display.setmode([680, 480])
-        self.background_music = pygame.mixer.channel(0)
-        pygame.display.caption(name)
+buff = collections.namedtuple('buff', ['stat', 'buff'])
 
-        self.textbox = text_box((0,0), "data")
-        self.textbox.load_data(self.data)
+def concat_dicts(*dicts, **kwargs):
+    output = {}
+    for dic in dicts:
+        if len(dic) > 0:
+            keys = output.keys() | dic.keys()
+            output = {k: output.get(k, kwargs["default"]) + dic.get(k, kwargs["default"]) for k in keys }
+    return output
 
-    def set_background(self, name):
-        self.window.blit(self.data.backgrounds.get_data(name))
-        self.background_music.play(self.data.sounds.get_data(name))
-
-    def load_sprite(self, meta_sprite):
-        meta_sprite.load_data(self.data)
-        self.sprites.add(meta_sprite)
-        return meta_sprite
-
-    def update(self):
-        self.sprites.update(self.data)
-        self.sprites.draw(self.window)
-        self.textbox.draw(self.window)
-        pygame.display.update()
-
-buff = namedtuple('buff', ['stat', 'buff'])
+def deconcat_dicts(*dicts, **kwargs):
+    output = {}
+    for dic in dicts:
+        if len(dic) > 0:
+            keys = output.keys() | dic.keys()
+            output = {k: output.get(k, kwargs["default"]) - dic.get(k, kwargs["default"]) for k in keys }
+    return output
 
 class entity(moveable):
 
@@ -281,6 +304,9 @@ class entity(moveable):
         self.__temp_buffs = []
         self.__stats = {}
         self.__stats_needs_update = True
+
+    def get_imagename(self):
+        return self._imagename
 
     def get_buffs_from_dict(self, dictbuff):
         buffs = []
@@ -336,12 +362,12 @@ class entity(moveable):
         self.remove_from_inventory(item)
         self.add_to_inventory(item1)
 
-    def use_item(self, itemname, game):
+    def use_item(self, itemname):
         self.__stats_needs_update =  True
         for buff in self.__inventory[itemname]["buffs"]:
            self.basestat[buff] +=  self.__inventory[itemname]["buffs"][buff] * self.inventory[itemname]["potency"]
         if self.__inventory[itemname][effect] != None:
-            self.__inventory[itemname][effect](game)
+            self.__inventory[itemname][effect]()
         if self.__inventory[itemname]["equipabble"]:
             self.equip(itemname)
         if  self.inventory[itemname]["consumable"]:
@@ -353,9 +379,9 @@ class entity(moveable):
             self.basestat += self.moves[movename]["buffs"][buffs]
         self.temp_buffs.append(self.moves[movename]["temporary_buffs"])
 
-    def load_battle_assets(self, game):
+    def load_battle_assets(self):
             self._imagename = imagename+"_battle"
-            self.load_sprite(game.data)
+            self.load_sprite(this.data)
             self.fighting = True
 
     def is_hopeful(self):
@@ -365,15 +391,6 @@ class entity(moveable):
             return False
 
 class player(entity):
-
-    def __init__(self, name):
-        player.name = name
-
-    def __del__(self):
-        self.save()
-
-    def is_player(self):
-        return True;
 
     def get_inventory_menu_data(self):
         output = {}
@@ -392,18 +409,42 @@ class player(entity):
         for stat, val in self.get_stats():
             output[stat+"  =  "+val] = None
         return output
+   
+    def is_sure_dialog(self, if_sure):
+        this.textbox.say("are you sure?", self.font.name, self.font.size) 
+        def sure_dialog(self, if_sure):
+            self.game.text_box.next_page()
+            self.game.text_box.hide()
+            return if_sure
+        return {
+                    "yep" : self.sure_dialog(self, if_sure),
+                    "nope": self.sure_dialog(self, "previous"),
+                }
     
-    def get_player_menu(self):
+    def get_player_menu_items(self, game):
         return {
                     "inventory" : self.get_inventory_menu_data,
                     "equipped" : self.get_equipped_menu_data,
                     "stats" : self.get_stats_menu_data,
-                    "save and quit" : self.__del__
+                    "save and quit" : self.is_sure_dialog(game.save_quit, game)
                }
 
-class battle_entity:
-    def __init__(self, entity, game):
-        entity.load_battle_assets(game)
+
+    def __init__(self, name):
+        self.name = name
+        self.font = font("menu", 12)
+        self.menu = text_menu(self.get_player_menu_items(), font.name, font.size) 
+
+    def is_player(self):
+        return True;
+
+this.battlebox= text_box((0 , 0), "data")
+this.battlebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
+this.battlemenu = text_martrix((0, 0), "data")
+
+class battle_entity():
+
+    def __init__(self, entity):
         self.__entity = entity
         self.__func_queue = collections.Deque()
 
@@ -429,16 +470,39 @@ class battle_entity:
     def is_hopeful(self):
         return self.__entity.is_hopeful()
 
+class battle_entity_sprite(battle_entity):
+
+    def __init__(self, entity, pos):
+        battle_entity.__init__(self, entity)
+        sprite(entity.get_imagename() + "_battle", pos, battle = True)
+
 class battle(threading.Thread):
-    def __init__(self, entity, entity1, game):
-            threading.Thread.__init__(self)
-            self.entity = battle_entity(entity, game)
-            self.entity1 = battle_entity(entity1, game)
-            game.set_background("battle")
-            self.start()
+    def __init__(self, entity, entity1):
+        threading.Thread.__init__(self)
+        self.entity = battle_entity(entity)
+        self.entity1 = battle_entity_sprite(entity1, (0,0))
+        calc_pos = lambda winx, objx: winx/2 - objx/2
+        self.entity1.set_pos((clac_pos(this.window.get_width(), 
+                self.entity1.rect.right),
+                    calc_pos(this.window.get_height(), self.entity1.rect.bottom)))
+
+        this.set_background("battle")
+        self.start()
 
     def run(self):
         if self.__entity_turn & self.entity.ready():
             self.entity.do_queued()
         if not self.__entity_turn & self.entity1.ready():
             self.entity1.do_queued()
+
+def update():
+    if not this.inbattle:
+        this.sprites.update(self.data)
+        this.sprites.draw(self.window)
+        this.textbox.draw(self.window)
+    else:
+        this.battle_sprites.update(self.data)
+        this.battle_sprites.draw(self.window)
+    pygame.display.update()
+
+

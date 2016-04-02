@@ -1,5 +1,4 @@
 import pygame, os, re
-from collections import namedtuple
 from pygame.local import *
 
 class resource_handler(object):
@@ -52,12 +51,6 @@ def sound_data(data_dir):
 def font_data(data_dir):
     return resource_handler(data_dir,'.fft', pygame.freetype.Font)
 
-def boundboxcol(rect, rect1):
-    if rect1.left <= rect.right & rect1.top >= rect.bottom:
-        if rect1.right >= rect.left & rect1.bottom <= rect.top:
-            return True;
-    return False;
-
 class game_data(object):
 
     def __init__(self, data_dir):
@@ -65,23 +58,4 @@ class game_data(object):
         self.backgrounds = image_data(os.path.join(data_dir, "backgrounds"))
         self.sounds = sound_data(os.path.join(data_dir, "sounds"))
 
-position = namedtuple("position", ['x', 'y'])
-
-class meta_sprite(pygame.sprite.DirtySprite):
-
-    def __init__(self, imagename, pos):
-        pygame.sprite.Sprite.__init__(self)
-        self.sounds = [] 
-        self._imagename = imagename
-        self.__pos = pos
-
-    def load_data(self, data):
-        self.image = data.sprites.get_data(self._imagename)
-        self.rect = self.image.get_rect()
-
-        self.rect.x = self.__pos.x 
-        self.rect.y = self.__pos.y
-        del self.__pos
-        
-        self.sounds = data.sounds.get_data_dict(self.sounds)
 
