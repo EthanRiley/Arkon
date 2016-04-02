@@ -158,7 +158,9 @@ class text_menu(basic_text_box):
         self.render_text = []
         for item_name in sorted(self.items.keys()):
             self.text += "    " + item_name + self.end_formatting
-        self.render_text = self.page_wrap(text, self.font_data.font_name, font_size)
+        if self.end_formatting != '\n':
+            self.text = self.word_wrap(text, self.font_data.font_name, self.font_data.font_size)
+        self.render_text = self.page_wrap(self.text, self.font_data.font_name, font_size)
 
     def __deselect(self, item_name):
         self.text[self.render_text.find(item_name) - 2] = ' '
@@ -168,7 +170,7 @@ class text_menu(basic_text_box):
         self.text_box.sounds["select_beep"].play()
 
         selected = sorted(self.items.keys)[index]
-        if self.selected != None & item_name != self.selected:
+        if self.selected != None & index != self.selected:
             self.__deselect(selected)
 
         self.text[self.text.find(selected) - 2] = '>'
@@ -207,13 +209,19 @@ class text_menu(basic_text_box):
     def select_previous(self):
         self.select(self.selected-1)
 
-    def activate_selected(self, player):
-        self.text_box.sounds["activate_beep"].play()
-        if self.items[selected].__class__.__name__ == 'dict':
+    def get_selected(self):
+        return sorted(self.items.keys)[self.selected]
+
+    def activate_selected(self, *args):
+        selected = self.get_selected()
+        if self.items[selected].__class__.__name__ != 'dict':
+            if self.items[selected] != None:
+                self.items[selected](selected, *args)
+            else:
+                self.text_box.sounds["back_beep"].play()
+        else:
             self.previous = self.items
             self.items = self.items[selected]
-        else:
-            self.items[selected](player)
 
     def previous_menu(self):
         if self.previous != None:
@@ -270,7 +278,7 @@ class entity(moveable):
         self.__equipped = {}
         self.__inventory = {}
         self.__moves = {}
-        self.__temp_buffs = {}
+        self.__temp_buffs = []
         self.__stats = {}
         self.__stats_needs_update = True
 
@@ -300,15 +308,18 @@ class entity(moveable):
     def get_moves(self):
         return self.__moves
 
-    def unequip(itemname):
+    def unequip(self, itemname):
         self.__stats_needs_update =  True
         self.inventory[itemname] = self.__equipped[itemname]
         self.__equipped.pop(itemname)
 
-    def equip(itemname):
+    def equip(self, itemname):
         self.__stats_needs_update =  True
         self.__equipped[itemname] = self.__inventory[itemname]
         self.__inventory.pop(itemname)
+
+    def get_equipped(self):
+        return self.__equipped
 
     def add_to_inventory(self, item):
         self.__inventory[item["name"]] += item["quantity"]
@@ -358,8 +369,37 @@ class player(entity):
     def __init__(self, name):
         player.name = name
 
+    def __del__(self):
+        self.save()
+
     def is_player(self):
         return True;
+
+    def get_inventory_menu_data(self):
+        output = {}
+        for item_name in sorted(self.get_inventory().keys()):
+            output[item_name] = self.use_item
+        return output
+
+    def get_equipped_menu_data(self):
+        output = {}
+        for item_name in sorted(self.get_equipped().keys()):
+            output[item_name] = self.unequip
+        return output
+
+    def get_stats_menu_data(self):
+        output = {}
+        for stat, val in self.get_stats():
+            output[stat+"  =  "+val] = None
+        return output
+    
+    def get_player_menu(self):
+        return {
+                    "inventory" : self.get_inventory_menu_data,
+                    "equipped" : self.get_equipped_menu_data,
+                    "stats" : self.get_stats_menu_data,
+                    "save and quit" : self.__del__
+               }
 
 class battle_entity:
     def __init__(self, entity, game):
