@@ -6,12 +6,12 @@
 	},
 	"types" : [
 		{
-			"name": "equipabble",
+			"type": "equipabble",
 			"equipabble": true,
 			"consumable": false
 		},
 		{
-			"name": "alcohol",
+			"type": "alcohol",
 			"buffs": {
 				"speed" : -5,
 				"determination": 5,
@@ -19,26 +19,26 @@
 			}
 		},
 		{
-			"name": "health",
+			"type": "health",
 		   	"buffs": {
 				"determination": 10
 			}
 		},
 		{
-			"name": "speed",
+			"type": "speed",
 			"buffs": { 
 				"speed": 5
 			}
 		},
 		{
-			"name": "hope",
+			"type": "hope",
 			"buffs": {
 				"hope": 5,
 				"enlightenment": 2
 			}
 		},
 		{
-			"name" : "mysterious",
+			"type" : "mysterious",
 			"buffs": {
 				"enlighenment": 100
 			}

@@ -6,10 +6,11 @@ music:
 
 stats:
 	the game will be based on a theese attributes:
-		speed
+		wit(speed)
 		determination(health)
-		hope
-		enlightenment
+		hope(critical hit rate / luck)
+		enlightenment(added to control and zen)
+		control(defense)
 		zen(attack)
 
 battles:
@@ -156,8 +157,31 @@ GUI:
 	in the menu for the game it will be like so:
 			
       ▶ stats
-        iventory
-        save
-        quit
+        inventory
+		equipped
+        save & quit
 
 	but with 1.5 or 1.25 line spaceing
+
+Enemy AI:
+	the enemy will use a seprate type of moves as idealogies are inapropate
+	the move that will be used will be calulated on the enemys health, the 
+	moves status effects and the players health and attack.
+
+	the enemy will prefer status/debuff moves that incapacitate the player if the
+	player has a high attack i.e. more than 35% of enemys health, it will also 
+	use theese moves when running low on health.
+
+	the enemy will use draining moves(has attack, but heals user)
+	this would be a metaphor for the enemys draining your energy(mentally and physically)
+	
+	the enemys last resort is to use the most powerful move avaiable.	
+
+status effects:
+	stun  -  stops the players next moves, base val = 2
+	block - blocks current move.
+	
+		
+		
+	
+	

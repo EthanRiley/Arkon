@@ -97,8 +97,6 @@ class moveable(sprite):
             self.moving = False
 
 
-text_data = collections.namedtuple("text_data", ['text', 'font_size', 'font_name'])
-
 class basic_text_box(object):
 
     def __init__(self, pos, data_dir):
@@ -156,7 +154,6 @@ class basic_text_box(object):
         self.text_box.sounds["activate_beep"].play()
         self.visible = False
 
-
 class text_box(basic_text_box):
 
     def __init__(self, pos, data_dir):
@@ -171,13 +168,17 @@ class text_box(basic_text_box):
           self.fonts.get_data(self.txt_data.font_name).render_to(self.text_box,
                   (0, 0), self.txt_data.text, size = self.txt_data.font_size)
 
-    def say(self, text, font_name, font_size):
-        text = self.word_wrap(text, font_name, font_size)
-        for page in self.page_wrap(text, font_name, font_size):
-            self.text_to_render.append(text_data(page, font_size, font_name))
-        next_page()
+    def say(self, text, **kwargs):
+        font = None
+        if 'font' not in sorted(kwargs.keys()):
+            font = this.default_font
+        else:
+            font = kwargs['font']
 
-font = collections.namedtuple('font', ['name', 'size'])
+        text = self.word_wrap(text, font.name, font.size)
+        for page in self.page_wrap(text, font.name, font.size):
+            self.text_to_render.append(text_data(page, font.size, font.name))
+        next_page()
 
 class text_menu(basic_text_box):
 
@@ -205,8 +206,8 @@ class text_menu(basic_text_box):
         self.selected = item_name
         self.page_number = int(self.text.find(selected)/self.rows_in_page)
 
-    def __init__(self, items, pos, data_dir, Font, **kwargs):
-        text_box.__init__(self, pos, data_dir)
+    def __init__(self, items, pos, data_dir, **kwargs):
+        basic_text_box.__init__(self, pos, data_dir)
         self.text_box.sounds.append("select_beep")
         self.text_box.sounds.append("back_beep")
 
@@ -217,7 +218,11 @@ class text_menu(basic_text_box):
         self.items = items
         self.data_dir = data_dir
         self.pos = pos
-        self.font = Font
+
+        if 'font' in sorted(kwargs.keys()):
+            self.font = kwargs['font']
+        else:
+            self.font = this.default_font
 
         if 'end_formatting' in sorted(kwargs.keys()):
             self.end_formatting = kwargs['end_formatting']
@@ -266,8 +271,11 @@ class text_menu(basic_text_box):
         self.fonts.get_data(self.font.name).render_to(self.text_box,
                 (0, 0), self.render_text[self.page_number], size = self.font.size)
 
-def text_martrix(items, pos, data_dir, Font_data):
-    return text_menu(items, pos, data_dir, Font_data, end_formatting = '')
+def text_martrix(items, pos, data_dir, **kwargs):
+    if 'font' in sorted[kwargs.keys()]:
+        return text_menu(items, pos, data_dir, font = kwargs['font'], end_formatting = '')
+    else:
+        return text_menu(items, pos, data_dir, end_formatting = '')
 
 this.textbox = text_box((0 , 0), "data")
 this.textbox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
@@ -292,12 +300,9 @@ def deconcat_dicts(*dicts, **kwargs):
 
 class entity(moveable):
 
-    def __init__(self, name, pos,  basestat, **kwargs):
+    def __init__(self, name, pos, basestat):
         moveable.__init__(self, name, pos, **kwargs)
         self.__basestat = basestat
-        for key in ordered(kwargs.keys()):
-            self.basestat[key] = kwargs[key]
-        self.__basestat['determination'] = 100
         self.__equipped = {}
         self.__inventory = {}
         self.__moves = {}
@@ -348,7 +353,10 @@ class entity(moveable):
         return self.__equipped
 
     def add_to_inventory(self, item):
-        self.__inventory[item["name"]] += item["quantity"]
+        if item["name"] in self.__inventory:
+            self.__inventory[item["name"]] += item["quantity"]
+        else:
+            self.__inventory[item["name"]] = item
 
     def remove_from_inventory(self, item):
         self.__inventory[item["name"]] -= item["quantity"]
@@ -358,9 +366,9 @@ class entity(moveable):
     def get_inventory(self):
         return self.__inventory
 
-    def trade(self, item, item1):
-        self.remove_from_inventory(item)
-        self.add_to_inventory(item1)
+    def trade(self, item_to_remove, item_to_gain):
+        self.remove_from_inventory(item_to_remove)
+        self.add_to_inventory(item_to_gain)
 
     def use_item(self, itemname):
         self.__stats_needs_update =  True
@@ -373,22 +381,30 @@ class entity(moveable):
         if  self.inventory[itemname]["consumable"]:
             self.remove_from_inventory(self.__inventory[itemname])
 
-    def use_move(self, movename, game):
-        self.__stats_needs_update =  True
-        for buff in self.moves[movename]["buffs"]:
-            self.basestat += self.moves[movename]["buffs"][buffs]
-        self.temp_buffs.append(self.moves[movename]["temporary_buffs"])
+    def use_move(self, movename):
+        if self.basestat["thought"] - self.moves[movename]["thought"] > 0:
+            self.basestat["thought"] =- self.moves[movename]["thought"]
+            self.__stats_needs_update =  True
+            for buff in self.moves[movename]["buffs"]:
+                self.basestat += self.moves[movename]["buffs"][buffs]
+            self.temp_buffs.append(self.moves[movename]["temporary_buffs"])
+            return True
+        else:
+            return False
 
     def load_battle_assets(self):
-            self._imagename = imagename+"_battle"
-            self.load_sprite(this.data)
-            self.fighting = True
+        self._imagename = imagename+"_battle"
+        self.load_sprite(this.data)
+        self.fighting = True
 
     def is_hopeful(self):
         if self.get_stats()["hope"] > random.randrange(1, 500):
             return True
         else:
             return False
+
+this.battlebox = text_box((0 , 0), "data")
+this.battlebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
 
 class player(entity):
 
@@ -429,35 +445,40 @@ class player(entity):
                     "save and quit" : self.is_sure_dialog(game.save_quit, game)
                }
 
-
     def __init__(self, name):
-        self.name = name
-        self.font = font("menu", 12)
-        self.menu = text_menu(self.get_player_menu_items(), font.name, font.size) 
+        entity.__init__(self, "player", {
+                'determination' : 100,
+                'enlightenment' : 5,
+                'hope' : 10,
+                'zen' : 1,
+                'wit' : 10,
+            }
+            )
+        self.menu = text_menu(self.get_player_menu_items()) 
+        self.player_name = name
 
     def is_player(self):
         return True;
 
-this.battlebox= text_box((0 , 0), "data")
-this.battlebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
-this.battlemenu = text_martrix((0, 0), "data")
+    def get_player_menu(self):
+        return self.menu
 
 class battle_entity():
 
     def __init__(self, entity):
-        self.__entity = entity
+        self._entity = entity
         self.__func_queue = collections.Deque()
 
     def use_item(self, itemname):
-        self.__func_queue.append({"func" : self.__entity.use_item,"args" : itemname})
+        self.__func_queue.append({"func" : self.__entity.use_item, "args" : itemname})
 
     def use_move(self, movename):
         self.__func_queue.append({"func" : self.__entity.use_move, "args" : movename})
 
     def do_queued(self):
         function = self.queue.pop()
-        function["func"]("args")
         self.turns += 1
+        return function["func"]("args")
 
     def ready(self):
         if len(self.__func_queue) > 0:
@@ -465,35 +486,66 @@ class battle_entity():
         return False
 
     def get_stats(self):
-        return self.__entity.get_stats()
+        return self._entity.get_stats()
 
     def is_hopeful(self):
-        return self.__entity.is_hopeful()
+        return self._entity.is_hopeful()
 
-class battle_entity_sprite(battle_entity):
+class battle_player(battle_entity):
 
-    def __init__(self, entity, pos):
+    def __init__(self, entity):
+        battle_entity(self, entity)
+
+    def get_battle_menu(self):
+        return text_menu
+
+class battle_NPC(battle_entity):
+
+    def __init__(self, entity, battle_queue, pos):
         battle_entity.__init__(self, entity)
-        sprite(entity.get_imagename() + "_battle", pos, battle = True)
+        self.battle_sprite = sprite(entity.get_imagename() + "_battle", pos, battle = True)
 
+    def get_what_do_next(player_stats):
+        stats = self.get_stats()
+        if stats["determination"] < 25:
+            health_items = {}
+            if len(self.entity.get_inventory()) != 0:
+                    for item in self._entity.get_inventory():
+                        if item["type"] == "health":
+                            health_items[item["potency"]] = item["name"]
+                    self.entity.use_item(health_items[sorted(health_items.keys())[-1]])
+               
 class battle(threading.Thread):
+
     def __init__(self, entity, entity1):
         threading.Thread.__init__(self)
-        self.entity = battle_entity(entity)
-        self.entity1 = battle_entity_sprite(entity1, (0,0))
+        self.player = battle_entity(entity)
+        self.npc = battle_NPC(entity1, (0,0))
+
         calc_pos = lambda winx, objx: winx/2 - objx/2
         self.entity1.set_pos((clac_pos(this.window.get_width(), 
                 self.entity1.rect.right),
                     calc_pos(this.window.get_height(), self.entity1.rect.bottom)))
 
+        if self.player.get_stats["speed"] > self.npc.get_stats["speed"]:
+            self.__player_turn= True
+        else:
+            self.__player_turn= False
+
         this.set_background("battle")
         self.start()
+    
+    def get_entity(self):
+        return self.entity
+
+    def get_entity1(self):
+        return self.entity1
 
     def run(self):
-        if self.__entity_turn & self.entity.ready():
-            self.entity.do_queued()
-        if not self.__entity_turn & self.entity1.ready():
-            self.entity1.do_queued()
+        if self.__player_turn & self.player.ready():
+            self.player.do_queued()
+        elif not self.__player_turn & self.npc.ready():
+            self.npc.do_queued()
 
 def update():
     if not this.inbattle:
@@ -504,5 +556,4 @@ def update():
         this.battle_sprites.update(self.data)
         this.battle_sprites.draw(self.window)
     pygame.display.update()
-
 
