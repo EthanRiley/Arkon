@@ -147,14 +147,14 @@
 			"discription" : "music drowns out the enemys attacks while hurting thier ears.",
 			"buffs":{
 				"zen": 20,
-				"defense": 10
+				"control": 10
 			}
 		},
 		{
 			"name" : "darth vader armor",
 			"discription" : " der. der. de.der.derde dER, DER DER DER(imerial theme intersifies",
 			"buffs":{
-				"defense": 15,
+				"control": 15,
 				"zen" : 5
 			}
 		},
@@ -162,14 +162,14 @@
 			"name" : "clothes",
 			"discription" : "you wear them.",
 			"buffs":{
-				"defense": 5
+				"control": 5
 			}
 		},
 		{
 			"name" : "nice clothes",
 			"discription" : "they smell nice, they look nice, they are nice!",
 			"buffs":{
-				"defense": 7,
+				"control": 7,
 				"zen" : 2,
 				"hope" : 5
 			}
@@ -181,11 +181,11 @@
 			"discription":  "I think therefore i am, but i can't be sure of anything else.",
 			"buffs" : {
 				"determination" : -10,
-				"defense" : 5,
+				"control" : 5,
 				"enlightenment": 5
 			},
 			"temporary_buffs" : {
-				"defense" : 15,
+				"control" : 15,
 				"enlightenment": 5,
 				"turns" : 10
 			}
@@ -263,12 +263,11 @@
 			"name" : "Nihilism",
 			"discription" : "you belive in nothing. nothing matters. nothing hurts you.",
 			"buffs" : {
-				"determination" : -40,
+				"determination" : -50,
 				"enlightenment" : 10
 			},			
 			"temporary_buffs":{
-				"determination" : -10,
-				"defense" : 100,
+				"control" : 500,
 				"turns" : 5
 			}
 		},
@@ -278,12 +277,12 @@
 			"buffs" : {
 				"determination" : 10,
 				"enlightenment" : 15,
-				"defense" : 5
+				"control" : 5
 			},
 			"temporary_buffs" : {
 				"determination" : 40,
 				"enlightenment" : 10,
-				"defense" : 10,
+				"control" : 10,
 				"turns" : 3
 			}
 		},

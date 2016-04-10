@@ -300,7 +300,7 @@ def deconcat_dicts(*dicts, **kwargs):
 
 class entity(moveable):
 
-    def __init__(self, name, pos, basestat):
+    def __init__(self, name, pos, basestat, **kwargs):
         moveable.__init__(self, name, pos, **kwargs)
         self.__basestat = basestat
         self.__equipped = {}
@@ -381,13 +381,13 @@ class entity(moveable):
         if  self.inventory[itemname]["consumable"]:
             self.remove_from_inventory(self.__inventory[itemname])
 
-    def use_move(self, movename):
+    def use_move(self, movename, enemy):
         if self.basestat["thought"] - self.moves[movename]["thought"] > 0:
             self.basestat["thought"] =- self.moves[movename]["thought"]
             self.__stats_needs_update =  True
             for buff in self.moves[movename]["buffs"]:
                 self.basestat += self.moves[movename]["buffs"][buffs]
-            self.temp_buffs.append(self.moves[movename]["temporary_buffs"])
+            self.__temp_buffs.append(self.moves[movename]["temporary_buffs"])
             return True
         else:
             return False
