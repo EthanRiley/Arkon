@@ -9,9 +9,9 @@ stats:
 		wit(speed)
 		determination(health)
 		hope(critical hit rate / luck)
-		enlightenment(added to control and zen)
+		enlightenment(added to control and focus)
 		control(defense)
-		zen(attack)
+		focus(attack)
 
 battles:
 	emotion - you have to fight to get the right outcome. 
@@ -132,15 +132,15 @@ weapons:
 	
 	headphones:
 		music drowns out the enemys attacks while hurting thier ears.
-		buff: +20 zen, +10 defense
+		buff: +20 focus, +10 defense
 
 	fanfiction:
 		it erm.. distracts the enemy.
-		buff: +50 zen.
+		buff: +50 focus.
 	
 	book:
 		zzzzz....
-		buff: +25 zen
+		buff: +25 focus
 
 hidden sh*t:
 	more scenes
@@ -180,8 +180,3 @@ Enemy AI:
 status effects:
 	stun  -  stops the players next moves, base val = 2
 	block - blocks current move.
-	
-		
-		
-	
-	

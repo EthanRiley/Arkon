@@ -302,6 +302,7 @@ class entity(moveable):
 
     def __init__(self, name, pos, basestat, **kwargs):
         moveable.__init__(self, name, pos, **kwargs)
+        self.__stunned = False
         self.__basestat = basestat
         self.__equipped = {}
         self.__inventory = {}
@@ -382,15 +383,28 @@ class entity(moveable):
             self.remove_from_inventory(self.__inventory[itemname])
 
     def use_move(self, movename, enemy):
-        if self.basestat["thought"] - self.moves[movename]["thought"] > 0:
+        if self.basestat["thought"] - self.moves[movename]["thought"] > 0 ^ self.__stunned == 0:
             self.basestat["thought"] =- self.moves[movename]["thought"]
             self.__stats_needs_update =  True
             for buff in self.moves[movename]["buffs"]:
                 self.basestat += self.moves[movename]["buffs"][buffs]
             self.__temp_buffs.append(self.moves[movename]["temporary_buffs"])
+            if self.moves[movename]["stun_effect"]:
+                enemy.stunned(self.moves[movename]["stun_effect"])
             return True
         else:
             return False
+
+    def next_turn(self):
+        self.stunned -= 1
+        for buff in self.__temp_buffs:
+            buff["turns"] -= 1
+            if buff["turns"] < 0:
+                self.__temp_buffs.remove(buff)
+        
+
+    def stun(self, NumberOfTurns):
+        self.stunned = NumberOfTurns
 
     def load_battle_assets(self):
         self._imagename = imagename+"_battle"
@@ -450,8 +464,9 @@ class player(entity):
                 'determination' : 100,
                 'enlightenment' : 5,
                 'hope' : 10,
-                'zen' : 1,
+                'focus' : 1,
                 'wit' : 10,
+                'thought' : 100
             }
             )
         self.menu = text_menu(self.get_player_menu_items()) 
@@ -477,8 +492,9 @@ class battle_entity():
 
     def do_queued(self):
         function = self.queue.pop()
-        self.turns += 1
-        return function["func"]("args")
+        out = function["func"]("args")
+        self._entity.next_turn()
+        return out
 
     def ready(self):
         if len(self.__func_queue) > 0:

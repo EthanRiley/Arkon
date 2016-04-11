@@ -132,21 +132,21 @@
 			"discription": "it erm.. distracts the enemy.",
 			"buffs":{
 				"hope": 30,
-				"zen": 50
+				"focus": 50
 			}
 		},
 		{
 			"name": "book",
 			"discription" : "zzz...",
 			"buffs":{
-				"zen":  25
+				"focus":  25
 			}
 		},
 		{
 			"name": "headphones",
 			"discription" : "music drowns out the enemys attacks while hurting thier ears.",
 			"buffs":{
-				"zen": 20,
+				"focus": 20,
 				"control": 10
 			}
 		},
@@ -155,7 +155,7 @@
 			"discription" : " der. der. de.der.derde dER, DER DER DER(imerial theme intersifies",
 			"buffs":{
 				"control": 15,
-				"zen" : 5
+				"focus" : 5
 			}
 		},
 		{
@@ -170,15 +170,23 @@
 			"discription" : "they smell nice, they look nice, they are nice!",
 			"buffs":{
 				"control": 7,
-				"zen" : 2,
+				"focus" : 2,
 				"hope" : 5
 			}
 		} 
 	],
 	"idealogies" : [
+		"backup plan":{
+                    "name": "backup plan",
+                    "discription": "a last resort when all thought has ran out",
+                    "buffs":{},
+                    "temporary_buffs":{},
+					"thought": 0
+		},
 		{
 			"name": "Cartiasiain doubt",
 			"discription":  "I think therefore i am, but i can't be sure of anything else.",
+			"thought": 10,
 			"buffs" : {
 				"determination" : -10,
 				"control" : 5,
@@ -193,6 +201,7 @@
 		{
 			"name": "Atheism",
 			"discription": "God is no longer a credable source for morals.",
+			"thought": 5,
 			"buffs" : {
 				"enlightenment" : 5
 			},
@@ -206,6 +215,7 @@
 		{
 			"name": "Theism",
 			"discription" : "your belif in a devine being gives you hope.",
+			"thought": 5,
 			"buffs" : {
 				"enlightenment": 5,
 				"determination" : 5,
@@ -216,6 +226,7 @@
 		{
 			"name": "Form theory",
 			"discription":"you are guided by your visions of a perfect world.",
+			"thought": 10,
 			"buffs" : {
 				"hope": 5,
 				"determination": 5,
@@ -230,6 +241,7 @@
 		{
 			"name" : "Agape",
 			"discription" : "your heart is filled with love transending all circumstances.",
+			"thought": 35,
 			"buffs" : {
 				"enlightenment" : 5,
 				"hope" : 5
@@ -244,6 +256,7 @@
 		{
 			"name" : "Eightfold Path",
 			"discription" : "see things as they truly are.",
+			"thought": 40,
 			"temporary_buffs" : {
 				"enlightenment" : 100,
 				"turns" : 2
@@ -252,6 +265,7 @@
 		{
 			"name": "Philla",
 			"discription" : "the power of friendship gives you hope to carry on.",
+			"thought": 10,
 			"buffs" : {
 				"hope" : 10,
 				"determination" : 20,
@@ -262,6 +276,7 @@
 		{
 			"name" : "Nihilism",
 			"discription" : "you belive in nothing. nothing matters. nothing hurts you.",
+			"thought": 60,
 			"buffs" : {
 				"determination" : -50,
 				"enlightenment" : 10
@@ -274,6 +289,7 @@
 		{
 			"name" : "Libertarianism",
 			"discription" : "only I can tell me what to do!",
+			"thought": 45,
 			"buffs" : {
 				"determination" : 10,
 				"enlightenment" : 15,
@@ -289,6 +305,7 @@
 		{
 			"name" : "Anticonformism",
 			"discription" : "rejecting soceity and its norms you open your mind to a larger world.",
+			"thought": 30,
 			"buffs" : {
 				"determination" : 5,
 				"hope" : 15,
@@ -304,6 +321,7 @@
 		{ 
 			"name" :  "Realism",
 			"discrption" : "you admit to the hashness of life.",
+			"thought": 15,
 			"temporary_buffs" : {
 				"determination" : -5,
 				"hope" : -2,
