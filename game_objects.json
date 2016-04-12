@@ -2,9 +2,14 @@
 	"default": { 
 		"consumable": true,
 		"equipabble": false,
-		"idealogy": false
+		"move": false
 	},
 	"types" : [
+		{
+			"type" : "move",
+			"move" : true,
+			"stun_effect": 0
+		},
 		{
 			"type": "equipabble",
 			"equipabble": true,
@@ -49,17 +54,17 @@
 		{
 			"name" : "wisky",
 			"potency": 5,
-			"discription": "garenteed to get you drunk."
+			"description": "garenteed to get you drunk."
 		},
 		{
 			"name" : "beer",
 			"potency": 2,
-			"discription": "do not consume between 2 and 3 AM."
+			"description": "do not consume between 2 and 3 AM."
 		},
 		{
 			"name" : "red wine",
 			"potency": 2,
-			"discription": "useful for romantic dinners."
+			"description": "useful for romantic dinners."
 		}
 	],
 	
@@ -67,17 +72,17 @@
 		{
 			"name": "veggie smoothie",
 			"potency": 2,
-			"discription": "it's healthy 'cus it's got vegatbles!"
+			"description": "it's healthy 'cus it's got vegatbles!"
 		},
 		{
 			"name": "chocolate",
 			"potency": 1,
-			"discription": "were not sure how this heals you, just take dialy mirrors word for it."
+			"description": "were not sure how this heals you, just take dialy mirrors word for it."
 		},
 		{
 			"name": "carrot",
 			"potency": 3,
-			"discription": "yup it's a carrot, alright."
+			"description": "yup it's a carrot, alright."
 		}
 	],
 
@@ -85,17 +90,17 @@
 		{
 			"name": "coffie",
 			"potency": 2,
-			"discription": "a getup 'n' go hot beverage."
+			"description": "a getup 'n' go hot beverage."
 		},
 		{
 			"name": "tea",
 			"potency": 1,
-			"discription": "a hot drink which the britsh are famed for drinking"
+			"description": "a hot drink which the britsh are famed for drinking"
 		},
 		{
 			"name": "energy drink No 3000",
 			"potency": 5,
-			"discription": "a drink with so much caffine that it makes you think that time has slowed down around you"
+			"description": "a drink with so much caffine that it makes you think that time has slowed down around you"
 		}
 	],
 	
@@ -103,17 +108,17 @@
 		{
 			"name": "liquid joy",
 			"potency": 4,
-			"discription" : "make you smile."
+			"description" : "make you smile."
 		},
 		{
 			"name": "hot chocolate",
 			"potency": 2,
-			"discription": "a choclatey hot beverage."
+			"description": "a choclatey hot beverage."
 		},
 		{
 			"name": "herbal tea",
 			"potency": 1,
-			"discription": "the herbality gives you hope to never taste it again."
+			"description": "the herbality gives you hope to never taste it again."
 		}
 	],
 	
@@ -121,15 +126,13 @@
 		{
 			"name": "holy water of TEM.",
 			"potency": 20,
-			"discription": "use on your own velition"
+			"description": "use on your own velition"
 		}
 	],
-			
-
 	"equipabble":[
 		{
 			"name": "fanfiction",
-			"discription": "it erm.. distracts the enemy.",
+			"description": "it erm.. distracts the enemy.",
 			"buffs":{
 				"hope": 30,
 				"focus": 50
@@ -137,14 +140,14 @@
 		},
 		{
 			"name": "book",
-			"discription" : "zzz...",
+			"description" : "zzz...",
 			"buffs":{
 				"focus":  25
 			}
 		},
 		{
 			"name": "headphones",
-			"discription" : "music drowns out the enemys attacks while hurting thier ears.",
+			"description" : "music drowns out the enemys attacks while hurting thier ears.",
 			"buffs":{
 				"focus": 20,
 				"control": 10
@@ -152,7 +155,7 @@
 		},
 		{
 			"name" : "darth vader armor",
-			"discription" : " der. der. de.der.derde dER, DER DER DER(imerial theme intersifies",
+			"description" : " der. der. de.der.derde dER, DER DER DER(imerial theme intersifies",
 			"buffs":{
 				"control": 15,
 				"focus" : 5
@@ -160,32 +163,31 @@
 		},
 		{
 			"name" : "clothes",
-			"discription" : "you wear them.",
+			"description" : "you wear them.",
 			"buffs":{
 				"control": 5
 			}
 		},
 		{
 			"name" : "nice clothes",
-			"discription" : "they smell nice, they look nice, they are nice!",
+			"description" : "they smell nice, they look nice, they are nice!",
 			"buffs":{
 				"control": 7,
-				"focus" : 2,
 				"hope" : 5
 			}
 		} 
 	],
-	"idealogies" : [
-		"backup plan":{
-                    "name": "backup plan",
-                    "discription": "a last resort when all thought has ran out",
-                    "buffs":{},
-                    "temporary_buffs":{},
-					"thought": 0
+	"moves" : [
+		{
+			"name": "backup plan",
+			"description": "a last resort when all thought has ran out",
+			"buffs":{},
+			"temporary_buffs":{},
+			"thought": 0
 		},
 		{
 			"name": "Cartiasiain doubt",
-			"discription":  "I think therefore i am, but i can't be sure of anything else.",
+			"description":  "I think therefore i am, but i can't be sure of anything else.",
 			"thought": 10,
 			"buffs" : {
 				"determination" : -10,
@@ -200,7 +202,7 @@
 		},
 		{
 			"name": "Atheism",
-			"discription": "God is no longer a credable source for morals.",
+			"description": "God is no longer a credable source for morals.",
 			"thought": 5,
 			"buffs" : {
 				"enlightenment" : 5
@@ -214,7 +216,7 @@
 		},
 		{
 			"name": "Theism",
-			"discription" : "your belif in a devine being gives you hope.",
+			"description" : "your belif in a devine being gives you hope.",
 			"thought": 5,
 			"buffs" : {
 				"enlightenment": 5,
@@ -225,7 +227,7 @@
 		},
 		{
 			"name": "Form theory",
-			"discription":"you are guided by your visions of a perfect world.",
+			"description":"you are guided by your visions of a perfect world.",
 			"thought": 10,
 			"buffs" : {
 				"hope": 5,
@@ -240,7 +242,7 @@
 		},
 		{
 			"name" : "Agape",
-			"discription" : "your heart is filled with love transending all circumstances.",
+			"description" : "your heart is filled with love transending all circumstances.",
 			"thought": 35,
 			"buffs" : {
 				"enlightenment" : 5,
@@ -255,7 +257,7 @@
 		},
 		{
 			"name" : "Eightfold Path",
-			"discription" : "see things as they truly are.",
+			"description" : "see things as they truly are.",
 			"thought": 40,
 			"temporary_buffs" : {
 				"enlightenment" : 100,
@@ -264,7 +266,7 @@
 		},
 		{
 			"name": "Philla",
-			"discription" : "the power of friendship gives you hope to carry on.",
+			"description" : "the power of friendship gives you hope to carry on.",
 			"thought": 10,
 			"buffs" : {
 				"hope" : 10,
@@ -275,7 +277,7 @@
 		},
 		{
 			"name" : "Nihilism",
-			"discription" : "you belive in nothing. nothing matters. nothing hurts you.",
+			"description" : "you belive in nothing. nothing matters. nothing hurts you.",
 			"thought": 60,
 			"buffs" : {
 				"determination" : -50,
@@ -288,7 +290,7 @@
 		},
 		{
 			"name" : "Libertarianism",
-			"discription" : "only I can tell me what to do!",
+			"description" : "only I can tell me what to do!",
 			"thought": 45,
 			"buffs" : {
 				"determination" : 10,
@@ -304,12 +306,12 @@
 		},
 		{
 			"name" : "Anticonformism",
-			"discription" : "rejecting soceity and its norms you open your mind to a larger world.",
+			"description" : "rejecting soceity and its norms you open your mind to a larger world.",
 			"thought": 30,
 			"buffs" : {
 				"determination" : 5,
 				"hope" : 15,
-				"enlightenment" : 10
+				"enlightenment" : 20
 			},
 			"temporary_buffs" : {
 				"determination" : 15,
@@ -320,19 +322,35 @@
 		},
 		{ 
 			"name" :  "Realism",
-			"discrption" : "you admit to the hashness of life.",
+			"description" : "you admit to the hashness of life.",
 			"thought": 15,
 			"temporary_buffs" : {
 				"determination" : -5,
 				"hope" : -2,
 				"enlightenment" : 20,
+				"focus": 5,
 				"turns" : 10
 			},
 			"buffs" : {
 				"hope" : -4,
-				"enlightenment" : 10
+				"enlightenment" : 10,
+				"focus": 5
 			}
-		}	
+		},
+		{
+			"name" : "mission statment",
+			"description" : "you set it as your primary objective to defeat the enemy", 
+			"thought": 20,
+			"buffs":{
+				"focus" : 5,
+				"determination": 5
+			},
+			"temporary_buffs":{
+				"focus" : 10,
+				"hope"  : 10,
+				"turns" : 3
+			}
+		}
 	]
 }
 

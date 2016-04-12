@@ -6,13 +6,29 @@ music:
 
 stats:
 	the game will be based on a theese attributes:
-		wit(speed)
+		wit(speed used to dodge enlightenment attacks)
 		determination(health)
 		hope(critical hit rate / luck)
-		enlightenment(added to control and focus)
+		enlightenment(specail attack)
 		control(defense)
-		focus(attack)
+		focus(attack is not affected by determination)
 
+
+calculations:
+	enlightenment = (base enlightenment * 1/2 focus + 1/4 determination) * R
+	where R is a random number between 0.2 and 1.1
+	
+	if the entity is hopeful then total attack * 2, this happens h > R[0 - 500] 
+	R is a random number between 0 and 500(notated above as 'R[0 - 500]')
+
+	to dodge an enlightenment attack:
+		wit > (enemy_enlightenment / 4 ) *  R [ 0 - ( 0.5  + (enemy_focus / 55 ) ) ]
+
+ 	cannot dodge focus attacks.
+	
+	stun chance from attacks(if move can stun):
+		wit - focus / 4 * R [ ( 0.8 + (enlightenment/250) ) - (1 + (enlightenment/250)) ] >  enemy_wit * R [ 0.5 - (1.5 + enemy_focus / 130) ] 
+		
 battles:
 	emotion - you have to fight to get the right outcome. 
 	if win get DROP. else get LOSS
@@ -33,12 +49,10 @@ battles:
 			DROPS: fanfiction +8 attack, +20 determination
 			LOSS: -10 hope, +5 enlightenment
 		
-		
 losing:
 	after losing a number of battles there was an idea that you would have to fight depression after losing
 	more battles you would have to fight him more frequently until another amount of losses til cronic depression
 	and suicide. this was scrapped beacuse it was too dark, so instead we will do something else.
-	
 	
 story senes:
 	

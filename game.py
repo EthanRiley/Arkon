@@ -302,7 +302,7 @@ class entity(moveable):
 
     def __init__(self, name, pos, basestat, **kwargs):
         moveable.__init__(self, name, pos, **kwargs)
-        self.__stunned = False
+        self.__stunned = 0
         self.__basestat = basestat
         self.__equipped = {}
         self.__inventory = {}
@@ -382,15 +382,25 @@ class entity(moveable):
         if  self.inventory[itemname]["consumable"]:
             self.remove_from_inventory(self.__inventory[itemname])
 
+    def _stun(self, enemy_stats,  NumberOfTurns):
+        enemy_attack = (enemy_stats/4) * random.randrange(0 , (0.5 + enemy_stats["focus"]/130))
+        if self.get_stats()["wit"] >  enemy_attack:
+            this.battlebox.say(self.name + " was stunned!")
+            self.stunned = NumberOfTurns
+
+    def _take_damage(self, stats):
+        stats = self.get_stats()
+
     def use_move(self, movename, enemy):
         if self.basestat["thought"] - self.moves[movename]["thought"] > 0 ^ self.__stunned == 0:
             self.basestat["thought"] =- self.moves[movename]["thought"]
-            self.__stats_needs_update =  True
             for buff in self.moves[movename]["buffs"]:
                 self.basestat += self.moves[movename]["buffs"][buffs]
             self.__temp_buffs.append(self.moves[movename]["temporary_buffs"])
-            if self.moves[movename]["stun_effect"]:
-                enemy.stun(self.moves[movename]["stun_effect"])
+            self.__stats_needs_update =  True
+            if self.moves[movename]["stun_effect"] > 0:
+                enemy.stun(self.get_stats(), 
+                        self.moves[movename]["stun_effect"])
             return True
         else:
             return False
@@ -401,18 +411,15 @@ class entity(moveable):
             buff["turns"] -= 1
             if buff["turns"] < 0:
                 self.__temp_buffs.remove(buff)
+        self.get_stats()
         
-
-    def stun(self, NumberOfTurns):
-        self.stunned = NumberOfTurns
-
     def load_battle_assets(self):
         self._imagename = imagename+"_battle"
         self.load_sprite(this.data)
         self.fighting = True
 
     def is_hopeful(self):
-        if self.get_stats()["hope"] > random.randrange(1, 500):
+        if self.get_stats()["hope"] > random.randrange(0, 500):
             return True
         else:
             return False
@@ -492,7 +499,7 @@ class battle_entity():
 
     def do_queued(self):
         function = self.queue.pop()
-        out = function["func"]("args")
+        out = function["func"](*funtction["args"])
         self._entity.next_turn()
         return out
 
