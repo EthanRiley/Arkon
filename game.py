@@ -390,7 +390,7 @@ class entity(moveable):
                 self.basestat += self.moves[movename]["buffs"][buffs]
             self.__temp_buffs.append(self.moves[movename]["temporary_buffs"])
             if self.moves[movename]["stun_effect"]:
-                enemy.stunned(self.moves[movename]["stun_effect"])
+                enemy.stun(self.moves[movename]["stun_effect"])
             return True
         else:
             return False
