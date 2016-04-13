@@ -10,14 +10,17 @@ stats:
 		determination(health)
 		hope(critical hit rate / luck)
 		enlightenment(specail attack)
+		persuasion(reaching certain limit, player wins battle)
 		control(defense)
 		focus(attack is not affected by determination)
 
 
 calculations:
-	enlightenment = (base enlightenment * 1/2 focus + 1/4 determination) * R
+	enlightnment = (base enlightenment * 1/2 focus + 1/4 determination) * R
 	where R is a random number between 0.2 and 1.1
 	
+	persiaison limit = determination + focus
+
 	if the entity is hopeful then total attack * 2, this happens h > R[0 - 500] 
 	R is a random number between 0 and 500(notated above as 'R[0 - 500]')
 

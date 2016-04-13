@@ -309,6 +309,8 @@ class entity(moveable):
         self.__moves = {}
         self.__temp_buffs = []
         self.__stats = {}
+        self.__persuasion = 0
+        self.__damage_taken = 0 
         self.__stats_needs_update = True
 
     def get_imagename(self):
@@ -327,6 +329,18 @@ class entity(moveable):
         self.__stats = concat_dicts(self.__basestat,
                 self.get_buffs_from_dict(self.__temp_buffs),
                     self.get_buffs_from_dict(self.__equipped), default = 0)
+        self.__stats["enlightenment"] *=  self.__stats["focus"] / 2
+        self.__stats["enlightenment"] +=  0.25 * self.__stats["determination"]
+        self.__stats["enlightenment"] *= random.randrange(0.2, 1.1)
+        self.__stats["determination"] -= self.__damage_taken
+    
+    def is_dead(self):
+        stats = self.get_stats()
+        if stats["determination"] <= 0:
+            return True
+        elif self.persuasion > stats["determination"] + stats["focus"]:
+            return True
+        return False
 
     def get_stats(self):
         if self.__stats_needs_update:
@@ -388,14 +402,25 @@ class entity(moveable):
             this.battlebox.say(self.name + " was stunned!")
             self.stunned = NumberOfTurns
 
-    def _take_damage(self, stats):
+    def _take_damage(self, enemy_stats, is_hopeful):
         stats = self.get_stats()
 
+        if is_hopeful:
+                for k in enemy_stats:
+                    enemy_stats[k] *= 2
+
+        if stats["wit"] > enemy_stats["enlightenment"] / 4 * random.randrange(0, 0.5 + enemy_stats["focus"] / 55 ):
+           self.persuasion += enemy_stats["enlightenment"] 
+        else:
+            this.battlebox.say("your oppenent out witted your attack! You focus on not embarrasing yourself futher.")
+
+        self.__damage_taken = enemy_stats["focus"] - stats["control"]
+         
     def use_move(self, movename, enemy):
         if self.basestat["thought"] - self.moves[movename]["thought"] > 0 ^ self.__stunned == 0:
             self.basestat["thought"] =- self.moves[movename]["thought"]
             for buff in self.moves[movename]["buffs"]:
-                self.basestat += self.moves[movename]["buffs"][buffs]
+                self.basestat += self.moves[movename]["buffs"][buff]
             self.__temp_buffs.append(self.moves[movename]["temporary_buffs"])
             self.__stats_needs_update =  True
             if self.moves[movename]["stun_effect"] > 0:
@@ -558,14 +583,15 @@ class battle(threading.Thread):
         this.set_background("battle")
         self.start()
     
-    def get_entity(self):
-        return self.entity
+    def get_player(self):
+        return self.player
 
-    def get_entity1(self):
-        return self.entity1
+    def get_npc(self):
+        return self.npc
 
     def run(self):
-        if self.__player_turn & self.player.ready():
+        self.check_if_dead() 
+        if  self.__player_turn & self.player.ready():
             self.player.do_queued()
         elif not self.__player_turn & self.npc.ready():
             self.npc.do_queued()
