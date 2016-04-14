@@ -97,6 +97,7 @@ class moveable(sprite):
             self.moving = False
 
 
+this.fonts = game_data.font_data(os.path.join(data_dir, "fonts"))
 class basic_text_box(object):
 
     def __init__(self, pos, data_dir):
@@ -104,7 +105,6 @@ class basic_text_box(object):
         rect = self.border.get_rect()
         self.text_box = game_data.sprite(self, "textbox", (pos.x - 6, pos.y - 6))
         self.text_box.sounds.append("activate_beep")
-        self.fonts = game_data.font_data(os.path.join(data_dir, "fonts"))
 
     def set_pos(self, pos):
         self.border.rect.x = pos.x
@@ -113,23 +113,23 @@ class basic_text_box(object):
         self.text_box.rect.y = pos.y - 6
 
     def word_wrap(self, text, font_name, font_size):
-        if self.get_rect().x < self.fonts.get_data(font_name).get_rect(text,
+        font = this.font.get_data(font_name)
+        textbox_x = self.text_box.get_rect().x
+        if textbox_x < font.get_rect(text,
                 size = font_size).x:
-            x = 0
             output = ""
             for word in text.split(' '):
-                word_rect = self.get_data(font_name).get_rect(text,
-                        size = font_size)
-                if x + word_rect.x > rect.x:
+                if font.get_rect(output + ' ' + word, size = font_size).x > textbox_x:
                     output += '\n'
                     x = 0
-                output += word
-            return output
+                output += ' ' + word  
+            return output.replace(' ', '', 1)
         else:
             return text
 
     def page_wrap(self, text, font_name, font_size):
-        font = self.fonts.get_data(font_name)
+        font = this.fonts.get_data(font_name)
+        y = self.textbox.get_rect().y
         page_text = ""
         pages = []
         for line in text.split('\n'):
@@ -165,7 +165,7 @@ class text_box(basic_text_box):
         self.text_box.sounds["activate_beep"].play()
 
     def draw_func(self, surface):
-          self.fonts.get_data(self.txt_data.font_name).render_to(self.text_box,
+          this.fonts.get_data(self.txt_data.font_name).render_to(self.text_box,
                   (0, 0), self.txt_data.text, size = self.txt_data.font_size)
 
     def say(self, text, **kwargs):
@@ -268,7 +268,7 @@ class text_menu(basic_text_box):
             self.hide()
 
     def draw_func(self, surface):
-        self.fonts.get_data(self.font.name).render_to(self.text_box,
+        this.fonts.get_data(self.font.name).render_to(self.text_box,
                 (0, 0), self.render_text[self.page_number], size = self.font.size)
 
 def text_martrix(items, pos, data_dir, **kwargs):
@@ -414,7 +414,7 @@ class entity(moveable):
         else:
             this.battlebox.say("your oppenent out witted your attack! You focus on not embarrasing yourself futher.")
 
-        self.__damage_taken = enemy_stats["focus"] - stats["control"]
+        self.__damage_taken = self.__damage_taken + enemy_stats["focus"] - stats["control"]
          
     def use_move(self, movename, enemy):
         if self.basestat["thought"] - self.moves[movename]["thought"] > 0 ^ self.__stunned == 0:
