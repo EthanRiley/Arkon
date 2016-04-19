@@ -121,7 +121,6 @@ class basic_text_box(object):
             for word in text.split(' '):
                 if font.get_rect(output + ' ' + word, size = font_size).x > textbox_x:
                     output += '\n'
-                    x = 0
                 output += ' ' + word  
             return output.replace(' ', '', 1)
         else:
