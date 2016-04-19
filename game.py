@@ -123,15 +123,16 @@ class basic_text_box(object):
                     lineoutput = ""
                     for word in text.split(' '):
                         if font.get_rect(output + ' ' + word, size = font_size).x > textbox_x:
-                            lineoutput += '\n'
-                        lineoutput += ' ' + word  
-                    lineoutput.replace(' ', '', 1)
-                    output += lineoutput
+                            lineoutput += '\n' + ' ' + word  
+                            lineoutput.replace(' ', '', 1)
+                            output += lineoutput
+                            lineoutput = ""
+                        else:
+                            lineoutput += ' ' + word
                 else:
                     output += line
         else:
             return text
-
     def page_wrap(self, text, font_name, font_size):
         font = this.fonts.get_data(font_name)
         y = self.textbox.get_rect().y
