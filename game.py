@@ -1,4 +1,4 @@
-import game_data, game_objects, threading, random, time, collections, sys
+import game_data, game_objects, multiprocessing, random, time, collections, sys, json
 
 #(0, 0) is top left corner in pygame.
 
@@ -43,6 +43,9 @@ class sprite(pygame.sprite.DirtySprite):
                 this.sprites.add(self)
         else:
             this.sprites.add(self)
+
+    def save_to_json(self):
+        return '{ "vars" : ' + json.dumps(self.__dict__) + ', classname:' + self.__class__.__name__ + '}'
 
 class moveable(sprite):
     def __init__(self, imagename, pos, **kwargs):
@@ -563,7 +566,7 @@ class battle_NPC(battle_entity):
                             health_items[item["potency"]] = item["name"]
                     self.entity.use_item(health_items[sorted(health_items.keys())[-1]])
                
-class battle(threading.Thread):
+class battle(multiprocessing.Process):
 
     def __init__(self, entity, entity1):
         threading.Thread.__init__(self)
@@ -589,12 +592,18 @@ class battle(threading.Thread):
     def get_npc(self):
         return self.npc
 
+    def battle_end(self):
+        if self.npc.is_dead() | self.player.is_dead():
+            this.inbattle = False
+            self.terminate()
+        return False
+
     def run(self):
-        self.check_if_dead() 
-        if  self.__player_turn & self.player.ready():
-            self.player.do_queued()
-        elif not self.__player_turn & self.npc.ready():
-            self.npc.do_queued()
+        if not self.battle_end(): 
+            if  self.__player_turn & self.player.ready():
+                self.player.do_queued()
+            elif not self.__player_turn & self.npc.ready():
+                self.npc.do_queued()
 
 def update():
     if not this.inbattle:

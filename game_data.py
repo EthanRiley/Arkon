@@ -1,5 +1,5 @@
 import pygame, os, re
-from pygame.local import *
+from pygame.locals import *
 
 class resource_handler(object):
 
