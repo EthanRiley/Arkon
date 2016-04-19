@@ -119,13 +119,16 @@ class basic_text_box(object):
                 size = font_size).x:
             output = ""
             for line in text.split('\n'):
-                lineoutput = ""
-                for word in text.split(' '):
-                    if font.get_rect(output + ' ' + word, size = font_size).x > textbox_x:
-                        output += '\n'
-                    output += ' ' + word  
-                output.replace(' ', '', 1)
-                lineoutput += output  
+                if textbox_x < font.get_rect(line, size = font_size):
+                    lineoutput = ""
+                    for word in text.split(' '):
+                        if font.get_rect(output + ' ' + word, size = font_size).x > textbox_x:
+                            lineoutput += '\n'
+                        lineoutput += ' ' + word  
+                    lineoutput.replace(' ', '', 1)
+                    output += lineoutput
+                else:
+                    output += line
         else:
             return text
 
