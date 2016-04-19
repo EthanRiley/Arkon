@@ -14,7 +14,7 @@ class object_loader:
 
     def __init__(self, filename):
       self.json = json.loads(open(filename).read())
-      self.effect_funcs = get_functions_in_file("game_objects.py")
+      self.effect_funcs = get_functions_in_file(filename.split('.')[0] + ".pyt")
 
     def __get_types(self):
         types = {}
