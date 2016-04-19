@@ -1,0 +1,512 @@
+Meole Brace School
+
+R008 – Urban mobile.
+
+Ethan Riley CN:3417 CenN:29275
+
+
+
+Meole Brace School
+[Pick the date]
+
+
+ 
+Planning
+In this unit I will be making a game for urban mobile to sell with their phones, this game will be also played on a website. This is in the hope that this will sell more of their phones because of the game.
+Research 
+
+I will start with researching into what makes a game good and then from that feedback create my own game helping the chances of our games success. I will be mainly researching 2D games; as that is the dimension I will most likely create my game. 
+I will look how games make explain themselves to the user and how they make their game stand out from the crowd, or give fun gameplay; this makes people want to play the game more, making the game more successful.
+Figure 1 – Pixel dungeon.
+Pixel dungeon is a rouge- like, Role playing game this means that you will play as a different person, where your decisions affect your life this gives players a feeling of escapism and autonomy. Rouge like is a macabre genre which focuses on grittiness, difficulty and realism this is shown by the fact that you need food to survive and  that there is no scaling of enemy levels to the player level.
+The interface of pixel dungeon is simplistic and automatic, and has little to no explanation, this ties in with its rouge like qualities as it is made to be hard. Tapping on the screen moves the player  to a different part of the dungeon, this instant response  means that the player does not have to learn the basic controls as they already know it.
+here(left) we have a screenshot of an new game in pixel dungeon, as you can see the interface can easily be understood  because of the icons, for example the rucksack means to go to the players inventory.
+Again pixel dungeon conforms to many games as a health bar(top left) is denoted in red, this players will automatically notice as health as when they take damage by other monsters the red in the bar will decrease.
+Attacking monster is instinctive as it only tapping the monster.
+Furthermore pixel dungeon uses ‘badges’ to show forms of achievement to the user, RPG games like pixel have no score as they it breaks immersion of the game as you are supposed to be thinking like the person you are playing.
+However pixel dungeon uses levels which come from the amount of enemies you have defeated and how hard they were to defeat, this can act as a score for other people to share, or as a sense of personal achievement like badges.
+Although there is no function to compare these scores online as RPGs are personal focused on empowerment which could be broken by other people’s scores.
+Finally I believe pixel dungeon is a good example of sane simple graphics combined with simple controls that do not need explaining to many users allowing the game to be as natural as possible.
+Figure 2 – Cave story.
+Cave story is a action platformer game focused on telling a story to its audience, this side scrolling adventure using controls explained by it in the first level increasing by giving simple denotations, of controls allowing time for the user to get used to them. 
+ The major element of this game that makes it stand out gameplay wise is the use of weapons to kill enemies instead of stomping in  the game as it works on an Experience system for  the weapon which is not transferable to other weapons.
+(top, left) Text is used to give story, here you see quote(the player) giving a amulet to Toroko. 
+(bottom, left) the game in action.
+The art style of cave story is called pixel art(which is also used in pixel dungeon) this is to give a sense of nostalgia to the game for older players, the art style is also a lot more simpler than the other new modern art style e.g. gothic, realism etc…
+This art easily expresses what designers want the player to use making it an effective plot device for the story.
+The main difference to pixel dungeon is that cave story lacks autonomy as it has to some linear elements for the story to progress.
+Figure 3 – Undertale.
+ What struck me with Undertale is it’s amazing gameplay mechanic which crosses over into the overall story making the game’s decisions in battle much more meaningful, it’s attack and defence mechanic s are unique, keeping it’s 90’s look it uses pixel art and chip tune music to set ambiance and feeling to its battles and scenes, it also allows another game mechanic called ‘mercy’ allowing to spare your enemies and way to persuade your enemies to flee. 
+(left) the defence mechanic
+
+(left) the attack mechanic
+
+
+Next I will make a success criterion for my project so I can keep on track on my objective of the game easily giving me a something to see the progress of my game.
+Success Criteria
+•	Scoring system – urban mobile has required me to add a scoring system into my game, while this does not have to be the centre point of the game, the ‘score’ will be used to compare with each other to see who is best, allowing competition. 
+
+•	Name entry – urban mobile also has required me to add a name entry into my game while this is not completely necessary, urban mobile may use it to gain data about their customers, use it as a leader board  with the scores or as a login to the online version of the game.
+
+•	Aesthetics – the game must be appealing to the player as in this day and age gamers judge harshly on graphics; if they are not good enough they will not play the game however intricate the game might be.
+
+•	Intuitive – Ideally the game should not even need to explain the controls being natural to the gamer or can be learnt by themselves without having an impact on the game, this could be done by tutorialzing elements of the game incorporating the learning of the game with the playing of it.
+
+•	Fun - the game must be enjoyable to keep the player playing this could be done by adding in an interesting design mechanic , something new which has not been done before , make it something that involves the player to the extent that they become immersed in the game or as just a escape from normal life. These things normally distil down to 4 things that keep them playing: autonomy (freedom), story, empowerment and escapism.  
+Design Proposal
+This will provide an overview of the game and its design. This will help me create the game as I will have a specific checklist, and will help urban mobiles non-programmers to understand the game.  
+This game will be a rougelike RPG game harking back to the first tile based games (1st few Zelda games) using the old art style pixel art for nostalgia purposes. This means that the games main goal is to do what the gamer wants maybe explore
+•	Goals – to explore and make their own goals; throughout the game world will be a simple story which will be played out, the player will have options on how that story progresses, or are allowed to make their own goals by choosing subset stories(quests) or to get item X etc… 
+•	 Win – for the player to ‘complete’ the game story or just stay alive.
+•	 Lose – for the player to die; this will lose all their progress and items in the game. 
+Character archetypes
+•	The player – the player will be allowed to make their choices affecting the game’s outcome. The player will also be able to enter in their own name these two things add immersion as they are playing as themselves. Most likely the player will fit into a few endings e.g. antihero, protagonist, antagonist. 
+•	The challenger(s) – the player will be challenged by something that affects his/hers decisions about the game world this maybe to kill(or not) the supposed antagonist or enemies that stop the player exploring, possibly a character the changes the players views. All of these give revelations to the player forcing them to create a coping strategy for example a way to cope with the enemies is to kill them, a way to cope with the challenger of view is to persuade the challenger to except your views.
+•	The cast – characters that preform a certain function or provide exposition to the games story. These members will be mainly supporting characters for the player for example a shopkeeper.
+Characters
+	Cast characters:
+•	Candara – a wizard, well educated, stately and powerful. Helps the player with potions, advice, magic items; eventually becoming friends with the player and enrolling him as his apprentice. He is rather conspiratorial about government, and distains this ‘new’ world.
+•	Cooper black – vicar who heals the player with healing magic, tries to help poor Richard, always filled with moral decisions and philosophical questions. 
+•	Lucida Bright – shopkeeper and bartender, nice woman, caring, has been receiving a lot of competition from a new shop who is ran by Eras Bold therefore currently on edge and very suspsious of Eras. 
+•	Poor Richard – a beggar of sorts, having a strong emotional background and a love of the countryside, many people see him as a child and a burden. His only motive (now) is to get a job, and live in some comfort, once aspiring to be an ecologist; his hopes were dashed after he fled his abusing parents.  
+•	Eras Bold – Business man, interested in making profit, moved to the village only a couple of weeks ago, not much is known about him, Candara currently sees him as a threat to the villages way of life, as Eras keeps on going about the ‘new’ world.
+•	Malgun Gothic - Antagonist
+•	Player – came from the new world after some time the villagers accept the player along with Eras.
+Places/backgrounds
+•	Century Gothic – Church.
+•	Eras Bolds Shop, Lucida’s Shop
+•	The Calisto - Candara’s tower.
+•	Overworld.
+A rethinking of our story
+After thinking about our story for a while I decided it to set it in a modern setting, as a turn based RPG, fighting against everyday things e.g. fear, illnesses and panic upon winning or losing the battle the story is changed, these things will be combatted with everyday items that work as coping strategies like headphones(to drown out noise) along with ideologies that act like a special move(spell in Final Fantasy) which give buffs to the player for a certain amount of turns.
+Places/backgrounds
+•	Century Gothic – Church.
+•	Eras Bolds Shop, Lucida’s Shop
+•	The Calisto – nightclub
+•	Cycle lane.
+•	Moonlight scene.
+Please see story.txt located in the game folder for more information.
+Design choices
+I will now go though the most commonly used programming languages and evaluate the pros and cons of each language.
+Language	Pros	Cons
+C++	•	I have a long term experience with this language
+•	Very Expressive(to me)
+•	Fast – low level
+•	Less dependent of other libraries
+•	Industry standard
+•	Statically typed(personally, less confusion between types)
+•	Superset of C(can run C code in C++)
+•	Professional Libraries
+•	No garbage collection(massive performance boost)
+•	Some Optional garbage collection(smart pointers) this has an impact on performance but may be used for maintainability
+•	Template Metaprogramming(allows for advanced libraries to be used)
+•	Generics – the ability to have argument that is all(or some) types
+•	Is available on all systems.	•	Requires a compiler which must be run for each platform because the little standardization of phone hardware not all phones are implanted with these compilers.
+•	Complex – takes long time to write code
+•	Uses large amounts of syntax(may be hard to read for novices)
+•	No garbage collection  - can create undefined behaviour with code if pointers are not handled properly 
+C	•	Statically typed
+•	Industry standard syntax
+•	Very fast
+•	No garbage collection(massive performance boost)
+•	Simple – not a lot of concepts to learn
+•	Official Libraries.
+•	Is Available on all operating systems
+•	Small Language(easy for operating systems to  implement)	•	No Object orientation
+•	No garbage collection  - can create undefined behaviour with code if pointers are not handled properly
+•	Restricting – most programming techniques are omitted
+•	Has to be compiled
+Java 	•	Runnable anywhere with virtual machine turned into byte code
+•	Medium experience with language 
+•	Statically typed
+•	Object-orientated
+•	C-like syntax(industry standard)
+•	garbage collection  - all pointers are handled properly
+•	Access to android SDK(is in java)
+•	Generics – the ability to have argument that is all(or some) types	•	Requires  compilation
+•	Operating system has to be supported.
+•	garbage collection  - significantly slows down runtime(as it has to run an algorithm to collect pointers)
+Python	•	Interpreted language
+•	Easy to read
+•	Quick to write 
+•	Dynamically typed(quicker to write)
+•	Recommended language to use.
+•	garbage collection  - all pointers are handled properly	•	Operating system has to be supported.
+•	Slower than compiled languages.
+•	Dynamically typed(can become confusing)
+•	Does not work with mobile devices without special software to convert it into mobile versions
+•	Poor inheritance model – python significantly slows down when inheriting classes
+•	garbage collection  - significantly slows down runtime.
+JavaScript (Web technologies)	•	Quick to write
+•	Easy to read
+•	Same language to make webapps
+•	garbage collection  - all pointers are handled properly	•	Operating system has to be supported
+•	Slower than compiled languages
+•	Dynamically typed
+•	Nonstandard class implementations
+•	Needs specialist API to work outside a browser
+•	garbage collection  - significantly slows down runtime.
+C#	•	Java like syntax/implenation
+•	Good IDE
+•	Object orentated
+•	Large amount of Support from Microsoft
+•	garbage collection  - all pointers are handled properly
+•	Generics – the ability to have argument that is all(or some) types
+	•	Needs Specialist API to run on mobile devices/non Microsoft products
+•	garbage collection  - significantly slows down runtime.
+Objective-C	•	Language used to write Apple Apps
+•	Basic object orientation	•	Nonstandard Syntax – objective C is infamous for it’s unusual syntax that confuses new people to the language
+•	Poor implementation of Classes
+•	Not widely used
+Visual Basic	•	garbage collection  - all pointers are handled properly	•	Microsoft operating systems only.
+•	Infamous for bad syntax, implementations and code.
+•	Uses newlines for declarations makes it impossible to do one line declarations e.g. calc(int a, int b){return a^b*2;} 
+ 
+I have chosen to use python for my coding language as it is recommended by urban mobile, doing it in a different language may affect the urban mobiles maintenance team for the game as if it is recommended it is likely that the team may have the most experience in python. The game I will be creating will be in beta or alpha testing and will work for mobile versions and desktop using the library PyGame which has been recommended by urban mobile (again) even though there are better libraries for game development in python like kivy.
+Algorithms and Processing
+Inputs
+Firstly I will list all the inputs that we will need to process in the game:
+•	Tapping place on screen – to move the character around.
+•	Pressing the back button – to pause the game when the player is off it.
+•	Pressing the home button – ditto.
+•	When the phone goes to sleep – ditto.
+•	When the app is selected or device woke up on app – resume to game menu screen.
+•	When the app is terminated by operating system – save game data and quit app.
+•	Dialog box to choose different dialog to say.
+•	Keyboard/ virtual keyboard for name.
+Outputs
+•	Text to provide story
+•	The game world / interface for the player to interact with.
+•	Changes in the story to provide for the players actions.
+Processing
+	This is what we will need to process for the game to give outputs from the input.
+	
+•	Dialog processing – getting the responses the character can make.
+•	Using items(checking item used, checking what it is used on, doing right function).
+•	Displaying sprites, and the background.
+•	Quit and save the game. 
+
+
+
+
+
+
+
+
+Flow charts of algorithms
+I will use flow charts and pseudocode to show the algorithms that I will use. These algorithms will carry one of the processing tasks. 
+I will first start with the event (main) algorithm processing; this will call all processing events.
+					 
+   
+
+
+
+
+	
+	NO.
+
+
+
+      YES.
+
+
+	YES.
+
+
+       NO.
+
+
+
+	 
+ The quit and save processing function.
+
+
+ FALSE.
+
+
+
+
+
+TRUE.
+
+
+
+
+
+
+	FALSE.
+	
+
+
+TRUE.
+
+
+
+	
+ 
+I will now do the algorithm of displaying sprites and the background; this function will be called in the start of the game and when something has been changed in the display. This algorithm could go into the how the displaying of game works, but it is above this level. 
+A more effective way of doing  
+This algorithm is to check whether 
+A sprite has been changed although 
+I will not do this as you will need
+A copy of each sprite to compare
+It with using up memory, 
+but increasing performance
+therefore I would only use it when
+performance is critical and memory is not ,
+for this game nether is critical so 
+I will do the simplest method instead,
+As it will allow for easier
+ documentation and maintenance.
+
+
+
+Overworld interaction algorithms.
+These are algorithms to deal with the players input interfacing with the elements that are passive and do not take part with another character that has dialog e.g. moving, colliding with objects, going into buildings etc..
+
+
+
+ 
+Using items
+
+
+
+
+ 
+Dialog processing
+
+ 
+Movement of the player/NPC.
+
+
+
+
+
+
+
+
+
+
+
+		
+	FALSE.	TRUE.
+
+
+
+
+
+	
+	FALSE.
+
+
+	.										                    	 TRUE.
+
+
+
+
+
+
+	
+ 
+Now we have created the Flowcharts we can start the creation of the code of the game.
+Creation of the game
+First we start by making a simple main function interlizing the pygame module and running the main function. 
+we then check that this is being run as a the main process not as a module, after that running the main function.
+After this we now need to create a window with a background. This will be a test on how pygame works so we can identify bugs in the real game easier.
+
+here I load the background, create the window, and use the function blit to copy the backgrounds image to the window. I then make this image in paint. While running this I get an error, this is because I have used the wrong backslash for  the image filepath. We can fix this cross platformly by using os.join instead that calculates which operating system is on and which syntax to use. I then came up with another error from filesystem permissions, as the resulting path was absolute and therefore blocked, to get round this factor I have to use relitive paths, which are simpler anyway.
+Event Manager Class.
+This class will manage our events as described on page 11.  I will store the functions into a dictionary and use the python module inspect to get what arguments the function has, this will return a list which is not useable by a dictonary as it is been set as unhashable so we convert the list into a tuple using the classes contructor,  we then set this variable as the function this can now be run by the runFunctionFromArguments function using the argument names to get the right function, the rest arguments will be parsed to the function.	
+We then test this by making a function of our own, adding it and calling it via the class(in the main function).
+
+
+
+
+
+Resource Handling.
+We now shall work on a collection of classes which will handle the games data, this will organize our methods and variables helping us to find methods and varialbes that we need. 
+We start with a new class called imageData this will handle images for the game. We then start with a private function to get an image, while python has no data abstraction an underscore is used to denote a ‘private’ function.
+
+we use the load function from pygame and our file argument to load the image, we then convert the image to the same format as the background using the convert function we do this as it increases speed drawing the image, we then return the converted image.
+
+We then make a convenice function to get all images from a certain folder, this allows the game to be loaded all at once instead of in chunks that could affect preformance, it also saves time from me loading each image manually from our image folder.  We start  by assigning an array to hold our images that we have loaded in,  we then have a for loop with the function listdir which lists everything in a directory(files and folders), after which we check wether the file has a .png extension by using an if … in statement , we ignore the fact that folders may have ‘.png’ in their name while it is still possible in unix based systems(and windows if a program creates it) it is neglagable as it is a very irrational thing to do. We then append the found image and its name(so we can identify the image) into the array, once the for loop is finished we return that array.
+I then realise that there is a syntax error in the append function and rectify it along with using a dictonary instead of an array for appendation as it is easier to acsess manually.
+
+
+
+
+We then make  the function private and interlize it in the consturctor following RAII(Resourse Acquistion is Initlization) standards by adding the images varible in the class from above function. We then create a public function to get the image(using its name) by iterating though each image until we find the said name.
+(left) the complete imageData class.
+
+
+
+We then abstract the resourse handling from the image class, distilling it to allow it to be reused for the other media management classes, we do this by having an argument which is a function, resourse class is now wrapped around the high level Data classes to provide a simple and easy to use interface, reducing the abstraction of the class, while this may have to wrap around allready defined functions it is a better method than inheritance because of pythons inefficentcy in that area.  
+(above) the resouceHandler class.
+
+Here are the two wrapped data classes for referance. see how the imageData are simpler than the origninal class
+I then create another class to get the data, for sprites I do this by assigning the classes name as the data keeping with the RAII standards
+ 
+Upon testing the resource handler I go though some simple errors from the fact that I have used many languages and their syntax can become merged when I am not activley check for correct syntax
+I then go on to refactor my work noticing that we can use a simpler method by not creating image data classes and instead creating functions which create the default class removing the large amount of methods used cleaning up the code and reducing time needed for the program to load resouces. 	(below) the factory methods.
+
+
+I then go on to create the game data class to load the games reources using theese classes and methods above, this works a convenince class so we can get the games data all in one easy to acsess place
+
+
+
+
+We then go on to a meta_sprite which is a sprite that has all the data about the sprite apart from the resources which is loaded by the game, the game then provides an interlizer function to intilize that sprite using the data given. In the first few lines we define the sprites image and position, we then delete  the position varible that we have set to save memory, loadgetl sounds that the sprite needs and then add it to our LayeredUpdates group so our game will draw said sprite. We then return that sprite.
+ 
+
+
+
+
+We then addthis to meta sprite class refactoring our work to create a more correct code as we do not change members outside of a class which could affect how the class works in unintended ways.
+
+This is done by parsing the games data, I then add the loading of the animations of the sprite if that sprite is animateable by using regex in the get_data_array I did this by reverting my change to this:
+
+
+
+
+
+I only load 3 directions as I can flip the right direction image to become the lefts image.
+We then create a function to play the animation, this takes in account which direction the charicters facing as we a imitating undertales charicters. We then iterate though frames of the walk animation if the charicter using a modulo to ‘wrap’ round back to the first frame.
+We call this function update so it is called when the RenderLayers group is rendered as It is called on every frame of a render call. First we check if the sprite is animateable and moving if not we do nothing, we then check if we are facing right or left if so we copy the right direction frame to the sprites image after which we check wether the image is allready flipped(so it is facing left) although thinking this though we do not need this as we have replaced the image.
+ 
+So we go onto edit this to check if frame is facing left we then flip the image.
+
+ 
+If the sprite is not facing right or left we just blit the animation with its direciton as the back of  a sprite is usally not the front of a sprite(especially for charicters which this will be used for)
+We then move on to a very conveint function that handles our collisons called move, this checks beforehand if we will collide with a sprite and stops the movement, this is made for small incremental movements made by keypress so the distance will not be noticeable. The NPC will not have this problem as I can test wether they intersect each other. If the sprite does not intersect any other sprites then I move the sprite inplace, and set moving to true, If it does interect each other then I set the moving variable to false.
+
+We then move on to the meta_sprites constructor:
+ 
+Which calls its base consutrcutor, and gets important data; the image name of sprite sprite is on the position of where the sprite is , and the key argument sounds which tells what sounds to load.
+The position argument is a position defined by this named tuple:
+ 
+I then realize that some sprites may not move in my game, so I split the meta_sprite move function into a inherited class called moveable , after doing this  a reach a revelation instead of using the game class as a namespace like object(it loads resouces, and most functions require it ) I instead put the code into the modules ‘global’ variable(this is only global to the module and therefore what most languages would not define global.)  we then assign the global variable as  a variable called this.
+ 
+This allows us to diffrenciate between a functional variable and  a module wide variable as the moudle wide would be refrenced with a ‘this.’ Prefix.
+We then intilize all variables from the game class, we then rename meta_sprite to sprite and merge the meta_init_sprite from game to its constructor loading the sprite on consturction. Leaving only change background intact and update defined at the last part of the file, as there will be more things to add which will needed to be updated.
+here in the sprite class we inherit dirtysprite as they have features which are useful for animatiing sprites, fater this we goto  init with the merged function using the this keyword to refer to resources, we then add the sprite to the lists of sprites to render, in this an agument from the constructor tells it weither it will be used in battle senes which will not have the same list as the normal sprite list, as the battle screen and the overworld will be different. We remove the update function as a static sprite won’t be changing much  at all.
+We then create the movable class which inherits sprite this handles movement and animation, we have our move function and our update function along with the direction we are facing.
+Along with this we add some things to theese functions, using the new this variable, playing the collide beep when the player has colided with something and setting the sprite as ‘dirty’(pygame  varible for dirty sprites) so pygame will rerender the sprites image.
+
+
+
+
+
+
+
+Next we start on the entity class which will hold what buffs and stat that entity has(for battles) also holding  it’s moveset what it has equipped, and its inventory. This will be most of the games logic for battles in the game, first we intilize  the entity:
+see that equipped, basestat, inventory and moves are private.
+We use dictonaries instead of arrays with equipped, inventory, moves and basestat as we will use the name of the object to acsess the object not its index as this is easier to  create a UI for.
+We then go on to create setters and getters for the entitys equipped, inventory and moves.
+
+
+i do not add a remove move as moves are gained as the charicter progresses and is from the charicters actions those actions are not reversable.
+I equipping an item needs to be in the entitys inventory to equip it.
+Removing items from inventory removes the quantity of that item first as we can have  a quantity of a certain item e.g. we can have more than one hot chlcate at a time.
+We now create the use_item function to so we can use an item in the inventory, this is also a short hand for equiping a equipablle  item, this function will determine the items type and then activeate that item in the approate manner for that type.
+
+As you can see consumable items are removed consuming them in the usage process and equipped items are equipped like so. The buffs are calculate no matter what will happern. As we wan’t buffs to be removed after equipping an item lets edit the unequip to cater for this.
+
+ 
+The for loop removes each buff in the equipped item.
+We then move on to the next part; moves this key gameplay feature gives buffs to the players attacks against enemys in battle, there are two types of buffs temporary and permanent ones, the temporary only lsat a certain amount of turns in the battle, after the battle it wears off. Moves use thought as a ‘mana’ pool, if there is not enough of it that the move requires, the move fails, this stops players from spamming the strongest move. Along with this moves sometimes can stun the opponent for a certain amount of turns, this incapictates the oppnent losing those turns. 
+ 
+ After this we create the next turn function which decrements the turns left on the stunned and temporary buffs once there is no turns left on a buff that buff is removed.
+ 
+We then create a function to stun the entity for amount of turns called stun so we can use this in the use_move function
+ 
+We then create the function to get statuses, this requires some utility functions, to concatinate dictornaries, deconcatinate dictornaries, and extract status data from dictonaires/arrays of items or moves
+ 
+Here we use a for loop to go into the array of dictonraies parsed from the arguments, we then iterate over them using a for loop, if the dictonary is empty, we do nothing as there is nothing to do, if there is something in the dictonary, we get the logical OR of the keys for the output and dictonary this basically means ‘both but no copies’ of a certain variable, to reduce time while iterating, we then set output in  a shorthand way which simply means to iterate over the keys(calling the iter k) which we then use as the variables key for that iter, we then concatinate(or add) the variables of the dictonary and the output. We then return the output.
+Deconcat dictonaries is reverse.
+
+ 
+We then make the function to extract the buffs from objects(moves or items)
+ 
+We get the buffs from all of the items in the dict and then concatinate them, if there is nothing to concatinate a variable with we concat it with 0 as default.
+we then create a function to update the players stats this includes concatinating the buffs of temp_buffs, basestats and equipped items I set this private as it will not be used pubicly.
+ 
+I then create the get stats function this checks if the stats needs updating if so It updates, then it returns the entitys stats.
+ 
+I then make the stats needs update to True every time the stats needs updating, this is in functions like using a move, equipping an item and using an item.
+Now we add our attack calculation algorithms to the stats as defined above.
+We start with the enlightenment stat adding it into update stats as it is does not need enemy stats after which we then remove the damage taken from the determination stats so the stat is correct.
+
+ 
+(above) we use the random.randrange function to get a random number in  a range. This is imported at the top of the file.
+We go on then to the is_hopeful function, which calculates wether the player will have a critical hit( a very powerful attack) 
+
+
+
+We do this by using an if statement, the > operator and the randrange function.
+We then go on to the stun function which needs the algorithm to be complete:
+
+
+	
+Giving a possiblity of the enemy not stunning the entity, making the game fairer and more intersting, if the entity is stunned we give a notice by using the battlebox to notify the player and set the stunned value, which is an int of the number of turns the entity is stunned, this is better than a boolean as the stun effect wears off.
+We then finally create the function _take_damage, I have put an underscore infront of it to show that it should be protected and only be accsessed by the entity or its subclasses, while people still can acsess this function it gives them a warning that it was not intended to be used that way.
+First we get our stats using the function(so it is updated if it needs to be), we then check if the entity is hopeful, if so we times all status values by 2, I did not put this into the update_stats function as the stats might not need updating on a new turn, making the random value not so random. We then go on to the outwitting of the enlightenment attack if the entity does outwit, the battlebox will notify the player, if not the persuasion value of the entity will increase, we then increase damage taken using the focus attack algorithm.
+
+
+Now we create the function to check wether the entity is dead this is by checking wether determination is lower or equal to 0 or pesuasion is higher than determination and  focus:
+
+
+
+
+
+I use an elif instead as it denotes that the if statement is true it will not carry on the function,  I could use an if although as the return statement exits the function.
+We now move on to the basic_text_box which gives a method to show properly aligned text, and instantate the resources that all textboxes use, show and hide itself like dirty sprites along with drawing the textbox itself.
+Before we interlize the class we create the font resource to load fonts for us to use.
+We first go on to the consturctor where we create a border sprite for the textbox(to make it look fancy and like a text box) after which we create the textbox sprite 6 pixels smaller than the border, making the border edge, this rect will be used to render the text of the textbox.
+We then add the activation beep that textboxes will use for a sound effect to confirm options and goto the next textbox screen or page.
+ 
+We then go on to the word wrap function which, wraps words around the textbox so there is no word going outside of the screen
+We first check this by checking if the word go outside the text box by using an if statement to see if texts rectangle x value is greater than our textboxes. If not we just return the text as is. If it is True , we iterate over each word(via splitting though whitespaces) checking weither the word, words after it and whitespaces is above the textbox x value if so it adds a delimter before adding that word then cleans up the word adding(as it the whitespace added to the first word would be garbage) it then adds the line(s) to the output.
+
+
+
+
+
+
+
+
+We then go on to page wrap which wraps the y axis to the textbox, by adding ‘pages’ where the text box once activated by a certain event will show the next part of the text. We start with a similar operation checkign weither the text needs to be wrapped if not we return the text, if so we then iterate over each line like, each word in the word wrap function.
+
+
+
+
+
+
+
+We now move on to the draw function which, uses what would be called a pure virtual function, or a function which has been defined in the base class as nothing and has to be overridern to function correctly. This is done by creating an empty function with the arguments needed and the keyword pass which makes the function do nothing.
+We then go on to check if we are visible in the draw function, if so we do nothing if not we draw the border and the textboxes image. We then leave the draw_func to do the rendering of the text allowing it to have more complex rendering and manipulation of such text.
+ 
+
+We then move on to the show and hide functions which set the visible boolean hide also makes the activation sound beep to show that it is hiddern to the player.
+
+
+
+We then move on to the text box class, we inherit the basic_text_box and interlize it in the constructor we then create a deque to hold our pages to render.
+We then create the say function which is used to put text on the textbox screen, in this we check weither there is the font kwarg used if not we use the default font for the game, we then word wrap the text and then page wrap that output we then append those pages to the pages to render deque and then call the next page function which pops the  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
