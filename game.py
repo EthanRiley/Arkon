@@ -336,7 +336,7 @@ class entity(moveable):
     
     def is_dead(self):
         stats = self.get_stats()
-        if stats["determination"] <= 0:
+        if stats["determination"] - self.__damage_taken <= 0:
             return True
         elif self.persuasion > stats["determination"] + stats["focus"]:
             return True
