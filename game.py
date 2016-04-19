@@ -1,4 +1,4 @@
-import game_data, game_objects, threading, random, time, collections, sys
+mport game_data, game_objects, threading, random, time, collections, sys
 
 #(0, 0) is top left corner in pygame.
 
@@ -118,35 +118,35 @@ class basic_text_box(object):
         if textbox_x < font.get_rect(text,
                 size = font_size).x:
             output = ""
-            for line in text.split('\n'):
-                if textbox_x < font.get_rect(line, size = font_size):
-                    lineoutput = ""
-                    for word in text.split(' '):
-                        if font.get_rect(output + ' ' + word, size = font_size).x > textbox_x:
-                            lineoutput += '\n' + ' ' + word  
-                            lineoutput.replace(' ', '', 1)
-                            output += lineoutput
-                            lineoutput = ""
-                        else:
-                            lineoutput += ' ' + word
-                else:
-                    output += line
+            for word in text.split(' '):
+                if font.get_rect(output + ' ' + word, size = font_size).x > textbox_x:
+                    output += '\n'
+                    x = 0
+                output += ' ' + word  
+            return output.replace(' ', '', 1)
         else:
             return text
+
     def page_wrap(self, text, font_name, font_size):
         font = this.fonts.get_data(font_name)
         y = self.textbox.get_rect().y
-        page_text = ""
-        pages = []
-        for line in text.split('\n'):
-            if y + font.get_rect(line,
-                    size=font_size).y < y:
-                page_text += '\n' + line
-            else:
-                pages.append(page_text)
-                page_text = line
-        return pages
+        if font.get_rect(text, size = font_size).y < y:
+            page_text = ""
+            pages = []
+            for line in text.split('\n'):
+                if font.get_rect(page_text,
+                        size=font_size).y < y:
+                    page_text += '\n' + line
+                else:
+                    pages.append(page_text)
+                    page_text = ""
+            return pages
+        else:
+            return text
 
+    def draw_func(self, surface):
+        pass
+    
     def draw(self, surface):
         if len(self.text_to_render) != 0 | self.visible:
           surface.blit(self.text_box.image)
@@ -164,10 +164,10 @@ class text_box(basic_text_box):
 
     def __init__(self, pos, data_dir):
         basic_text_box.__init__(self, pos, data_dir)
-        self.text_to_render = collections.deque()
+        self.pages_to_render = collections.deque()
 
     def next_page(self):
-        self.txt_data = self.text_to_render.pop()
+        self.txt_data = self.pages_to_render.pop()
         self.text_box.sounds["activate_beep"].play()
 
     def draw_func(self, surface):
@@ -183,7 +183,7 @@ class text_box(basic_text_box):
 
         text = self.word_wrap(text, font.name, font.size)
         for page in self.page_wrap(text, font.name, font.size):
-            self.text_to_render.append(text_data(page, font.size, font.name))
+            self.pages_to_render.append(text_data(page, font.size, font.name))
         next_page()
 
 class text_menu(basic_text_box):
