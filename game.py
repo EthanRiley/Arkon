@@ -31,10 +31,8 @@ class sprite(pygame.sprite.DirtySprite):
 
         self.image = this.data.sprites.get_data(self._imagename)
         self.rect = self.image.get_rect()
-
         self.rect.x = pos.x
         self.rect.y = pos.y
-        
         self.sounds = this.data.sounds.get_data_dict(self.sounds)
         if 'battle' in sorted(kwargs.keys()):
             if kwargs['battle']:
@@ -133,17 +131,23 @@ class basic_text_box(object):
     def page_wrap(self, text, font_name, font_size):
         font = this.fonts.get_data(font_name)
         y = self.textbox.get_rect().y
-        page_text = ""
-        pages = []
-        for line in text.split('\n'):
-            if y + font.get_rect(line,
-                    size=font_size).y < y:
-                page_text += '\n' + line
-            else:
-                pages.append(page_text)
-                page_text = line
-        return pages
+        if font.get_rect(text, size = font_size).y < y:
+            page_text = ""
+            pages = []
+            for line in text.split('\n'):
+                if font.get_rect(page_text,
+                        size=font_size).y < y:
+                    page_text += '\n' + line
+                else:
+                    pages.append(page_text)
+                    page_text = ""
+            return pages
+        else:
+            return text
 
+    def draw_func(self, surface):
+        pass
+    
     def draw(self, surface):
         if len(self.text_to_render) != 0 | self.visible:
           surface.blit(self.text_box.image)
@@ -161,10 +165,10 @@ class text_box(basic_text_box):
 
     def __init__(self, pos, data_dir):
         basic_text_box.__init__(self, pos, data_dir)
-        self.text_to_render = collections.deque()
+        self.pages_to_render = collections.deque()
 
     def next_page(self):
-        self.txt_data = self.text_to_render.pop()
+        self.txt_data = self.pages_to_render.pop()
         self.text_box.sounds["activate_beep"].play()
 
     def draw_func(self, surface):
@@ -180,7 +184,7 @@ class text_box(basic_text_box):
 
         text = self.word_wrap(text, font.name, font.size)
         for page in self.page_wrap(text, font.name, font.size):
-            self.text_to_render.append(text_data(page, font.size, font.name))
+            self.pages_to_render.append(text_data(page, font.size, font.name))
         next_page()
 
 class text_menu(basic_text_box):
@@ -339,7 +343,7 @@ class entity(moveable):
     
     def is_dead(self):
         stats = self.get_stats()
-        if stats["determination"] <= 0:
+        if stats["determination"] - self.__damage_taken <= 0:
             return True
         elif self.persuasion > stats["determination"] + stats["focus"]:
             return True
