@@ -127,7 +127,6 @@ class door(sprite):
         self.setting_from = self.setting_to
         self.setting_to = s_from 
 
-
 class moveable(sprite):
     def __init__(self, imagename, pos, **kwargs):
         sounds = ["collide_beep"]
@@ -278,13 +277,12 @@ class text_box(basic_text_box):
             font = kwargs['font']
 
         if 'speaker' in sorted(kwargs.keys()):
-            text += kwargs['speaker'] + '\n'
+            text = kwargs['speaker'] + '\n' + text
 
         text = self.word_wrap(text, font.name, font.size)
         for page in self.page_wrap(text, font.name, font.size):
             self.pages_to_render.append(text_data(page, font.size, font.name))
         activate()
-        self.visible = False
 
 class text_menu(basic_text_box):
 
@@ -303,21 +301,19 @@ class text_menu(basic_text_box):
 
     def select(self, index):
         self.text_box.sounds["select_beep"].play()
-
-        selected = sorted(self.items.keys)[index]
-        if self.selected != None & index != self.selected:
+        
+        self.selected_index = index % len(self.items.keys())
+        
+        selected = self.items.keys()[index]
+        if self.selected != None & selected != self.selected:
             self.__deselect(selected)
 
         self.text[self.text.find(selected) - 2] = '>'
-        self.selected = item_name
+        self.selected = selected
         self.page_number = int(self.text.find(selected)/self.rows_in_page)
 
     def __init__(self, items, pos, **kwargs):
         basic_text_box.__init__(self, pos, sounds = ['select_beep', 'back_beep'])
-
-        #set say function to private; so ppl do not use it
-        self.__say = self.say
-        self.say = None
 
         self.items = items
 
@@ -333,23 +329,23 @@ class text_menu(basic_text_box):
 
         self.render()
 
-        self.rows_in_page = len(render_text)/len(self.page_wrap(render_text,
+        self.rows_in_page = len(self.render_text)/len(self.page_wrap(self.render_text,
             Font_data.name, Font_data.size))
 
         self.select(0)
         self.save_vars += ['end_formatting', 'font', 'items']
         
     def select_next(self):
-        self.select(self.selected+1)
+        self.select(self.selected_index+1)
 
     def select_previous(self):
-        self.select(self.selected-1)
+        self.select(self.selected_index-1)
 
     def get_selected(self):
-        return sorted(self.items.keys)[self.selected]
+        return self.selected
 
     def activate(self, *args):
-        selected = self.get_selected()
+        selected = self.items[selected]
         if self.items[selected].__class__.__name__ != 'dict':
             if self.items[selected] != None:
                 if self.items[selected](selected, *args) == "previous":
@@ -737,5 +733,3 @@ def save_data():
 def load_data():
     game = json.load(open("save.json"))
     this.sprites.update_dict(game["sprites"])
-
-
