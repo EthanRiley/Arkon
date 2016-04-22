@@ -400,6 +400,9 @@ def deconcat_dicts(*dicts, **kwargs):
             output = {k: output.get(k, kwargs["default"]) - dic.get(k, kwargs["default"]) for k in keys }
     return output
 
+this.battlebox = text_box((0 , 0), "data")
+this.battlebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
+
 class entity(moveable):
 
     def __init__(self, name, pos, basestat, **kwargs):
@@ -431,9 +434,9 @@ class entity(moveable):
     def __update_stats(self):
         self.__stats = concat_dicts(self.__basestat,
                 self.get_buffs_from_dict(self.__temp_buffs),
-                    self.get_buffs_from_dict(self.__equipped), default = 0)
+                    self.get_buffs_from_dict(self.__equipped), default = 0) 
         self.__stats["enlightenment"] *=  self.__stats["focus"] / 2
-        self.__stats["enlightenment"] +=  0.25 * self.__stats["determination"]
+        self.__stats["enlightenment"] +=  self.__stats["determination"] / 4
         self.__stats["enlightenment"] *= random.randrange(0.2, 1.1)
         self.__stats["determination"] -= self.__damage_taken
     
@@ -500,10 +503,16 @@ class entity(moveable):
             self.remove_from_inventory(self.__inventory[itemname])
 
     def _stun(self, enemy_stats,  NumberOfTurns):
-        enemy_attack = (enemy_stats/4) * random.randrange(0 , (0.5 + enemy_stats["focus"]/130))
+        enemy_attack = (enemy_stats["enlightenment"]/4) * random.randrange(0 , (0.5 + enemy_stats["focus"]/130))
         if self.get_stats()["wit"] >  enemy_attack:
-            this.battlebox.say(self.name + " was stunned!")
+            this.battlebox.say(self._imagename + " was stunned!")
             self.stunned = NumberOfTurns
+
+    def is_hopeful(self):
+        if self.get_stats()["hope"] > random.randrange(0, 500):
+            return True
+        else:
+            return False
 
     def _take_damage(self, enemy_stats, is_hopeful):
         stats = self.get_stats()
@@ -539,21 +548,8 @@ class entity(moveable):
             buff["turns"] -= 1
             if buff["turns"] < 0:
                 self.__temp_buffs.remove(buff)
-        self.get_stats()
+        self.__stats_needs_update = True
         
-    def load_battle_assets(self):
-        self._imagename = imagename+"_battle"
-        self.load_sprite(this.data)
-        self.fighting = True
-
-    def is_hopeful(self):
-        if self.get_stats()["hope"] > random.randrange(0, 500):
-            return True
-        else:
-            return False
-
-this.battlebox = text_box((0 , 0), "data")
-this.battlebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
 
 class player(entity):
 
@@ -572,26 +568,26 @@ class player(entity):
     def get_stats_menu_data(self):
         output = {}
         for stat, val in self.get_stats():
-            output[stat+"  =  "+val] = None
+            output[stat+"  =  "+val] = None 
         return output
    
     def is_sure_dialog(self, if_sure):
         this.textbox.say("are you sure?", self.font.name, self.font.size) 
-        def sure():
+        def sure(*args):
             self.game.text_box.next_page()
             self.game.text_box.hide()
             return if_sure()
         return {
-                    "yep" : sure(),
+                    "yep" : sure, 
                     "nope": "previous"
-                }
+               }
     
     def get_player_menu_items(self, game):
         return {
                     "inventory" : self.get_inventory_menu_data,
                     "equipped" : self.get_equipped_menu_data,
                     "stats" : self.get_stats_menu_data,
-                    "save and quit" : self.is_sure_dialog(this.save_quit, game)
+                    "save and quit" : self.is_sure_dialog(this.save_quit)
                }
 
     def __init__(self, name, pos):
