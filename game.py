@@ -363,8 +363,10 @@ class text_menu(basic_text_box):
         selected = self.items[selected]
         if self.items[selected].__class__.__name__ != 'dict':
             if self.items[selected] != None:
-                if self.items[selected](selected, *args) == "previous":
+                output = self.items[selected](selected, *args) == "previous"
+                if output == "previous":
                     self.previous_menu()
+                return  output
             elif self.items[selected] != "previous":
                 self.border.sounds["back_beep"].play()
             else:
@@ -423,11 +425,14 @@ class entity(moveable):
         self.__moves = {}
         self.__temp_buffs = []
         self.__stats = {}
-        self.__dialog = {} 
         self.__persuasion = 0
         self.__damage_taken = 0 
         self.__stats_needs_update = True
-        self.save_vars += ['__moves', '__inventory', '__equipped', '__basestat' ]
+        self.__dying_message = "..."
+        if 'dying_message' in kwargs:
+            self.__dying_message = kwargs['dying_message']
+
+        self.save_vars += ['__moves', '__inventory', '__equipped', '__basestat', '__dying_message' ]
 
     def get_imagename(self):
         return self._imagename
@@ -450,11 +455,12 @@ class entity(moveable):
         self.__stats["enlightenment"] *= random.randrange(0.2, 1.1)
         self.__stats["determination"] -= self.__damage_taken
     
+    def say(self, text):
+        this.textbox.say(response, font = self._imagename, speaker = self._imagename)
+
     def is_dead(self):
         stats = self.get_stats()
-        if stats["determination"] - self.__damage_taken <= 0:
-            return True
-        elif self.persuasion > stats["determination"] + stats["focus"]:
+        if stats["determination"] - self.__damage_taken <= 0 | self.persuasion > stats["determination"] + stats["focus"]:
             return True
         return False
 
@@ -501,6 +507,14 @@ class entity(moveable):
         self.remove_from_inventory(item_to_remove)
         self.add_to_inventory(item_to_gain)
 
+    def buy(self, item_to_buy):
+        if self.__inventory["sterling"] >= self.item_to_buy["price"]:
+            self.add_to_inventory(item_to_buy)
+            self.remove_from_inventory({"name": "sterling", "quantity": item_to_buy["price"]})
+            return True
+        else:
+            return False
+
     def get_inventory_menu_data(self, **kwargs):
         output = {}
         for item_name in sorted(self.get_inventory().keys()):
@@ -509,9 +523,6 @@ class entity(moveable):
             else:
                 output[item_name] = kwargs['do_func']
         return output
-
-    def trade_menu_data(self, buyer):
-        pass
 
     def use_item(self, itemname):
         self.__stats_needs_update =  True
@@ -580,17 +591,10 @@ class entity(moveable):
 this.battlebox = text_box((0 , 0), "data")
 this.battlebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
 
-class NPC(entity):
-    
-    def __init__(self, name, pos, basestat, **kwargs):
-        entity.__init__(self, name, pos, basestat, **kwargs)
-        self.dialog = {}
-        self.save_vars.append('__dialog')
-
-    def get_next_dialog(self):
-        this.textbox.say(self.__dialog.keys()[0],font = self._imagename, speaker = self._imagename)
-        response = self.__dialog.pop()
-        this.sprites
+def response_menu(items):
+    responsebox = text_menu(items, (0, 0), border = "text_box")
+    responsebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.y )
+    return responsebox
 
 class player(entity):
 
@@ -656,16 +660,9 @@ class player(entity):
 
 def get_trade_menu(buyer, seller):
     return text_menu({
-            "buy": seller.get_inventory
+            "buy": seller.get_inventory,
             "sell": buyer.get_inventory
-        }
-
-
-def response_box(items):
-    responsebox = text_menu(items, (0, 0), border = "text_box")
-    responsebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.y )
-    return responsebox
-
+        }, (0, 0)) 
 
 class battle_entity():
 
@@ -696,6 +693,9 @@ class battle_entity():
     def is_hopeful(self):
         return self._entity.is_hopeful()
 
+    def is_dead(self):
+        return self._entity.is_dead()
+
 class battle_player(battle_entity):
 
     def __init__(self, entity):
@@ -722,10 +722,10 @@ class battle_NPC(battle_entity):
                
 class battle(multiprocessing.Process):
 
-    def __init__(self, entity, entity1):
-        threading.Thread.__init__(self)
-        self.player = battle_entity(entity)
-        self.npc = battle_NPC(entity1, (0,0))
+    def __init__(self, player, NPC):
+        multiprocessing.Process.__init__(self)
+        self.player = battle_entity(player)
+        self.npc = battle_NPC(NPC, (0,0))
 
         calc_pos = lambda winx, objx: winx/2 - objx/2
         self.entity1.set_pos((clac_pos(this.window.get_width(), 
@@ -758,6 +758,25 @@ class battle(multiprocessing.Process):
                 self.player.do_queued()
             elif not self.__player_turn & self.npc.ready():
                 self.npc.do_queued()
+
+class NPC(entity):
+    
+    def __init__(self, name, pos, basestat, **kwargs):
+        entity.__init__(self, name, pos, basestat, **kwargs)
+        self.__dialog = {}
+        self.__func_dialog = {}
+        self.save_vars.append('__dialog', '__func_dialog')
+
+    def get_next_dialog(self):
+        self.say(self.__dialog.keys()[0])
+        response = response_menu(self.__dialog.pop())
+        if response.__class__.__name__ == "dict":
+            #dicts are only used in trading items.
+            self.say(self.__func_dialog["trade"][this.sprites["player"].buy(response)])
+        if response == "_attack_player":
+            this.Battle = battle(this.sprites["player"], self)
+        else:
+            self.speak(response)
 
 def update():
     this.onscreen_sprites.clear(this.background)
