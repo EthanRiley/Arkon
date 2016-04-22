@@ -719,6 +719,9 @@ class battle_NPC(battle_entity):
                         if item["type"] == "health":
                             health_items[item["potency"]] = item["name"]
                     self.entity.use_item(health_items[sorted(health_items.keys())[-1]])
+        else:
+            moves = self._entity.get_moves()
+            self._entity.use_move(moves[random.randrange(len(moves))], this.sprite["player"])
                
 class battle(multiprocessing.Process):
 
