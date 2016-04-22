@@ -604,15 +604,7 @@ class player(entity):
 
         self.menu = text_menu(self.get_player_menu_items()) 
         self.player_name = name
-        self.rect = this.background
         self.save_vars.append('player_name')
-
-    def get_pos(self):
-        rect = self.get_rect()
-        return position(rect.x, rect.y)
-
-    def is_player(self):
-        return True;
 
     def get_player_menu(self):
         return self.menu
@@ -627,7 +619,7 @@ class battle_entity():
         self.__func_queue.append({"func" : self.__entity.use_item, "args" : itemname})
 
     def use_move(self, movename):
-        self.__func_queue.append({"func" : self.__entity.use_move, "args" : movename})
+        self.__func_queue.append({"func" : self.__entity.use_move, "args" : [movename, self.enemy]})
 
     def do_queued(self):
         function = self.queue.pop()
@@ -648,17 +640,28 @@ class battle_entity():
 
 class battle_player(battle_entity):
 
-    def __init__(self, entity):
-        battle_entity(self, entity)
+    def __init__(self, entity, enemy):
+        battle_entity.__init__(self, entity)
+        self.enemy = enemy
+
+    def get_move_menu_data(self):
+        output = {}
+        for move in self._entity.get_moves():
+            output[move] = self.use_move
+        return output
 
     def get_battle_menu(self):
-        return text_menu
+        return response_menu({
+                    "moves" : self.get_move_menu_data
+                    "items" : self._entity.get_inventory_menu_data
+                })
 
 class battle_NPC(battle_entity):
 
     def __init__(self, entity, battle_queue, pos):
         battle_entity.__init__(self, entity)
         self.battle_sprite = sprite(entity.get_imagename() + "_battle", pos, battle = True)
+        self.enemy = this.sprites["player"]
 
     def get_what_do_next(player_stats):
         stats = self.get_stats()
@@ -674,8 +677,8 @@ class battle(multiprocessing.Process):
 
     def __init__(self, entity, entity1):
         threading.Thread.__init__(self)
-        self.player = battle_entity(entity)
         self.npc = battle_NPC(entity1, (0,0))
+        self.player = battle_entity(entity, npc)
 
         calc_pos = lambda winx, objx: winx/2 - objx/2
         self.entity1.set_pos((clac_pos(this.window.get_width(), 
