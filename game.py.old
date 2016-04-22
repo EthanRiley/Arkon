@@ -373,11 +373,12 @@ class text_menu(basic_text_box):
         this.fonts.get_data(self.font.name).render_to(self.text_box,
                 (0, 0), self.render_text[self.page_number], size = self.font.size)
 
-def text_martrix(items, pos, **kwargs):
+def text_matrix(items, **kwargs):
     if 'font' in sorted[kwargs.keys()]:
         return text_menu(items, pos, font = kwargs['font'], end_formatting = '')
     else:
         return text_menu(items, pos, end_formatting = '')
+    
 
 this.textbox = text_box((0 , 0))
 this.textbox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
@@ -549,21 +550,20 @@ class entity(moveable):
             if buff["turns"] < 0:
                 self.__temp_buffs.remove(buff)
         self.__stats_needs_update = True
-        
 
+def menu_data(self, data_get, var):
+    output = {}
+    for data in data_get():
+        output[data] = var
+    return output
+   
 class player(entity):
 
     def get_inventory_menu_data(self):
-        output = {}
-        for item_name in sorted(self.get_inventory().keys()):
-            output[item_name] = self.use_item
-        return output
+        return menu_data(sorted(self.get_inventory().keys()), self.use_item)
 
     def get_equipped_menu_data(self):
-        output = {}
-        for item_name in sorted(self.get_equipped().keys()):
-            output[item_name] = self.unequip
-        return output
+        return menu_data(sorted(self.get_equipped().keys()), self.unequip)
 
     def get_stats_menu_data(self):
         output = {}
@@ -606,37 +606,32 @@ class player(entity):
         self.player_name = name
         self.save_vars.append('player_name')
 
-    def get_player_menu(self):
+    def get_menu(self):
         return self.menu
 
 class battle_entity():
 
     def __init__(self, entity):
         self._entity = entity
-        self.__func_queue = collections.Deque()
+        self.__func_queue = []
 
     def use_item(self, itemname):
-        self.__func_queue.append({"func" : self.__entity.use_item, "args" : itemname})
+        self.__func_queue.append({"func" : self._entity.use_item, "args" : itemname})
 
     def use_move(self, movename):
-        self.__func_queue.append({"func" : self.__entity.use_move, "args" : [movename, self.enemy]})
+        self.__func_queue.append({"func" : self._entity.use_move, "args" : [movename, self.enemy]})
 
     def do_queued(self):
-        function = self.queue.pop()
+        function = self.__func_queue.pop()
         out = function["func"](*funtction["args"])
         self._entity.next_turn()
         return out
 
     def ready(self):
-        if len(self.__func_queue) > 0:
-            return True
-        return False
+        return len(self.__func_queue) > 0:
 
     def get_stats(self):
         return self._entity.get_stats()
-
-    def is_hopeful(self):
-        return self._entity.is_hopeful()
 
 class battle_player(battle_entity):
 
@@ -644,26 +639,26 @@ class battle_player(battle_entity):
         battle_entity.__init__(self, entity)
         self.enemy = enemy
 
+    def get_item_menu_data(self):
+        return menu_data(sorted(self._entity.get_inventory().keys()), self.use_item)
+    
     def get_move_menu_data(self):
-        output = {}
-        for move in self._entity.get_moves():
-            output[move] = self.use_move
-        return output
+        return self.menu_data(self._entity.get_moves, self.use_move)
 
     def get_battle_menu(self):
-        return response_menu({
-                    "moves" : self.get_move_menu_data
-                    "items" : self._entity.get_inventory_menu_data
+        return response_box({
+                    "idealogies" : self.get_move_menu_data
+                    "items" : self.get_item_menu_data
                 })
 
 class battle_NPC(battle_entity):
 
-    def __init__(self, entity, battle_queue, pos):
+    def __init__(self, entity, pos):
         battle_entity.__init__(self, entity)
         self.battle_sprite = sprite(entity.get_imagename() + "_battle", pos, battle = True)
         self.enemy = this.sprites["player"]
 
-    def get_what_do_next(player_stats):
+    def get_what_do_next(self):
         stats = self.get_stats()
         if stats["determination"] < 25:
             health_items = {}
@@ -672,17 +667,21 @@ class battle_NPC(battle_entity):
                         if item["type"] == "health":
                             health_items[item["potency"]] = item["name"]
                     self.entity.use_item(health_items[sorted(health_items.keys())[-1]])
+        else:
+            moves = self._entity.get_moves()
+            self._entity.use_move(moves[random.randrange(len(moves))], this.sprite["player"])
+            
                
 class battle(multiprocessing.Process):
 
-    def __init__(self, entity, entity1):
-        threading.Thread.__init__(self)
-        self.npc = battle_NPC(entity1, (0,0))
-        self.player = battle_entity(entity, npc)
+    def __init__(self, player, npc):
+        multiprocessing.Process.__init__(self)
+        self.npc = battle_NPC(npc, (0,0))
+        self.player = battle_entity(player, npc)
 
         calc_pos = lambda winx, objx: winx/2 - objx/2
-        self.entity1.set_pos((clac_pos(this.window.get_width(), 
-                self.entity1.rect.right),
+        self.npc.set_pos((clac_pos(this.window.get_width(), 
+                self.npc.rect.right),
                     calc_pos(this.window.get_height(), self.entity1.rect.bottom)))
 
         if self.player.get_stats["speed"] > self.npc.get_stats["speed"]:
