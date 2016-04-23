@@ -5,7 +5,7 @@
 		"move" : true,
 		"type" : "move",
 		"stun_effect": 0
-	}
+	},
 	"moves" : [
 		{
 			"name": "backup plan",
