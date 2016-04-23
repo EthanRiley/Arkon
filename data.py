@@ -1,5 +1,7 @@
-import pygame, os, re
+import pygame, os, re, pygame.freetype
 from pygame.locals import *
+
+pygame.init()
 
 class resource_handler(object):
 
@@ -46,7 +48,7 @@ def image_data(data_dir):
     return resource_handler(data_dir, '.png', get_image)
 
 def sound_data(data_dir):
-    return resource_handler(data_direction, '.ogg', pygame.mixer.load)
+    return resource_handler(data_dir, '.ogg', pygame.mixer.load)
 
 def font_data(data_dir):
     return resource_handler(data_dir,'.fft', pygame.freetype.Font)

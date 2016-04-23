@@ -1,0 +1,30 @@
+{
+	"sprite":{
+		"args": ["_imagename", "pos"],
+		"kwargs": []
+	},
+	"door":{
+		"args": ["setting_to", "setting_from"],
+		"kwargs" : ["_imagename"]
+	},
+	"item":{
+		"args": ["pos", "item_data"],
+		"kwargs": []
+	},
+	"moveable":{
+		"args": ["_imagename", "pos"],
+		"kwargs": []
+	},
+	"entity":{
+		"args": ["_imagename", "pos", "__basestat"],
+		"kwargs": ["dying_message"]
+	},
+	"NPC":{
+		"args": ["_imagename", "pos", "__basestat"],
+		"kwargs": ["dying_message"]
+	},
+	"player":{
+		"args": ["player_name", "pos"],
+		"kwargs": []
+	}
+}
