@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import multiprocessing, random, time, collections, sys, json, pygame, os
+import multiprocessing, random, time, collections, sys, json, pygame, os, re
 import object_loader, data
 
 #(0, 0) is top left corner in pygame.
@@ -90,18 +90,18 @@ class sprite(pygame.sprite.DirtySprite):
         if 'battle' in sorted(kwargs.keys()):    
             if kwargs['battle']:
                 this.battle_sprites.add(imagename, self)
-            else:
-                this.sprites.add(imagename, self)
-        else:
-            this.sprites.add(imagename, self)
 
         self.save_vars = [ '_imagename', 'pos' ]
 
     def get_rect(self):
         return self.image.get_rect()
-
+    
     def get_pos(self):
         return position(self.rect.x, self.rect.y)
+
+    def set_pos(self, pos):
+        self.rect.x = pos.x
+        self.rect.y = pos.y
 
     def save_data(self):
         self.pos = self.get_pos()
@@ -129,10 +129,10 @@ class door(sprite):
 
         sprite.__init__(self, imagename, pos, sounds = ['door_open'])
         self.setting_to = setting_to
-        self.setting_from = setting_from
         self.save_vars.append('setting_to')
 
     def activate(self):
+        self.sounds['door_open'].play()
         this.settings.load(self.setting_to)
 
 class item(sprite):
@@ -140,21 +140,21 @@ class item(sprite):
     def __init__(pos, item_data, **kwargs):
         sprite.__init__(self, "dropped_item", pos)
         self.item_data = item_data
-        self.save_vars += [ 'item_data', 'setting_from' ] 
+        self.save_vars += [ 'item_data', 'setting_from' ]
 
 class settings:
     
-    def __init__(self, settings_dict_data):
-        self.settings  = settings_dict_data
+    def __init__(self, settings_dict):
+        self.settings  = settings_dict
         self.__current_setting = ""
 
     def load_data_sprite(self, sprite):
         def get_data_args(sprite, argtype):
                 args = subset_dict_from_array(sprite["vars"], 
-                    this.sprite_class_args[sprite["classname"]]["argtype"]).values()
+                    this.sprite_class_args[sprite["classname"]][argtype]).values()
                 for arg in args:
                     sprite.pop(arg)
-                return sorted(args)
+                return sorted(args.values())
                 
         args = get_data_args(sprite, "args")
         kwargs = get_data_args(sprite, "kwargs")
@@ -163,18 +163,27 @@ class settings:
         return sprite
 
     def load(self, setting_name):
-        this.onscreen_sprites.empty()
+        for sprite in this.onscreen_sprites.keys() & self.settings[setting_name]["sprites_used"]:
+            this.onscreen_sprites[sprite].set_pos(position(this.settings[setting_name]["sprites_used"][sprite]))
+            self.settings[setting_name]["sprites_used"].pop(sprite)
+            
+            
         this.onscreen_sprites.update({ k : self.load_data_sprite(this.data_sprites[k]) 
                                         for k in self.settings[setting_name]["sprites_used"]})
                                         
         this.set_background(setting_name)
 
+        i = 0
         for key in self.settings[setting_name]["doors"].keys():
-            Door = door(self.settings[setting_name]["doors"][door_keys[i]]["pos"], 
-                    setting_name, door_keys[i])
-            this.onscreen_sprites.add("door_" + str(i))
+            i += 1
+            Door = door(position(self.settings[setting_name]["doors"][key]["pos"]),
+                        key)
+            this.onscreen_sprites.add("door_" + str(i), Door)
 
         self.__current_setting = setting_name
+
+    def get_current_setting():
+        return self.__current_setting
 
 class moveable(sprite):
     def __init__(self, imagename, pos, **kwargs):
@@ -250,7 +259,6 @@ class basic_text_box(multiprocessing.Process):
         sounds = ['activate_beep']
 
         self.border = sprite(border, pos, sounds = sounds)
-        this.sprites.remove(self.border._imagename)
         self.rect = self.border.get_rect()
 
         if 'sounds' in sorted(kwargs.keys()):
@@ -265,7 +273,7 @@ class basic_text_box(multiprocessing.Process):
 
         self.visible = False
 
-    def set_pos(self, pos):
+    def set_pos(self, x, y):
         self.border.rect.x = pos.x
         self.border.rect.y = pos.y
         self.text_box.rect.x = pos.x - 2
@@ -596,14 +604,6 @@ class entity(moveable):
         self.remove_from_inventory(item_to_remove)
         self.add_to_inventory(item_to_gain)
 
-    def buy(self, item_to_buy):
-        if self.__inventory["sterling"] >= self.item_to_buy["price"]:
-            self.add_to_inventory(item_to_buy)
-            self.remove_from_inventory({"name": "sterling", "quantity": item_to_buy["price"]})
-            return True
-        else:
-            return False
-
     def get_inventory_menu_data(self, **kwargs):
         output = {}
         for item_name in sorted(self.get_inventory().keys()):
@@ -611,7 +611,6 @@ class entity(moveable):
                 output[item_name] = self.use_item
             else:
                 output[item_name] = kwargs['do_func']
-
         return output
 
     def use_item(self, itemname):
@@ -694,15 +693,26 @@ class NPC(entity):
     def __init__(self, name, pos, basestat, **kwargs):
         entity.__init__(self, name, pos, basestat, **kwargs)
         self.__dialog = {}
-        self.__func_dialog = {}
         self.__player_battle_won = None
-        self.save_vars.append('__dialog', '__func_dialog')
-        self.args_vars = ['_imagename', 'pos', '__basestat']
         if 'battle_name' in kwargs:
             self.battle_name = kwargs['battle_name']
         else:
             self.battle_name = self._imagename
+        self.save_vars.append('__dialog', '__func_dialog')
+        self.args_vars = ['_imagename', 'pos', '__basestat']
 
+    def sell(self, item_to_sell):
+        if this.onscreen_sprites["player"].get_inventory()["sterling"] >= self.item_to_buy["price"]:
+            self.trade( item_to_sell, {"name": "sterling", "quantity": item_to_buy["price"]})
+            this.onscreen_sprites["player"].trade({"name": "sterling", "quantity": item_to_buy["price"]},
+                                                  item_to_sell)
+            return True
+        else:
+            return False
+
+    def _get_sell_menu_data(self):
+        return self.get_iventory_menu_data(do_func=self.sell)
+                    
     def _get_dialog(self):
         if self.player_battle_won:
             return self.__dialog["battle_lost"]
@@ -710,19 +720,32 @@ class NPC(entity):
             return self.__dialog["battle_won"]
         else:
             return self.__dialog["no_battle"]
-        
+
+    def parse_dialog(self, dialog):
+        if dialog != None:
+            if dialog.__class__.__name__ == 'dict':
+                self.dialog_dict = dialog
+                response_menu({ k : self.menu_dialog for k in dialog.keys()})
+            if '_give_item' in dialog:
+                this.onscreen_sprites["player"].add_to_inventory(re.match('_give_item (\w+)').group(1))
+            elif '_give_move' in dialog:
+                this.onscreen_sprites["player"].add_move(re.match('_give_move (\w+)').group(1))
+            elif response == "_trade":
+                text_menu(self._get_sell_menu_data, (0,0))
+            elif response == "_attack_player":
+                self._player_battle_won = battle(this.onscreen_sprites["player"], self)
+            else:
+                self.say(response)
+
+    def menu_dialog(self, dialog):
+        self.parse_dialog(self.dialog_dict[dialog])
+
     def activate(self):
         if self._get_dialog().keys()[0] != "":
             self.say(self.__dialog.keys()[0])
+            
+        self.parse_dialog(self._get_dialog().pop())
 
-        response = response_menu(self._get_dialog().pop())
-        if response.__class__.__name__ == "dict":
-            #dicts are only used in trading items.
-            self.say(self.__func_dialog["trade"][this.onscreen_sprites["player"].buy(response)])
-        elif response == "_attack_player":
-            self._player_battle_won = battle(this.onscreen_sprites["player"], self)
-        else:
-            self.speak(response)
 
 def menu_data(self, data_get, var):
     output = {}
@@ -786,7 +809,6 @@ class player(entity, multiprocessing.Process):
         self.save_vars.append('player_name')
     
     def move(self, dx, dy):
-        moveable.move(self, dx, dy)
         return moveable.move(self, dx, dy, this.background.scroll)
 
     def activate_sprite(self, sprite):
@@ -833,13 +855,6 @@ class player(entity, multiprocessing.Process):
                 self.move(-1, 0)
             elif event.key == pygame.K_RIGHT:
                 self.move(1, 0)
-
-
-def get_trade_menu(buyer, seller):
-    return text_menu({
-            "buy": seller.get_inventory,
-            "sell": buyer.get_inventory
-        }, (0, 0)) 
 
 class battle_player():
 
@@ -898,7 +913,7 @@ class battle_NPC(sprite):
                     self._entity.use_item(health_items[sorted(health_items.keys())[-1]])
         else:
             moves = self._entity.get_moves()
-            self._entity.use_move(moves[random.randrange(len(moves))], this.sprites["player"])
+            self._entity.use_move(moves[random.randrange(len(moves))], this.onscreen_sprites["player"])
             
     def get_losing_message(self):
         return self._entity.get_losing_message()
@@ -911,10 +926,10 @@ class battle(multiprocessing.Process):
         self.player = battle_entity(player, npc)
 
         calc_pos = lambda winx, objx: winx/2 - objx/2
-        self.npc.set_pos((clac_pos(this.window.get_width(), 
+        self.npc.set_pos(position((clac_pos(this.window.get_width(), 
                 self.npc.rect.right),
-                    calc_pos(this.window.get_height(), self.npc.rect.bottom)))
-
+                    calc_pos(this.window.get_height(), self.npc.rect.bottom))))
+    
         if self.player.get_stats["speed"] > self.npc.get_stats["speed"]:
             self.__player_turn= True
         else:
@@ -966,7 +981,10 @@ def update():
     pygame.display.update()
 
 def save_data():
-   return json.dumps(this.data_sprites)
+   json.dumps({
+       "sprites":this.data_sprites,
+       "setting":this.settings.get_current_setting()
+    })
 
 def start_screen():
     this.text_box.say("""Press ANY key.""")
@@ -1016,10 +1034,10 @@ def init():
         sys.exit(404)
 
     this.textbox = text_box((0 , 0))
-    this.textbox.set_pos(0, this.window.get_height() - this.textbox.border.rect.y)
+    this.textbox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.y))
 
     this.battlebox = text_box((0 , 0))
-    this.battlebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.bottom)
+    this.battlebox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.bottom))
 
     this.data_sprites = {}
     this.onscreen_sprites = LayeredDirtyDict()
@@ -1029,17 +1047,20 @@ def init():
 
     try:
         this.sprite_classes_args = json.load(open("sprite_classes_args.json"))
+        this.settings = settings(json.load(open("settings.json")))
     finally:
-        print("cannot find the sprite_classes_args.json file, Exiting.")
+        print("cannot find the sprite_classes_args.json or settings.json file, Exiting.")
         sys.exit(404)
 
     try:
-        this.data_sprites = json.load(open("save.json"))
+      data = json.load(open("save.json"))
+      this.data_sprites = data["sprites"]
+      this.settings.load(data["setting"])
     except (OSError, IOError):
         try:
             items = object_loader.load_objects("items.json")
             moves = object_loader.load_objects("moves.json")
-            settings = settings(json.load(open("settings.json")))
+
         except (OSError, IOError):
             print("cannot load object.json or settings.json, Fatal Error. Exiting")
             sys.exit(404)
