@@ -122,7 +122,7 @@ class sprite(pygame.sprite.DirtySprite):
 
 class door(sprite):
 
-    def __init__(pos ,setting_from, setting_to, **kwargs):
+    def __init__(pos , setting_to, **kwargs):
         imagename = "door"
         if 'imagename' in sorted(kwargs.keys()):
             imagename = kwargs['imagename']
@@ -130,13 +130,10 @@ class door(sprite):
         sprite.__init__(self, imagename, pos, sounds = ['door_open'])
         self.setting_to = setting_to
         self.setting_from = setting_from
-        self.save_vars += ['setting_to', 'setting_from']
+        self.save_vars.append('setting_to')
 
     def activate(self):
-        this.setting.set_zone(setting_to)
-        s_from = self.setting_from 
-        self.setting_from = self.setting_to
-        self.setting_to = s_from 
+        this.settings.load(self.setting_to)
 
 class item(sprite):
 
@@ -149,8 +146,9 @@ class settings:
     
     def __init__(self, settings_dict_data):
         self.settings  = settings_dict_data
+        self.__current_setting = ""
 
-    def load_data_sprite(sprite):
+    def load_data_sprite(self, sprite):
         def get_data_args(sprite, argtype):
                 args = subset_dict_from_array(sprite["vars"], 
                     this.sprite_class_args[sprite["classname"]]["argtype"]).values()
@@ -164,7 +162,7 @@ class settings:
         sprite.load_save_data(sprite["vars"])
         return sprite
 
-    def load(setting_name):
+    def load(self, setting_name):
         this.onscreen_sprites.empty()
         this.onscreen_sprites.update({ k : self.load_data_sprite(this.data_sprites[k]) 
                                         for k in self.settings[setting_name]["sprites_used"]})
@@ -176,6 +174,7 @@ class settings:
                     setting_name, door_keys[i])
             this.onscreen_sprites.add("door_" + str(i))
 
+        self.__current_setting = setting_name
 
 class moveable(sprite):
     def __init__(self, imagename, pos, **kwargs):
@@ -471,6 +470,7 @@ class text_menu(basic_text_box):
                 (0, 0), self.render_text[self.page_number], size = self.font.size)
 
     def run(self):
+        self.draw(this.window)
         pygame.event.pump()
         event = pygame.event.wait() 
         if event == pygame.KEYDOWN:
@@ -515,13 +515,14 @@ class entity(moveable):
         self.__persuasion = 0
         self.__damage_taken = 0 
         self.__stats_needs_update = True
-        self.__dying_message = "..."
-        if 'dying_message' in kwargs:
-            self.__dying_message = kwargs['dying_message']
+        self.__losing_message = "..."
+        if 'losing_message' in kwargs:
+            self.__losing_message = kwargs['losing_message']
 
-        self.save_vars += ['__moves', '__inventory', '__equipped', '__basestat', '__dying_message' ]
-        self.arg_vars = [ '_imagename', 'pos', '__basestat' ]
-        self.kwarg_vars = ['__dying_message']
+        self.save_vars += ['__moves', '__inventory', '__equipped', '__basestat', '__losing_message' ]
+
+    def get_losing_message(self):
+        return self.__losing_message
 
     def get_imagename(self):
         return self._imagename
@@ -549,9 +550,9 @@ class entity(moveable):
 
     def is_dead(self):
         stats = self.get_stats()
-        return (stats["determination"] - self.__damage_taken <= 0 |
-                    self.persuasion > stats["determination"] + stats["focus"])
-
+        return(stats["determination"] - self.__damage_taken <= 0 |
+                self.persuasion > stats["determination"] + stats["focus"])
+    
     def get_stats(self):
         if self.__stats_needs_update:
             self.__update_stats()
@@ -694,23 +695,32 @@ class NPC(entity):
         entity.__init__(self, name, pos, basestat, **kwargs)
         self.__dialog = {}
         self.__func_dialog = {}
+        self.__player_battle_won = None
         self.save_vars.append('__dialog', '__func_dialog')
         self.args_vars = ['_imagename', 'pos', '__basestat']
         if 'battle_name' in kwargs:
             self.battle_name = kwargs['battle_name']
         else:
             self.battle_name = self._imagename
+
+    def _get_dialog(self):
+        if self.player_battle_won:
+            return self.__dialog["battle_lost"]
+        elif not self.player_battle_won:
+            return self.__dialog["battle_won"]
+        else:
+            return self.__dialog["no_battle"]
         
     def activate(self):
-        if self.__dialog.keys()[0] != "":
+        if self._get_dialog().keys()[0] != "":
             self.say(self.__dialog.keys()[0])
 
-        response = response_menu(self.__dialog.pop())
+        response = response_menu(self._get_dialog().pop())
         if response.__class__.__name__ == "dict":
             #dicts are only used in trading items.
             self.say(self.__func_dialog["trade"][this.onscreen_sprites["player"].buy(response)])
         elif response == "_attack_player":
-            this.Battle = battle(this.onscreen_sprites["player"], self)
+            self._player_battle_won = battle(this.onscreen_sprites["player"], self)
         else:
             self.speak(response)
 
@@ -768,13 +778,12 @@ class player(entity, multiprocessing.Process):
                     'focus' : 1,
                     'wit' : 10,
                     'thought' : 100
-                }, sounds = ['activate_beep'])
+                }, losing_message = "you lost...", sounds = ["activate_beep"] )
 
         this.player_menu = text_menu(self.get_player_menu_items()) 
         self.player_name = name
         self.battle_name = self.player_name
         self.save_vars.append('player_name')
-        self.args = [ 'player_name', 'pos' ] 
     
     def move(self, dx, dy):
         moveable.move(self, dx, dy)
@@ -832,11 +841,12 @@ def get_trade_menu(buyer, seller):
             "sell": buyer.get_inventory
         }, (0, 0)) 
 
-class battle_entity():
+class battle_player():
 
-    def __init__(self, entity):
+    def __init__(self, entity, enemy):
         self._entity = entity
         self.__func_queue = []
+        self.enemy = enemy
 
     def use_item(self, itemname):
         self.__func_queue.append({"func" : self._entity.use_item, "args" : itemname})
@@ -856,12 +866,8 @@ class battle_entity():
     def get_stats(self):
         return self._entity.get_stats()
 
-
-class battle_player(battle_entity):
-
-    def __init__(self, entity, enemy):
-        battle_entity.__init__(self, entity)
-        self.enemy = enemy
+    def get_losing_message(self):
+        return self._entity.get_losing_message()
 
     def get_item_menu_data(self):
         return menu_data(sorted(self._entity.get_inventory().keys()), self.use_item)
@@ -875,77 +881,86 @@ class battle_player(battle_entity):
                     "items" : self.get_item_menu_data
                 })
 
-class battle_NPC(battle_entity):
+class battle_NPC(sprite):
 
     def __init__(self, entity, pos):
-        battle_entity.__init__(self, entity)
-        self.battle_sprite = sprite(entity.get_imagename() + "_battle", pos, battle = True)
-        self.enemy = this.sprites["player"]
+        self._entity = entity
+        self.sprite.__init__(self, entity.get_imagename() + "_battle", pos, battle = True)
 
-    def get_what_do_next(self):
+    def do_attack(self):
         stats = self.get_stats()
-
         if stats["determination"] < 25:
             health_items = {}
             if len(self.entity.get_inventory()) != 0:
                     for item in self._entity.get_inventory():
                         if item["type"] == "health":
                             health_items[item["potency"]] = item["name"]
-                    self.entity.use_item(health_items[sorted(health_items.keys())[-1]])
+                    self._entity.use_item(health_items[sorted(health_items.keys())[-1]])
         else:
             moves = self._entity.get_moves()
-            self._entity.use_move(moves[random.randrange(len(moves))], this.sprite["player"])
+            self._entity.use_move(moves[random.randrange(len(moves))], this.sprites["player"])
+            
+    def get_losing_message(self):
+        return self._entity.get_losing_message()
                
 class battle(multiprocessing.Process):
 
     def __init__(self, player, npc):
         multiprocessing.Process.__init__(self)
-        self.npc = battle_NPC(npc, (0,0))
+        this.battle_npc = battle_NPC(npc, (0,0))
         self.player = battle_entity(player, npc)
 
         calc_pos = lambda winx, objx: winx/2 - objx/2
         self.npc.set_pos((clac_pos(this.window.get_width(), 
                 self.npc.rect.right),
-                    calc_pos(this.window.get_height(), self.entity1.rect.bottom)))
+                    calc_pos(this.window.get_height(), self.npc.rect.bottom)))
 
         if self.player.get_stats["speed"] > self.npc.get_stats["speed"]:
             self.__player_turn= True
         else:
             self.__player_turn= False
 
-        this.set_background("battle")
+        this.set_background("battle")   
         self.start()
     
     def get_player(self):
         return self.player
 
     def get_npc(self):
-        return self.npc
+        return this.battle_npc
 
     def battle_end(self):
-        if self.npc.is_dead() | self.player.is_dead():
-            for item in self.npc._entity.get_inventory():
-                self.player._entity.add_to_inventory(item)
-            this.inbattle = False
+        if this.battle_npc.is_dead()| self.player.is_dead():
+            transfer_inventory = lambda e1 , e2 for item in e2._entity.get_inventory(): e1.add_to_inventory(item)
+            if this.battle_npc.is_dead():
+                 transfer_inventory(self.player, this.battle_npc)
+                 this.battle.box.say(this.battle_npc.get_losing_message())
+            else:
+                 transfer_inventory(this.battle_npc, self.player)
+                 this.battle.box.say(self.player.get_losing_message())
             self.terminate()
+            this.inbattle = False
+            del this.battle_npc
+            self.__del__()
+            return True
         return False
 
     def run(self):
         if not self.battle_end(): 
             if  self.__player_turn & self.player.ready():
                 self.player.do_queued()
-            elif not self.__player_turn & self.npc.ready():
-                self.npc.get_what_do_next()
-                self.npc.do_queued()
+            elif not self.__player_turn:
+                self.npc.do_attack()
 def update():
-    this.onscreen_sprites.clear(this.background)
-    this.onscreen_sprites.update(this.data)
-    this.onscreen_sprites.draw(this.window)
-
     if not this.inbattle:
+        this.onscreen_sprites.clear(this.background)
+        this.onscreen_sprites.update(this.data)
+        this.onscreen_sprites.draw(this.window)
         this.textbox.draw(this.window)
         this.player_menu.draw(this.window)
     else:
+        this.window.clear(this.background)
+        this.window.blit(this.battle_npc)
         this.battlebox.draw(this.window)
 
     pygame.display.update()
