@@ -1065,23 +1065,18 @@ def __init__():
     this.data_sprites = {}
     this.onscreen_sprites = LayeredDirtyDict()
 
-    try:
-        pygame.mixer.init()
-        this.background_music = pygame.mixer.Channel(0)
-        this.background = None
-    finally:
-        print("no audio device, no audio")
+
+    #pygame.mixer.init()
+    #this.background_music = pygame.mixer.Channel(0)
+    this.background = None
 
 
     try:
       data = json.load(open("save.json"))
-      this.data_sprites = data["sprites"]
-      this.settings.load(data["setting"])
-    except (OSError, IOError):
+    except (OSError, IOError, FileNotFoundError):
         try:
             items = object_loader.load_objects("items.json")
             moves = object_loader.load_objects("moves.json")
-
         except (OSError, IOError):
             print("cannot load items.json or moves.json, Fatal Error. Exiting")
             sys.exit(404)
@@ -1105,6 +1100,8 @@ def __init__():
             for name, sprite in sprites:
                 sprite['name'] = name
                 this.data_sprites[sprite['name']] = { 'classname': classname, 'vars': sprite }
-    print("wtf")
+    else:
+        this.data_sprites = data["sprites"]
+        this.settings.load(data["setting"])
 
 __init__()
