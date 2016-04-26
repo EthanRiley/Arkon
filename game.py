@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import multiprocessing, random, time, collections, sys, json, pygame, os, re
-import object_loader, data
+import object_loader, game_data
 
 #(0, 0) is top left corner in pygame.
 
@@ -77,7 +77,7 @@ class sprite(pygame.sprite.DirtySprite):
 
         if 'sounds' in sorted(kwargs.keys()):
             self.sounds = this.data.sounds.get_data_dict(kwargs['sounds'])
-            self.sound_names = kwargs['sound_names']
+            self.sound_names = kwargs['sounds']
         else:
             self.sound_names = []
 
@@ -109,8 +109,8 @@ class sprite(pygame.sprite.DirtySprite):
                 'classname' :  self.__class__.__name__ }
 
     def __del__(self):
-        if self.__class__.__name__ not in this.sprite_class_args:
-            this.sprite_class_args[self.__class__.__name__] = self.class_arg_data()
+        if self.__class__.__name__ not in this.sprite_classes_args:
+            this.sprite_classes_args[self.__class__.__name__] = self.class_arg_data()
 
         this.data_sprites[self._imagename] = self.save_data()
     
@@ -151,7 +151,7 @@ class settings:
     def load_data_sprite(self, sprite):
         def get_data_args(sprite, argtype):
                 args = subset_dict_from_array(sprite["vars"], 
-                    this.sprite_class_args[sprite["classname"]][argtype]).values()
+                    this.sprite_classes_args[sprite["classname"]][argtype]).values()
                 for arg in args:
                     sprite.pop(arg)
                 return sorted(args.values())
@@ -173,12 +173,14 @@ class settings:
                                         
         this.set_background(setting_name)
 
-        i = 0
-        for key in self.settings[setting_name]["doors"].keys():
-            i += 1
-            Door = door(position(self.settings[setting_name]["doors"][key]["pos"]),
-                        key)
-            this.onscreen_sprites.add("door_" + str(i), Door)
+        for key, val in self.settings[setting_name]["doors"]:
+            if val["imagename"] == "":
+                val["imagename"] = "door"
+
+            Door = door(position(val["pos"]),
+                        key, imagename = val["imagename"])
+
+            this.onscreen_sprites.add("door_to_" + key , Door)
 
         self.__current_setting = setting_name
 
@@ -721,6 +723,11 @@ class NPC(entity):
         else:
             return self.__dialog["no_battle"]
 
+    def move_to(self, sprite_name):
+        pos_to = this.onscreen_sprites[sprite_name].get_pos()
+        pos_from = self.get_pos()
+        self.move(pos_from.x - pos_to.x - 1, pos_from.y - pos_to.y - 1 )
+
     def parse_dialog(self, dialog):
         if dialog != None:
             if dialog.__class__.__name__ == 'dict':
@@ -730,6 +737,10 @@ class NPC(entity):
                 this.onscreen_sprites["player"].add_to_inventory(re.match('_give_item (\w+)').group(1))
             elif '_give_move' in dialog:
                 this.onscreen_sprites["player"].add_move(re.match('_give_move (\w+)').group(1))
+            elif '_move_to' in dialog:
+                self.move_to(re.match('_move_to (\w+)').group(1))
+            elif '_move_player_to' in dialog:
+                this.onscreen_sprites["player"].move_to(re.match('_move_to (\w+)').group(1))
             elif response == "_trade":
                 text_menu(self._get_sell_menu_data, (0,0))
             elif response == "_attack_player":
@@ -946,7 +957,9 @@ class battle(multiprocessing.Process):
 
     def battle_end(self):
         if this.battle_npc.is_dead()| self.player.is_dead():
-            transfer_inventory = lambda e1 , e2 for item in e2._entity.get_inventory(): e1.add_to_inventory(item)
+            def transfer_inventory(e1, e2):
+                for item in e2._entity.get_inventory(): e1.add_to_inventory(item)
+
             if this.battle_npc.is_dead():
                  transfer_inventory(self.player, this.battle_npc)
                  this.battle.box.say(this.battle_npc.get_losing_message())
@@ -989,11 +1002,11 @@ def save_data():
 def start_screen():
     this.text_box.say("""Press ANY key.""")
     this.text_box.say(""" thank you for accepting our not so binding agreement for you to play this game.
-                            here is now a BIG DISCLAMER that this game is SATIRE and is a GAME(DUN-DUN-DUN!).""")
+here is now a BIG DISCLAMER that this game is SATIRE and is a GAME(DUN-DUN-DUN!).""")
 
     this.text_box.say("""hello. Welcome to the world of Earth(R) 
-                        You need a name, due to budjet cuts from the education system 
-                        we can only give you a few, choose well!""")
+You need a name, due to budjet cuts from the education system 
+we can only give you a few, choose well!""")
 
 
     this.response_menu({"bob":None, "bob": None, "bob": None })
@@ -1002,8 +1015,8 @@ def start_screen():
     this.text_box.say("STOP! POLITICAL CORRECTNESS POLICE IS HERE TO GIVE JUSTICE!", speaker = "???")
     this.text_box.say("Nooooooo! please Nooo.", speaker = "narrator")
     this.text_box.say("""YOU HAVE BEEN SECTIONED ON RESTRICTING HUMAN EXPRESSION.
-                        CHOOSE YOUR NAME BEFORE HE STARTS WRITING YOU DESTINY.
-                        PRESS ENTER ONCE YOU HAVE COMPLTED YOUR NAME.""",
+CHOOSE YOUR NAME BEFORE HE STARTS WRITING YOU DESTINY.
+PRESS ENTER ONCE YOU HAVE COMPLTED YOUR NAME.""",
                         speaker = "POLITICAL CORRECNTESS POLICE")
     key = ""
     name = ""
@@ -1020,18 +1033,30 @@ def start_screen():
     this.onscreen_sprites.add("player", Player(name, (0,0)))
 
     this.text_box.say("""ERM... HERE ILL HELP YOU UP, CALL ME RICHARD.
-                        USE YOU'RE ARROW KEYS TO MOVE,
-                        X TO OPEN THE MENU AND THE Z TO ACTIVATE THINGS
-                        WHATEVER THAT MEANS. 
-                        WEIRD THAT YOU CAME WITH AN OPERATION MANUAL""", speaker = "Richard")
-def init():
+USE YOU'RE ARROW KEYS TO MOVE,
+X TO OPEN THE MENU AND THE Z TO ACTIVATE THINGS
+WHATEVER THAT MEANS. 
+WEIRD THAT YOU CAME WITH AN OPERATION MANUAL""", speaker = "Richard")
+
+    this.text_box.say("""ha.. just kidding! you're the new guy who just moved in, 
+well yours is the one right in front of you, have a nice day!""", speaker = "Richard")
+
+def __init__():
+    this.window = pygame.display.set_mode([680, 480])
+    try:
+        this.data = game_data.game_data("data")
+        this.fonts = game_data.font_data(os.path.join("data", "fonts"))
+    except(OSError, IOError):
+        print("cannot load resources. exiting check data path.")
+        sys.exit(404)
 
     try:
-        this.data = data.game_data("data")
-        this.fonts = data.font_data(os.path.join("data", "fonts"))
-    finally:
-        print("cannot find resources, check data paths exist.")
+        this.sprite_classes_args = json.load(open("sprite_classes_args.json"))
+        this.settings = settings(json.load(open("settings.json")))
+    except(OSError, IOError):
+        print("cannot find the sprite_classes_args.json or settings.json file, Exiting.")
         sys.exit(404)
+
 
     this.textbox = text_box((0 , 0))
     this.textbox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.y))
@@ -1046,13 +1071,6 @@ def init():
     this.background = None
 
     try:
-        this.sprite_classes_args = json.load(open("sprite_classes_args.json"))
-        this.settings = settings(json.load(open("settings.json")))
-    finally:
-        print("cannot find the sprite_classes_args.json or settings.json file, Exiting.")
-        sys.exit(404)
-
-    try:
       data = json.load(open("save.json"))
       this.data_sprites = data["sprites"]
       this.settings.load(data["setting"])
@@ -1062,7 +1080,7 @@ def init():
             moves = object_loader.load_objects("moves.json")
 
         except (OSError, IOError):
-            print("cannot load object.json or settings.json, Fatal Error. Exiting")
+            print("cannot load items.json or moves.json, Fatal Error. Exiting")
             sys.exit(404)
 
         for sprite in json.load(open("npcs.json")):
@@ -1084,5 +1102,6 @@ def init():
             for name, sprite in sprites:
                 sprite['name'] = name
                 this.data_sprites[sprite['name']] = { 'classname': classname, 'vars': sprite }
+    print("wtf")
 
-    this.window = pygame.display.set_mode([680, 480])
+__init__()

@@ -1,0 +1,111 @@
+{
+	"overworld": {
+		"sprites_used":{
+				"Poor Richard" : [354, 200],
+				"Lucidia Bright": [266, 204],
+				"player": [320, 240]
+		},
+		"doors":{
+			"school-interior" : {
+				"pos": [408, 382],
+				"imagename": "school"
+			},
+			"shop-interior":{
+				"pos": [193, 380],
+				"imagename": "shop"
+			},
+			"house-interior":{
+				"pos":[99, 35],
+				"imagename": "house"
+			},
+			"house1-interior":{
+				"pos":[263, 31],
+				"imagename": "house1"
+			},
+			"house2-interior":{
+				"pos":[404, 44],
+				"imagename": "house2"
+			},
+			"moonlight-scene":{
+				"pos":[0, 106],
+				"imagename":""
+			}
+		}
+	},
+	"school-interior":{
+		"sprites_used":{
+			"player": [59, 83],
+			"Candara": [42, 86]
+		},
+		"doors":{
+			"overworld":{
+				"pos":[51, 89]
+			}
+		}
+	},
+	"house-interior":{
+			"sprites_used":{
+				"player": [59, 83],
+				"Poor Richard": [42, 86],
+				"table":[83, 69],
+				"house-wall": [0, 0]
+			},
+			"doors":{
+				"overworld":{
+					"pos":[51, 89]
+				}
+			}
+	},
+	"house1-interior":{
+				"sprites_used":{
+					"player": [59, 83],
+					"table":[83, 69],
+					"house-wall": [0, 0]
+				},
+				"doors":{
+					"overworld":{
+						"pos":[51, 89]
+					}
+				}
+	},
+	"house2-interior":{
+				"sprites_used":{
+					"player": [59, 83],
+					"Lucidia Bright": [76, 30],
+					"Cooper Black": [88, 24],
+					"table":[83, 69],
+					"house-wall": [0, 0]
+				},
+				"doors":{
+					"overworld":{
+						"pos":[51, 89]
+					}
+				}
+	},
+	"shop-interior":{
+		"sprites_used":{
+			"player":[59, 83],
+			"Eras Bold": [39, 24]
+		},
+		"doors":{
+			"overworld":{
+				"pos":[51, 89]
+			}
+		}
+	},
+	"moonlight-scene":{
+		"sprites_used":{
+			"player":[304, 130],
+			"Lucidia Bright":[243, 134],
+			"Cooper Black": [271, 136]
+		},
+		"doors":{
+			"overworld":{
+				"pos":[319, 149],
+				"imagename": ""
+			}
+		}
+	}
+}
+
+
