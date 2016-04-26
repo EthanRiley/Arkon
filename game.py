@@ -75,11 +75,11 @@ class sprite(pygame.sprite.DirtySprite):
         pygame.sprite.Sprite.__init__(self)
         self.sounds = [] 
 
-        if 'sounds' in sorted(kwargs.keys()):
-            self.sounds = this.data.sounds.get_data_dict(kwargs['sounds'])
-            self.sound_names = kwargs['sounds']
-        else:
-            self.sound_names = []
+        #if 'sounds' in sorted(kwargs.keys()):
+        #    self.sounds = this.data.sounds.get_data_dict(kwargs['sounds'])
+        #    self.sound_names = kwargs['sounds']
+        #else:
+        #    self.sound_names = []
 
         self._imagename = imagename
 
@@ -132,7 +132,7 @@ class door(sprite):
         self.save_vars.append('setting_to')
 
     def activate(self):
-        self.sounds['door_open'].play()
+        #self.sounds['door_open'].play()
         this.settings.load(self.setting_to)
 
 class item(sprite):
@@ -222,7 +222,7 @@ class moveable(sprite):
                     rect1 = sprite.get_rect()
                     if rect1.left <= rect.right + dx & rect1.top >= rect.bottom + dy:
                         if rect1.right >= rect.left + dx & rect1.bottom <= rect.top + dy:
-                            self.sounds["collide_beep"].play()
+                            #self.sounds["collide_beep"].play()
                             self.moving = False
                             if sprite.__class__.__name__ == "door":
                                 sprite.activate()
@@ -266,8 +266,8 @@ class basic_text_box(multiprocessing.Process):
         if 'sounds' in sorted(kwargs.keys()):
             sounds += kwargs['sounds']
 
-        self.text_box = pygame.Sprite()
-        self.text_box.image = pygame.Surface([self.rect.x - 2, self.rect.y - 2])
+        self.text_box = pygame.sprite.Sprite()
+        self.text_box.image = pygame.Surface([self.rect.width - 2, self.rect.height - 2])
         self.text_box.rect = self.text_box.image.get_rect()
         self.text_box.image.fill(0)
         self.text_box.rect.x = pos.x - 2
@@ -275,7 +275,7 @@ class basic_text_box(multiprocessing.Process):
 
         self.visible = False
 
-    def set_pos(self, x, y):
+    def set_pos(self, pos):
         self.border.rect.x = pos.x
         self.border.rect.y = pos.y
         self.text_box.rect.x = pos.x - 2
@@ -333,7 +333,7 @@ class basic_text_box(multiprocessing.Process):
         self.start()
 
     def hide(self):
-        self.text_box.sounds["activate_beep"].play()
+        #self.text_box.sounds["activate_beep"].play()
         self.visible = False
         self.terminate()
 
@@ -344,7 +344,7 @@ class text_box(basic_text_box):
         self.pages_to_render = multiprocessing.Queue()
 
     def activate(self, **kwargs):
-        self.border.sounds["activate_beep"].play()
+        #self.border.sounds["activate_beep"].play()
         if len(pages_to_render) > 0:
             self.txt_data = self.pages_to_render.get()
             if 'func' in sorted(kwargs):
@@ -402,7 +402,7 @@ class text_menu(basic_text_box):
         self.selected = None
 
     def select(self, index):
-        self.border.sounds["select_beep"].play()
+        #self.border.sounds["select_beep"].play()
         self.selected_index = index % len(self.items.keys())
 
         selected = self.items.keys()[index]
@@ -466,7 +466,7 @@ class text_menu(basic_text_box):
                 self.render()   
 
     def previous_menu(self):
-        self.text_box.sounds["back_beep"].play()
+        #self.text_box.sounds["back_beep"].play()
         if self.previous != None:
             self.items = self.previous
             self.previous = None
@@ -823,7 +823,7 @@ class player(entity, multiprocessing.Process):
         return moveable.move(self, dx, dy, this.background.scroll)
 
     def activate_sprite(self, sprite):
-        self.sounds['activate_beep'].play()
+        #self.sounds['activate_beep'].play()
         if sprite.__class__.__name__ == "item":
              self.add_to_inventory(sprite.item_data)
              this.text_box("picked up some "+ sprite.item_data["name"])
@@ -840,8 +840,8 @@ class player(entity, multiprocessing.Process):
                     self.facing == "left" & rect1.x + 3 >= rect.x |
                     self.facing == "right" & rect1.x -3 <= rect.x ):
                 self.activate_sprite()
-            else:
-                self.sounds['collide_beep'].play()
+            #else:
+                #self.sounds['collide_beep'].play()
 
     def get_pos(self):
         rect = self.get_rect()
@@ -1043,12 +1043,10 @@ well yours is the one right in front of you, have a nice day!""", speaker = "Ric
 
 def __init__():
     this.window = pygame.display.set_mode([680, 480])
-    try:
-        this.data = game_data.game_data("data")
-        this.fonts = game_data.font_data(os.path.join("data", "fonts"))
-    except(OSError, IOError):
-        print("cannot load resources. exiting check data path.")
-        sys.exit(404)
+ 
+    this.data = game_data.game_data("data")
+    this.fonts = game_data.font_data(os.path.join("data", "fonts"))
+
 
     try:
         this.sprite_classes_args = json.load(open("sprite_classes_args.json"))
@@ -1058,17 +1056,22 @@ def __init__():
         sys.exit(404)
 
 
-    this.textbox = text_box((0 , 0))
+    this.textbox = text_box(position(0 , 0))
     this.textbox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.y))
 
-    this.battlebox = text_box((0 , 0))
+    this.battlebox = text_box(position(0 , 0))
     this.battlebox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.bottom))
 
     this.data_sprites = {}
     this.onscreen_sprites = LayeredDirtyDict()
 
-    this.background_music = pygame.mixer.Channel(0)
-    this.background = None
+    try:
+        pygame.mixer.init()
+        this.background_music = pygame.mixer.Channel(0)
+        this.background = None
+    finally:
+        print("no audio device, no audio")
+
 
     try:
       data = json.load(open("save.json"))
