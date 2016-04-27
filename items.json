@@ -1,15 +1,10 @@
 {
-	"default": { 
-		"consumable": true,
-		"equipabble": false,
-		"move": false
+	"default":{ 
+			"consumable": true,
+			"equipabble": false,
+			"move": false
 	},
 	"types" : [
-		{
-			"type" : "move",
-			"move" : true,
-			"stun_effect": 0
-		},
 		{
 			"type": "equipabble",
 			"equipabble": true,
@@ -54,17 +49,20 @@
 		{
 			"name" : "wisky",
 			"potency": 5,
-			"description": "garenteed to get you drunk."
+			"description": "garenteed to get you drunk.",
+			"price": 25
 		},
 		{
 			"name" : "beer",
 			"potency": 2,
-			"description": "do not consume between 2 and 3 AM."
+			"description": "do not consume between 2 and 3 AM.",
+			"price": 10
 		},
 		{
 			"name" : "red wine",
 			"potency": 2,
-			"description": "useful for romantic dinners."
+			"description": "useful for romantic dinners.",
+			"price": 15
 		}
 	],
 	
@@ -72,17 +70,20 @@
 		{
 			"name": "veggie smoothie",
 			"potency": 2,
-			"description": "it's healthy 'cus it's got vegatbles!"
+			"description": "it's healthy 'cus it's got vegatbles!",
+			"price": 5
 		},
 		{
 			"name": "chocolate",
 			"potency": 1,
-			"description": "were not sure how this heals you, just take dialy mirrors word for it."
+			"description": "were not sure how this heals you, just take dialy mirrors word for it.",
+			"price": 10
 		},
 		{
 			"name": "carrot",
 			"potency": 3,
-			"description": "yup it's a carrot, alright."
+			"description": "yup it's a carrot, allright.",
+			"price": 20
 		}
 	],
 
@@ -90,17 +91,20 @@
 		{
 			"name": "coffie",
 			"potency": 2,
-			"description": "a getup 'n' go hot beverage."
+			"description": "a getup 'n' go hot beverage.",
+			"price": 16
 		},
 		{
 			"name": "tea",
 			"potency": 1,
-			"description": "a hot drink which the britsh are famed for drinking"
+			"description": "a hot drink which the britsh are famed for drinking",
+			"price": 8
 		},
 		{
 			"name": "energy drink No 3000",
 			"potency": 5,
-			"description": "a drink with so much caffine that it makes you think that time has slowed down around you"
+			"description": "a drink with so much caffine that it makes you think that time has slowed down around you",
+			"price": 23
 		}
 	],
 	
@@ -108,17 +112,20 @@
 		{
 			"name": "liquid joy",
 			"potency": 4,
-			"description" : "make you smile."
+			"description" : "makes you smile.",
+			"price": 34
 		},
 		{
 			"name": "hot chocolate",
 			"potency": 2,
-			"description": "a choclatey hot beverage."
+			"description": "a choclatey hot beverage.",
+			"price": 10
 		},
 		{
 			"name": "herbal tea",
 			"potency": 1,
-			"description": "the herbality gives you hope to never taste it again."
+			"description": "the herbality gives you hope to never taste it again.",
+			"price": 4
 		}
 	],
 	
@@ -126,7 +133,8 @@
 		{
 			"name": "holy water of TEM.",
 			"potency": 20,
-			"description": "use on your own velition"
+			"description": "use on your own velition",
+			"price": 50
 		}
 	],
 	"equipabble":[
@@ -136,14 +144,16 @@
 			"buffs":{
 				"hope": 30,
 				"focus": 50
-			}
+			},
+			"price": 30
 		},
 		{
 			"name": "book",
 			"description" : "zzz...",
 			"buffs":{
 				"focus":  25
-			}
+			},
+			"price": 25
 		},
 		{
 			"name": "headphones",
@@ -151,7 +161,8 @@
 			"buffs":{
 				"focus": 20,
 				"control": 10
-			}
+			},
+			"price": 20
 		},
 		{
 			"name" : "darth vader armor",
@@ -159,14 +170,16 @@
 			"buffs":{
 				"control": 15,
 				"focus" : 5
-			}
+			},
+			"price": 10
 		},
 		{
 			"name" : "clothes",
 			"description" : "you wear them.",
 			"buffs":{
 				"control": 5
-			}
+			},
+			"price": 5
 		},
 		{
 			"name" : "nice clothes",
@@ -174,7 +187,8 @@
 			"buffs":{
 				"control": 7,
 				"hope" : 5
-			}
+			},
+			"price": 10
 		} 
 	]
 }

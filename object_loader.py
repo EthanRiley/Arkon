@@ -22,6 +22,7 @@ def get_types(Json):
         complete_type.update(Type)
         types[name] = complete_type
     Json.pop("types")
+    Json.pop("default")
     return types
 
 def load_objects(filename):
@@ -31,11 +32,10 @@ def load_objects(filename):
     objects = {}
     for Type in Json:
         for instance in Json[Type]:
-            print(types[Type])
             instance.update(types[Type])
             if effect_funcs != None:
                 instance["effect"] = effect_funcs.setdefault(instance["type"],
-                        None)
+                        None) 
 
             objects[instance["name"]] = instance
     return objects

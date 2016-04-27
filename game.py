@@ -2,6 +2,7 @@
 
 import multiprocessing, random, time, collections, sys, json, pygame, os, re
 import object_loader, game_data
+from pygame.locals import *
 
 #(0, 0) is top left corner in pygame.
 
@@ -10,7 +11,7 @@ this = sys.modules[__name__]
 position = collections.namedtuple("position", ['x', 'y'])
 
 def subset_dict_from_array(dict1, array):
-    return { k : dict1[k] for k in dict1.keys & array } 
+    return { k : dict1[k] for k in array } 
 
 def merge_arrays_to_dict(key_array, var_array):
     return { k : v for k in key_array for v in var_array }
@@ -36,7 +37,7 @@ class LayeredDirtyDict():
         return sprite
 
     def __getitem__(self, key):
-        return _get_dict()[key]
+        return self._get_dict()[key]
 
     def __setitem__(self, key, val):
         self.add(key, val)
@@ -110,6 +111,7 @@ class sprite(pygame.sprite.DirtySprite):
 
     def __del__(self):
         if self.__class__.__name__ not in this.sprite_classes_args:
+            print(self.save_vars)
             this.sprite_classes_args[self.__class__.__name__] = self.class_arg_data()
 
         this.data_sprites[self._imagename] = self.save_data()
@@ -178,8 +180,7 @@ class settings:
                 val["imagename"] = "door"
 
             Door = door(position(val["pos"]),
-                        key, imagename = val["imagename"])
-
+                        key, imagename = val["imagename"]) 
             this.onscreen_sprites.add("door_to_" + key , Door)
 
         self.__current_setting = setting_name
@@ -284,11 +285,8 @@ class basic_text_box(multiprocessing.Process):
     def get_pos(self):
         return position(self.border.rect.x, self.border.rect.y)
 
-    def get_pos(self):
-        return position(self.border.rect.x, self.border.rect.y)
-
     def word_wrap(self, text, font_name, font_size):
-        font = this.font.get_data(font_name)
+        font = this.fonts.get_data(font_name)
         textbox_x = self.text_box.image.get_rect().x
         if textbox_x < font.get_rect(text,
                 size = font_size).x:
@@ -304,8 +302,8 @@ class basic_text_box(multiprocessing.Process):
 
     def page_wrap(self, text, font_name, font_size):
         font = this.fonts.get_data(font_name)
-        y = self.textbox.image.get_rect().y
-        if font.get_rect(text, size = font_size).y < y:
+        y = self.text_box.image.get_rect().height
+        if font.get_rect(text, size = font_size).y > y:
             page_text = ""
             pages = []
             for line in text.split('\n'):
@@ -317,16 +315,16 @@ class basic_text_box(multiprocessing.Process):
                     page_text = ""
             return pages
         else:
-            return text
+            return [text]
 
-    def draw_func(self, surface):
+    def draw_func(self):
         pass
     
     def draw(self, surface):
-        if len(self.text_to_render) != 0 | self.visible:
-          surface.blit(self.text_box.image)
-          surface.blit(self.border.image)
-          self.draw_func(self, surface)
+        if self.visible:
+          surface.blit(self.border.image, self.get_pos())
+          surface.blit(self.text_box.image, self.get_pos())
+          self.draw_func()
 
     def show(self):
         self.visible = True
@@ -337,15 +335,27 @@ class basic_text_box(multiprocessing.Process):
         self.visible = False
         self.terminate()
 
+font_data = collections.namedtuple('font_data', ['size', 'name'])
+text_data = collections.namedtuple('text_data', ['text', 'font_size', 'font_name'])
+
 class text_box(basic_text_box):
 
     def __init__(self, pos):
         basic_text_box.__init__(self, pos, "text_box")
         self.pages_to_render = multiprocessing.Queue()
+        self.new = True
+ 
+    def show(self):
+        this.text_box_visible = True
+        basic_text_box.show(self)
+
+    def hide(self):
+        this.text_box_visible = False
+        basic_text_box.hide(self)
 
     def activate(self, **kwargs):
         #self.border.sounds["activate_beep"].play()
-        if len(pages_to_render) > 0:
+        if not self.pages_to_render.empty():
             self.txt_data = self.pages_to_render.get()
             if 'func' in sorted(kwargs):
                 kwargs['func']()
@@ -353,18 +363,23 @@ class text_box(basic_text_box):
         else:
             self.hide()
 
-    def draw_func(self, surface):
-          this.fonts.get_data(self.txt_data.font_name).render_to(self.text_box,
+    def draw_func(self):
+          this.fonts.get_data(self.txt_data.font_name).render_to(self.text_box.image,
                   (0, 0), self.txt_data.text, size = self.txt_data.font_size)
 
     def run(self):
-        if not this.text_menu.visible:
+        if self.new:
+            self.activate()
+            self.new = False
+        self.draw(this.window)
+        if not this.text_menu_visible:
             pygame.event.pump()
             if pygame.event.wait() == pygame.KEYDOWN: 
                 self.activate()
-
+   
     def say(self, text, **kwargs):
-        text = text.replace("[player_name]", this.onscreen_sprites["player"].player_name)
+        if "[player_name]" in text:
+            text = text.replace("[player_name]", this.onscreen_sprites["player"].player_name)
 
         font = None
         if 'font' not in sorted(kwargs.keys()):
@@ -379,11 +394,19 @@ class text_box(basic_text_box):
 
         for page in self.page_wrap(text, font.name, font.size):
             self.pages_to_render.put(text_data(page, font.size, font.name))
-
-        self.activate()
-        self.show()
+        
+        if not self.visible:
+            self.show()
 
 class text_menu(basic_text_box):
+
+    def hide(self):
+        this.text_menu_visible = False
+        basic_text_box.hide(self)
+
+    def show(self):
+        this.text_menu_visible = True
+        basic_text_box.show(self)
 
     def render(self):
         self.text = ""
@@ -393,23 +416,29 @@ class text_menu(basic_text_box):
             self.text += "    " + item_name + self.end_formatting
 
         if self.end_formatting != '\n':
-            self.text = self.word_wrap(text, self.font.name, self.font.size)
+            self.text = self.word_wrap(self.text, self.font.name, self.font.size)
 
         self.render_text = self.page_wrap(self.text, self.font.name, self.font.size)
+        self.rows_in_page = len(sorted(self.items.keys()))/len(self.render_text)
 
     def __deselect(self, item_name):
-        self.text[self.render_text.find(item_name) - 2] = ' '
-        self.selected = None
+        textlist = sorted(self.text)
+        textlist[self.render_text.find(item_name) - 2] = ' '
+        self.text = str(textlist)
+        self.selected = "" 
 
     def select(self, index):
         #self.border.sounds["select_beep"].play()
         self.selected_index = index % len(self.items.keys())
 
-        selected = self.items.keys()[index]
-        if self.selected != None & selected != self.selected:
+        selected = sorted(self.items.keys())[index]
+        if (self.selected != "")&(selected != self.selected):
             self.__deselect(selected)
 
-        self.text[self.text.find(selected) - 2] = '>'
+        textlist = sorted(self.text)
+        textlist[self.text.find(selected) - 2] = '>'
+        self.text = str(textlist)
+
         self.selected = selected
         self.page_number = int(self.text.find(selected)/self.rows_in_page)
 
@@ -434,11 +463,9 @@ class text_menu(basic_text_box):
 
         self.render()
 
-        self.rows_in_page = len(self.render_text)/len(self.page_wrap(self.render_text,
-            Font_data.name, Font_data.size))
 
+        self.selected = "" 
         self.select(0)
-        self.save_vars += ['end_formatting', 'font', 'items']
         
     def select_next(self):
         self.select(self.selected_index+1)
@@ -475,8 +502,8 @@ class text_menu(basic_text_box):
             self.terminate()
             self.hide()
 
-    def draw_func(self, surface):
-        this.fonts.get_data(self.font.name).render_to(self.text_box,
+    def draw_func(self):
+        this.fonts.get_data(self.font.name).render_to(self.text_box.image,
                 (0, 0), self.render_text[self.page_number], size = self.font.size)
 
     def run(self):
@@ -685,8 +712,8 @@ class entity(moveable):
         self.__stats_needs_update = True
 
 def response_menu(items):
-    responsebox = text_menu(items, (0, 0), border = "text_box", end_formatting = '')
-    responsebox.set_pos(0, this.window.get_height() - this.textbox.border.rect.y )
+    responsebox = text_menu(items, position(0, 0), border = "text_box", end_formatting = '')
+    responsebox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.y))
     responsebox.show()
     return responsebox
 
@@ -696,11 +723,12 @@ class NPC(entity):
         entity.__init__(self, name, pos, basestat, **kwargs)
         self.__dialog = {}
         self.__player_battle_won = None
+        self.__repeat_dialog = {'...':''}
         if 'battle_name' in kwargs:
             self.battle_name = kwargs['battle_name']
         else:
             self.battle_name = self._imagename
-        self.save_vars.append('__dialog', '__func_dialog')
+        self.save_vars.append('__dialog', '__repeat_dialog')
         self.args_vars = ['_imagename', 'pos', '__basestat']
 
     def sell(self, item_to_sell):
@@ -714,14 +742,15 @@ class NPC(entity):
 
     def _get_sell_menu_data(self):
         return self.get_iventory_menu_data(do_func=self.sell)
-                    
+   
     def _get_dialog(self):
+        get_setting_dict  = lambda dict: dict.getdefault(dict[this.settings.get_current_setting()], dict["default"])
         if self.player_battle_won:
-            return self.__dialog["battle_lost"]
+            return get_setting_dict(self.__dialog["battle_lost"])
         elif not self.player_battle_won:
-            return self.__dialog["battle_won"]
+            return get_setting_dict(self.__dialog["battle_won"])
         else:
-            return self.__dialog["no_battle"]
+            return get_setting_dict(self.__dialog["no_battle"])
 
     def move_to(self, sprite_name):
         pos_to = this.onscreen_sprites[sprite_name].get_pos()
@@ -729,7 +758,7 @@ class NPC(entity):
         self.move(pos_from.x - pos_to.x - 1, pos_from.y - pos_to.y - 1 )
 
     def parse_dialog(self, dialog):
-        if dialog != None:
+        if dialog != "" | dialog != None:
             if dialog.__class__.__name__ == 'dict':
                 self.dialog_dict = dialog
                 response_menu({ k : self.menu_dialog for k in dialog.keys()})
@@ -752,11 +781,15 @@ class NPC(entity):
         self.parse_dialog(self.dialog_dict[dialog])
 
     def activate(self):
-        if self._get_dialog().keys()[0] != "":
-            self.say(self.__dialog.keys()[0])
+        if len(sorted(self.__get_dialog.keys())) != 0:
+            if sorted(self._get_dialog().keys()[0]) != "":
+                self.say(sorted(self.__dialog.keys())[0])
             
-        self.parse_dialog(self._get_dialog().pop())
-
+            self.parse_dialog(self._get_dialog().pop())
+        else:
+            key = sorted(self.__repeat_dialog.keys()[0])
+            self.say(key)
+            self.parse_dialog(self.__repeat_dialog[key])
 
 def menu_data(self, data_get, var):
     output = {}
@@ -767,9 +800,6 @@ def menu_data(self, data_get, var):
     return output
  
 class player(entity, multiprocessing.Process):
-
-    def get_inventory_menu_data(self):
-        return menu_data(sorted(self.get_inventory().keys()), self.use_item)
 
     def get_equipped_menu_data(self):
         return menu_data(sorted(self.get_equipped().keys()), self.unequip)
@@ -782,19 +812,29 @@ class player(entity, multiprocessing.Process):
 
         return output
    
-    def is_sure_dialog(self, if_sure):
-        this.textbox.say("are you sure?", self.font.name, self.font.size) 
+    def is_sure_dialog(self, if_sure, **kwargs):
+        if 'dialog' in kwargs:
+            this.textbox.say(kwargs['dialog'], self.font.name, self.font.size) 
+        else:
+            this.textbox.say("are you sure?", self.font.name, self.font.size) 
 
         def sure(*args):
             this.text_box.next_page()
             this.text_box.hide()
             return if_sure()
 
-        return {
+        return response_menu({
                     "yep" : sure, 
                     "nope": "previous"
-               }
-    
+            })
+
+    def item_description_menu(self, itemname):
+            self.is_sure_dialog(self.use_item, dialog = 'it says "' + self.__inventory[itemname]["description"] + '" eat it?"') 
+
+    def get_inventory_menu_data(self):
+               return menu_data(sorted(self.get_inventory().keys()), item_description_menu) 
+
+
     def get_player_menu_items(self, game):
         return {
                     "inventory" : self.get_inventory_menu_data,
@@ -898,8 +938,11 @@ class battle_player():
     def get_item_menu_data(self):
         return menu_data(sorted(self._entity.get_inventory().keys()), self.use_item)
     
+    def get_move_is_sure_disc(self, movename):
+        self.is_sure_dialog(self.use_movej, dialog = self._entity.get_moves()["discription"] + '". do you want to use this move? "') 
+    
     def get_move_menu_data(self):
-        return self.menu_data(self._entity.get_moves, self.use_move)
+        return menu_data(self._entity.get_moves, self.get_move_is_sure_disc)
 
     def get_battle_menu(self):
         return response_menu({
@@ -984,8 +1027,7 @@ def update():
         this.onscreen_sprites.clear(this.background)
         this.onscreen_sprites.update(this.data)
         this.onscreen_sprites.draw(this.window)
-        this.textbox.draw(this.window)
-        this.player_menu.draw(this.window)
+        this.player_menu.draw()
     else:
         this.window.clear(this.background)
         this.window.blit(this.battle_npc)
@@ -1000,54 +1042,58 @@ def save_data():
     })
 
 def start_screen():
-    this.text_box.say("""Press ANY key.""")
-    this.text_box.say(""" thank you for accepting our not so binding agreement for you to play this game.
+
+    this.textbox.say(""""Press ANY key.""")
+    this.textbox.say(""" thank you for accepting our not so binding agreement for you to play this game.
 here is now a BIG DISCLAMER that this game is SATIRE and is a GAME(DUN-DUN-DUN!).""")
 
-    this.text_box.say("""hello. Welcome to the world of Earth(R) 
+    this.textbox.say("""hello. Welcome to the world of Earth(R) 
 You need a name, due to budjet cuts from the education system 
 we can only give you a few, choose well!""")
 
 
     this.response_menu({"bob":None, "bob": None, "bob": None })
-    this.text_box.say("great Choice! ...")
+    this.textbox.say("great Choice! ...")
 
-    this.text_box.say("STOP! POLITICAL CORRECTNESS POLICE IS HERE TO GIVE JUSTICE!", speaker = "???")
-    this.text_box.say("Nooooooo! please Nooo.", speaker = "narrator")
-    this.text_box.say("""YOU HAVE BEEN SECTIONED ON RESTRICTING HUMAN EXPRESSION.
+    this.textbox.say("STOP! POLITICAL CORRECTNESS POLICE IS HERE TO GIVE JUSTICE!")
+    this.textbox.say("Nooooooo! please Nooo.")
+    this.textbox.say("""YOU HAVE BEEN SECTIONED ON RESTRICTING HUMAN EXPRESSION.
 CHOOSE YOUR NAME BEFORE HE STARTS WRITING YOU DESTINY.
-PRESS ENTER ONCE YOU HAVE COMPLTED YOUR NAME.""",
-                        speaker = "POLITICAL CORRECNTESS POLICE")
+PRESS ENTER ONCE YOU HAVE COMPLTED YOUR NAME.""")
     key = ""
     name = ""
     while key != "return":
-       key = pygame.event.wait(KEYDOWN).name()
-       name += key
-       this.text_box.say(name)
+       event = pygame.event.wait()
+       if event == KEYDOWN:
+           key = event.name()
+           name += key
+           this.textbox.say(name)
 
-    this.text_box.say("oh so your name is " + name + ". I guess we could use that.", 
-            speaker = "narrator")
+    this.textbox.say("oh so your name is " + name + ". I guess we could use that.")
 
-    this.settings.load("start")
+    this.settings.load("overworld")
     
     this.onscreen_sprites.add("player", Player(name, (0,0)))
 
-    this.text_box.say("""ERM... HERE ILL HELP YOU UP, CALL ME RICHARD.
+    this.textbox.say("""ERM... HERE ILL HELP YOU UP, CALL ME RICHARD.
 USE YOU'RE ARROW KEYS TO MOVE,
 X TO OPEN THE MENU AND THE Z TO ACTIVATE THINGS
 WHATEVER THAT MEANS. 
-WEIRD THAT YOU CAME WITH AN OPERATION MANUAL""", speaker = "Richard")
+WEIRD THAT YOU CAME WITH AN OPERATION MANUAL""", speaker = "Poor Richard")
 
-    this.text_box.say("""ha.. just kidding! you're the new guy who just moved in, 
-well yours is the one right in front of you, have a nice day!""", speaker = "Richard")
+    this.textbox.say("""ha.. just kidding! you're the new guy who just moved in, 
+well yours is the one right in front of you, have a nice day!""", speaker = "Poor Richard")
 
 def __init__():
+    this.text_menu_visible = False
+    this.text_box_visible= False
+
     this.window = pygame.display.set_mode([680, 480])
  
     this.data = game_data.game_data("data")
     this.fonts = game_data.font_data(os.path.join("data", "fonts"))
 
-
+    this.default_font = font_data(11, "default")
     try:
         this.sprite_classes_args = json.load(open("sprite_classes_args.json"))
         this.settings = settings(json.load(open("settings.json")))
@@ -1070,14 +1116,13 @@ def __init__():
     #this.background_music = pygame.mixer.Channel(0)
     this.background = None
 
-
     try:
       data = json.load(open("save.json"))
     except (OSError, IOError, FileNotFoundError):
         try:
-            items = object_loader.load_objects("items.json")
-            moves = object_loader.load_objects("moves.json")
-        except (OSError, IOError):
+            this.items = object_loader.load_objects("items.json")
+            this.moves = object_loader.load_objects("moves.json")
+        except (OSError, IOError, FileNotFoundError):
             print("cannot load items.json or moves.json, Fatal Error. Exiting")
             sys.exit(404)
 
@@ -1085,21 +1130,21 @@ def __init__():
            this.data_sprites[sprite["name"]] =  {
                 "classname":"NPC",
                 "vars" : {
-                    "__inventory" : subset_dict_from_array(this.items, sprite.items),
-                    "__equipped" : subset_dict_from_array(this.items, sprite.items),
-                    "__moves" : subset_dict_from_array(this.moves, sprite.moves),
+                    "__inventory" : subset_dict_from_array(this.items, sprite["items"]),
+                    "__equipped" : subset_dict_from_array(this.items, sprite["equipped"]),
+                    "__moves" : subset_dict_from_array(this.moves, sprite["moves"]),
                     "__dialog" : sprite["dialog"],
-                    "__func_dialog" : sprite["func_dialog"],
-                    "__baststat" : sprite["stats"],
-                    "pos" : sprite["pos"],
-                    "_imagename": sprite["name"]
+                    "__repeat_dialog": sprite["repeat_dialog"],
+                    "__basestat" : sprite["stats"],
+                    "_imagename": sprite["name"],
+                    "battle_name": sprite["battle_name"],
+                    "losing_message": sprite["losing_message"]
                 }
             }  
        
-        for classname, sprites in json.load(open("sprites.json")):
-            for name, sprite in sprites:
-                sprite['name'] = name
-                this.data_sprites[sprite['name']] = { 'classname': classname, 'vars': sprite }
+        for sprite in json.load(open("sprites.json")):
+                this.data_sprites[sprite['name']] = { 'classname': sprite["classname"], 'vars': sprite }
+        start_screen()
     else:
         this.data_sprites = data["sprites"]
         this.settings.load(data["setting"])

@@ -1,0 +1,87 @@
+[
+	{
+		"name": "Eras Bold",
+		"items": [
+			"wisky",
+			"beer",
+			"chocolate",
+			"darth vader armor",
+			"clothes",
+			"nice clothes",
+			"liquid joy",
+			"hot chocolate",
+			"herbal tea",
+			"headphones",
+			"coffie",
+			"tea",
+			"carrot",
+			"veggie smoothie"
+		],
+		"moves":[],
+		"equipped":[],
+		"repeat_dialog":{
+			"hi, do you wanna buy something?": "_trade"
+		},
+		"dialog":{},
+		"stats":{
+			"determination": 100,
+			"enlightenment": 50,
+			"focus": 15,
+			"hope": 25,
+			"control": 30
+		},
+		"losing_message": "dammit",
+		"battle_name": "Eras Bold"
+	},
+	{
+		"name": "Lucidia Bright",
+		"items":[],
+		"equipped":[],
+		"moves":[
+			"Form theory",
+			"Agape",
+			"mission statment",
+			"Libertarianism"
+		],
+		"stats":{
+			"determination": 200,
+			"enlightenment": 75,
+			"focus": 5,
+			"hope": 20,
+			"control": 5
+		},
+		"losing_message": "I.. Am.. Not.. Your.... ",
+		"battle_name": "la lune",
+		"dialog":{
+			"battle_lost":{
+				"moonlight-scene":{
+					"I don't think they're out here to hurts us, not theese": "nobodies harmed right?"
+				},
+				"default":{}
+			},
+			"battle_won":{
+				"moonlight-scene":{
+					"what.. did it just say?": "if not.. what are..."
+				},
+				"default":{}
+			},
+			"battle_none":{
+				"house2-interior":{
+					"me and richard are going on a walk do you want to come?": { "yup": "okay see you there!", "no thanks": "well if you carry on left, you'll find us."}
+				},
+				"overworld":{
+					"hi Im Lucidia, You Okay? it looked like you blacked out for a bit.":""
+				}
+			}
+		},
+		"repeat_dialog": { "..." : ""}
+	}
+]
+
+
+	
+
+
+
+
+

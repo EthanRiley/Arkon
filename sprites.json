@@ -1,0 +1,30 @@
+[
+	{
+		"name":"text_box",
+		"classname":"sprite",
+		"vars":{
+			"_imagename":"text_box"
+		}
+	},
+	{
+		"name":"sofa",
+		"classname": "sprite",
+		"vars":{
+			"_imagename":"sofa"
+		}
+	},
+	{
+		"name":"table",
+		"classname": "sprite",
+		"vars":{
+			"_imagename":"table"
+		}
+	},
+	{
+		"name": "text_menu",
+		"classname":"sprite",
+		"vars":{
+			"_imagename":"text_menu"
+		}
+	}
+]

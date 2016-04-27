@@ -1,12 +1,15 @@
 {
-	"default":{
-		"consumable": false,
-		"equipabble": false,
-		"move" : true,
-		"type" : "move",
-		"stun_effect": 0
-	},
-	"moves" : [
+	"default":{},
+	"types" : [
+		{
+			"consumable": false,
+			"equipabble": false,
+			"move" : true,
+			"type" : "move",
+			"stun_effect": 0
+		}
+	],
+	"move" : [
 		{
 			"name": "backup plan",
 			"description": "a last resort when all thought has ran out",
