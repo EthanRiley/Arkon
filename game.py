@@ -36,6 +36,9 @@ class LayeredDirtyDict():
         self.sprites.remove(sprite)
         return sprite
 
+    def keys(self):
+        return self.sprite_names
+    
     def __getitem__(self, key):
         return self._get_dict()[key]
 
@@ -68,7 +71,7 @@ class LayeredDirtyDict():
 
 def set_background(name):
     this.background = this.data.backgrounds.get_data(name)
-    self.background_music.play(this.data.sounds.get_data(name))
+    #self.background_music.play(this.data.sounds.get_data(name))
 
 class sprite(pygame.sprite.DirtySprite):
 
@@ -151,37 +154,42 @@ class settings:
         self.__current_setting = ""
 
     def load_data_sprite(self, sprite):
+
         def get_data_args(sprite, argtype):
                 args = subset_dict_from_array(sprite["vars"], 
-                    this.sprite_classes_args[sprite["classname"]][argtype]).values()
+                    this.sprite_classes_args[sprite["classname"]][argtype])
                 for arg in args:
-                    sprite.pop(arg)
-                return sorted(args.values())
+                    sprite["vars"].pop(arg)
+                return args
                 
-        args = get_data_args(sprite, "args")
+        args = list(get_data_args(sprite, "args").values())
         kwargs = get_data_args(sprite, "kwargs")
         sprite = eval(sprite["classname"]+"(*args, **kwargs)")
         sprite.load_save_data(sprite["vars"])
         return sprite
 
     def load(self, setting_name):
-        for sprite in this.onscreen_sprites.keys() & self.settings[setting_name]["sprites_used"]:
-            this.onscreen_sprites[sprite].set_pos(position(this.settings[setting_name]["sprites_used"][sprite]))
-            self.settings[setting_name]["sprites_used"].pop(sprite)
+        #for sprite in this.onscreen_sprites.keys() & self.settings[setting_name]["sprites_used"]:
+         #   this.onscreen_sprites[sprite].set_pos(position(this.settings[setting_name]["sprites_used"][sprite]))
+         #   self.settings[setting_name]["sprites_used"].pop(sprite)
             
-            
+
+        for sprite in self.settings[setting_name]["sprites_used"]:
+            this.data_sprites[sprite]["vars"]["pos"] = position(self.settings[setting_name]["sprites_used"][sprite][0], self.settings[setting_name]["sprites_used"][sprite][1])
+
+   
         this.onscreen_sprites.update({ k : self.load_data_sprite(this.data_sprites[k]) 
-                                        for k in self.settings[setting_name]["sprites_used"]})
+                                      for k in self.settings[setting_name]["sprites_used"]})
                                         
         this.set_background(setting_name)
 
-        for key, val in self.settings[setting_name]["doors"]:
-            if val["imagename"] == "":
-                val["imagename"] = "door"
+        #for key, val in self.settings[setting_name]["doors"]:
+       #     if val["imagename"] == "":
+       #         val["imagename"] = "door"
 
-            Door = door(position(val["pos"]),
-                        key, imagename = val["imagename"]) 
-            this.onscreen_sprites.add("door_to_" + key , Door)
+         #   Door = door(position(val["pos"]),
+        #                key, imagename = val["imagename"]) 
+         #   this.onscreen_sprites.add("door_to_" + key , Door)
 
         self.__current_setting = setting_name
 
@@ -268,7 +276,7 @@ class basic_text_box(multiprocessing.Process):
             sounds += kwargs['sounds']
 
         self.text_box = pygame.sprite.Sprite()
-        self.text_box.image = pygame.Surface([self.rect.width - 2, self.rect.height - 2])
+        self.text_box.image = pygame.Surface([self.rect.width - 10, self.rect.height - 10])
         self.text_box.rect = self.text_box.image.get_rect()
         self.text_box.image.fill(0)
         self.text_box.rect.x = pos.x - 2
@@ -328,12 +336,10 @@ class basic_text_box(multiprocessing.Process):
 
     def show(self):
         self.visible = True
-        self.start()
 
     def hide(self):
         #self.text_box.sounds["activate_beep"].play()
         self.visible = False
-        self.terminate()
 
 font_data = collections.namedtuple('font_data', ['size', 'name'])
 text_data = collections.namedtuple('text_data', ['text', 'font_size', 'font_name'])
@@ -342,7 +348,7 @@ class text_box(basic_text_box):
 
     def __init__(self, pos):
         basic_text_box.__init__(self, pos, "text_box")
-        self.pages_to_render = multiprocessing.Queue()
+        self.pages_to_render = []
         self.new = True
  
     def show(self):
@@ -355,8 +361,8 @@ class text_box(basic_text_box):
 
     def activate(self, **kwargs):
         #self.border.sounds["activate_beep"].play()
-        if not self.pages_to_render.empty():
-            self.txt_data = self.pages_to_render.get()
+        if len(self.pages_to_render) != 0:
+            self.txt_data = self.pages_to_render.pop()
             if 'func' in sorted(kwargs):
                 kwargs['func']()
             return True
@@ -373,9 +379,11 @@ class text_box(basic_text_box):
             self.new = False
         self.draw(this.window)
         if not this.text_menu_visible:
-            pygame.event.pump()
-            if pygame.event.wait() == pygame.KEYDOWN: 
-                self.activate()
+            while self.visible:
+                pygame.event.pump()
+                if pygame.event.wait() == pygame.KEYDOWN:
+                    self.activate()
+              
    
     def say(self, text, **kwargs):
         if "[player_name]" in text:
@@ -393,10 +401,10 @@ class text_box(basic_text_box):
         text = self.word_wrap(text, font.name, font.size)
 
         for page in self.page_wrap(text, font.name, font.size):
-            self.pages_to_render.put(text_data(page, font.size, font.name))
-        
-        if not self.visible:
-            self.show()
+            self.pages_to_render.append(text_data(page, font.size, font.name))
+
+        self.show()
+        self.run()
 
 class text_menu(basic_text_box):
 
@@ -499,7 +507,6 @@ class text_menu(basic_text_box):
             self.previous = None
             self.render()
         else:
-            self.terminate()
             self.hide()
 
     def draw_func(self):
@@ -507,18 +514,20 @@ class text_menu(basic_text_box):
                 (0, 0), self.render_text[self.page_number], size = self.font.size)
 
     def run(self):
-        self.draw(this.window)
-        pygame.event.pump()
-        event = pygame.event.wait() 
-        if event == pygame.KEYDOWN:
-            if event.key == pygame.K_DOWN | event.key == pygame.K_LEFT:
-                self.select_previous()
-            elif event.key == pygame.K_RETURN | event.key == pygame.K_z:
-                self.activate()
-            elif event.key == pygame.K_x:
-                self.previous_menu()
-            else:
-                self.select_next()
+        while self.visible:
+            self.draw(this.window)
+            update()
+            pygame.event.pump()
+            event = pygame.event.wait() 
+            if event == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN | event.key == pygame.K_LEFT:
+                    self.select_previous()
+                elif event.key == pygame.K_RETURN | event.key == pygame.K_z:
+                    self.activate()
+                elif event.key == pygame.K_x:
+                    self.previous_menu()
+                else:
+                    self.select_next()
 
 buff = collections.namedtuple('buff', ['stat', 'name'])
 
@@ -858,6 +867,7 @@ class player(entity, multiprocessing.Process):
         self.player_name = name
         self.battle_name = self.player_name
         self.save_vars.append('player_name')
+        run()
     
     def move(self, dx, dy):
         return moveable.move(self, dx, dy, this.background.scroll)
@@ -891,7 +901,7 @@ class player(entity, multiprocessing.Process):
         return self.menu
     
     def run():
-        if not(this.text_box.visible | this.player_menu.visible | this.inbattle):
+        while not(this.text_box.visible | this.player_menu.visible | this.inbattle):
             pygame.event.pump()
             event = pygame.event.wait()
             if event.key == pygame.K_x:
@@ -1023,17 +1033,17 @@ class battle(multiprocessing.Process):
             elif not self.__player_turn:
                 self.npc.do_attack()
 def update():
+    pygame.event.pump()
     if not this.inbattle:
-        this.onscreen_sprites.clear(this.background)
+        this.onscreen_sprites.clear(this.window, this.background)
         this.onscreen_sprites.update(this.data)
         this.onscreen_sprites.draw(this.window)
-        this.player_menu.draw()
+        this.textbox.draw(this.window)
+        this.player_menu.draw(this.window)
     else:
-        this.window.clear(this.background)
         this.window.blit(this.battle_npc)
         this.battlebox.draw(this.window)
 
-    pygame.display.update()
 
 def save_data():
    json.dumps({
@@ -1087,6 +1097,7 @@ well yours is the one right in front of you, have a nice day!""", speaker = "Poo
 def __init__():
     this.text_menu_visible = False
     this.text_box_visible= False
+    this.inbattle = False
 
     this.window = pygame.display.set_mode([680, 480])
  
@@ -1114,7 +1125,6 @@ def __init__():
 
     #pygame.mixer.init()
     #this.background_music = pygame.mixer.Channel(0)
-    this.background = None
 
     try:
       data = json.load(open("save.json"))
@@ -1144,7 +1154,9 @@ def __init__():
        
         for sprite in json.load(open("sprites.json")):
                 this.data_sprites[sprite['name']] = { 'classname': sprite["classname"], 'vars': sprite }
-        start_screen()
+        this.settings.load("overworld")
+        while True:
+            update()
     else:
         this.data_sprites = data["sprites"]
         this.settings.load(data["setting"])
