@@ -435,11 +435,11 @@ class text_box(basic_text_box):
         if self.new:
             self.activate()
             self.new = False
-        if not this.text_menu_visible:
-            while self.visible:
-                pygame.event.pump()
-                if pygame.event.wait().type == KEYDOWN:
-                    self.activate()
+        while self.visible & (not this.text_menu_visible):
+                events = pygame.event.get()
+                for event in events:
+                    if event.type == pygame.KEYDOWN:
+                        self.activate()
               
    
     def say(self, text, **kwargs):
@@ -597,7 +597,7 @@ class text_menu(basic_text_box):
 
     def run(self):
         while self.visible:
-            event = pygame.event.wait() 
+            event = pygame.event.poll() 
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_DOWN:
                     self.select_previous()
@@ -649,6 +649,9 @@ class entity(moveable):
             self.__losing_message = kwargs['losing_message']
 
         self.save_vars += ['__moves', '__inventory', '__equipped', '__basestat', '__losing_message' ]
+
+    def get_persuasion(self):
+        return self.__persuasion
 
     def get_losing_message(self):
         return self.__losing_message
@@ -1020,8 +1023,7 @@ class Player(entity):
 
     def run(self):
         while not(this.text_box.visible | this.player_menu.visible | this.inbattle):
-            pygame.event.pump()
-            event = pygame.event.wait()
+            event = pygame.event.poll()
             if event.type == KEYDOWN:
                 if event.key == pygame.K_x:
                     this.player_menu.show()
@@ -1042,6 +1044,9 @@ class battle_player():
         self._entity = entity
         self.__func_queue = []
         self.enemy = enemy
+
+    def get_persuasion(self):
+        return entity.get_persuasion(self)
 
     def use_item(self, itemname):
         self.__func_queue.append({"func" : self._entity.use_item, "args" : itemname})
@@ -1089,6 +1094,9 @@ class battle_NPC(sprite):
     def __del__(self):
         pass
 
+    def get_persuasion(self):
+        return entity.get_persuasion(self)
+    
     def do_attack(self):
         stats = self.get_stats()
         if stats["determination"] < 25:
@@ -1152,21 +1160,29 @@ class battle(threading.Thread):
     def run(self):
         if not self.battle_end(): 
             if  self.__player_turn & self.player.ready():
-                this.battlebox.say("PLAYER HEALTH: " + str(self.player.get_stats()["determination"]))
+                this.battlebox.say(this.player_name + " DETERMINATION: " + str(self.player.get_stats()["determination"])+"""
+ENEMY DETERMINATION: """ + str(self.npc.get_stats()["determination"]))
+                this.battlebox.say(this.player_name + " PERSUATION: " + str(self.player.get_persuasion()["pers"])+"""
+ENEMY PERSUATION: """ + str(self.npc.get_persuasion()["determination"]))
                 self.player.get_battle_menu()
                 self.player.do_queued()
             elif not self.__player_turn:
                 self.npc.do_attack()
 def update():
     while True:
-        pygame.event.pump()
         if not this.inbattle:
-            this.onscreen_sprites.clear(this.window, this.background)
-            this.onscreen_sprites.update()
-            this.onscreen_sprites.draw(this.window)
-            this.textbox.draw(this.window)
             if this.background is not None:
                 window.blit(this.background, (0,0))
+                this.onscreen_sprites.clear(this.background, None)
+                this.onscreen_sprites.update()
+                this.onscreen_sprites.draw(this.background)
+                this.textbox.draw(this.background)
+                this.window.blit(this.background, (0, 0))
+            else:
+                this.onscreen_sprites.clear(this.window, None)
+                this.onscreen_sprites.update()
+                this.onscreen_sprites.draw(this.window)
+                this.textbox.draw(this.window)
             for menu in this.text_menus_to_draw:
                 menu.draw(this.window)
         else:
@@ -1198,17 +1214,25 @@ with the power of the arrow keys to select and the z key to confirm!""")
     this.textbox.say("STOP! POLITICAL CORRECTNESS POLICE IS HERE TO GIVE JUSTICE!")
     this.textbox.say("Nooooooo! please Nooo.")
     this.textbox.say("""YOU HAVE BEEN SECTIONED ON RESTRICTING HUMAN EXPRESSION.
-CHOOSE YOUR NAME BEFORE HE STARTS WRITING YOU DESTINY.
+ENTER YOUR NAME BEFORE HE STARTS WRITING YOU DESTINY.
 PRESS ENTER ONCE YOU HAVE COMPLETED YOUR NAME.""")
-    key = ""
+
+    lastkey = ""
     name = ""
-    while key != "return":
+    loop = True
+    while loop:
+       pygame.event.pump()
        event = pygame.event.wait()
        if event.type == pygame.KEYDOWN:
-           key = pygame.key.name(event.key)
-           if key == "return":
-               break
-           name += key
+           newkey = pygame.key.name(event.key)
+           if newkey == "return":
+               loop = False
+           if newkey == "backspace":
+               print("back")
+               name=-lastkey
+           else:
+               name += newkey
+               lastkey = newkey
            this.textbox.say(name)
 
     this.textbox.say("oh so your name is " + name + ". I guess we could use that.")
@@ -1219,16 +1243,18 @@ PRESS ENTER ONCE YOU HAVE COMPLETED YOUR NAME.""")
 
     this.textbox.say("""ERM... HERE ILL HELP YOU UP, CALL ME RICHARD.
 USE YOU'RE ARROW KEYS TO MOVE,
-X TO OPEN THE MENU AND THE Z TO ACTIVATE THINGS
+X TO OPEN THE MENU AND THE Z TO ACTIVATE THINGS IN FRONT OF YOU
 WHATEVER THAT MEANS. 
 WEIRD THAT YOU CAME WITH AN OPERATION MANUAL""", speaker = "Poor Richard")
 
     this.textbox.say("""ha.. just kidding! you're the new guy who just moved in, 
 well yours is the one right in front of you, have a nice day!""", speaker = "Poor Richard")
 
-    this.textbox.hide()
 
 def __init__():
+
+    this.event_hooks = []
+    
     this.text_menu_visible = False
     this.text_box_visible= False
     this.inbattle = False
