@@ -28,11 +28,12 @@ class resource_handler(object):
             data[name] = self.get_data(name)
         return data 
     
-    def get_data_dict(self, names):
-        data = [] 
-        for name in names:
-            data.append(self.get_data(name))
-        return data 
+    def get_data_array(self, name):
+        out = []
+        for data in self.__data:
+            if re.match(name, data['name']):
+                out.append(data['data'])
+        return out
 
     def get_name(self, data):
         for data in self.__data:
@@ -59,6 +60,6 @@ class game_data(object):
     def __init__(self, data_dir):
         self.sprites = image_data(os.path.join(data_dir, "sprites"))
         self.backgrounds = image_data(os.path.join(data_dir, "backgrounds"))
-        self.sounds = sound_data(os.path.join(data_dir, "sounds"))
+       #self.sounds = sound_data(os.path.join(data_dir, "sounds"))
 
 

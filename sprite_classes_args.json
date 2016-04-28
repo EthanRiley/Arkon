@@ -17,11 +17,11 @@
 	},
 	"entity":{
 		"args": ["_imagename", "pos", "__basestat"],
-		"kwargs": ["dying_message"]
+		"kwargs": ["losing_message"]
 	},
 	"NPC":{
 		"args": ["_imagename", "pos", "__basestat"],
-		"kwargs": ["dying_message"]
+		"kwargs": ["losing_message"]
 	},
 	"player":{
 		"args": ["player_name", "pos"],

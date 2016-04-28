@@ -51,7 +51,6 @@
 			"control": 5
 		},
 		"losing_message": "I.. Am.. Not.. Your.... ",
-		"battle_name": "la lune",
 		"dialog":{
 			"battle_lost":{
 				"moonlight-scene":{

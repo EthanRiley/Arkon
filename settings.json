@@ -1,7 +1,6 @@
 {
 	"overworld": {
 		"sprites_used":{
-				"Poor Richard" : [354, 200],
 				"Lucidia Bright": [266, 204],
 				"player": [320, 240]
 		},
