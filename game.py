@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 
+#we import everything we need  object_loader and game_data refer to thier files
 import threading, random, collections, sys, json, pygame, os, re
 import object_loader, game_data
 from pygame.locals import *
 
 #(0, 0) is top left corner in pygame.
 
+#module referance, used as a namespace to acsess variables nomatter the scope in the module
 this = sys.modules[__name__]
 
+# stores position x and y values
 position = collections.namedtuple("position", ['x', 'y'])
 
 def subset_dict_from_array(dict1, array):
     return { k : dict1[k] for k in array }
 
+# creates an ordered subset using orderedDict, as dicts are not ordered
 def ordered_subset_dict_from_array(dict1, array):
     out_dict = collections.OrderedDict()
     for k in array:
@@ -25,6 +29,7 @@ def orderd_dict_from_dict(dict):
         out[k] = dict[k]
     return out
 
+# logical and operation for an array
 def array_and(array, array1):
     out = []
     for i in array:
@@ -36,74 +41,44 @@ def array_and(array, array1):
 def merge_arrays_to_dict(key_array, var_array):
     return {k : v for k in key_array for v in var_array }
 
+# converts an arrays 0th and 1st element into a pos tuple
 def array_to_pos(array):
     return position(array[0], array[1])
 
+# converts a list to a str, doing this cast wise gives bad output
 def list_to_str(list):
     out  = ""
     for char in list:
         out+=char
     return out
 
-class LayeredDirtyDict():
+#cusomized dictionary for holding sprites
+class SpriteDict(collections.UserDict):
 
-    def __init__(self):
-        collections.UserDict.__init__(self)
-        self.sprites = pygame.sprite.LayeredDirty()
-        self.sprite_names = []
+    def __init__(self, *args, **kwargs):
+        collections.UserDict.__init__(self, *args, **kwargs)
 
-    def _get_dict(self):
-        return collections.OrderedDict(merge_arrays_to_dict(self.sprite_names, self.sprites.sprites()))
-
-    def add(self, name, sprite):
-        self.sprites.add(sprite)
-        self.sprite_names.append(name)
-
-    def pop(self, name):
-        sprite = self._get_dict()[name]
-        self.sprite_names.remove(name)
-        self.sprites.remove(sprite)
-        return sprite
-
-    def __contains__(self, item):
-        return item in self.sprite_names
-
-    def keys(self):
-        return self.sprite_names
-    
-    def __getitem__(self, key):
-        return self._get_dict().get(key)
-
-    def __setitem__(self, key, val):
-        self.add(key, val)
-
-    def __iter__(self):
-        return iter(self._get_dict())
-
-    def __len__(self):
-        return len(self.sprite_names)
-
+	#draw the sprites in the dict
     def draw(self, surface):
-        self.sprites.draw(surface)
-
-    def clear(self, surface, background):
-        self.sprites.clear(surface, background)
-
-    def empty(self):
-        self.sprites.empty()
-        self.sprite_names = []
-
+        for k in self.data:
+            surface.blit(self.data[k].image, self.data[k].rect)
+	
+	#run update function on all the sprites in the dict
     def update(self, *args):
-        self.sprites.update(*args)
+        for k in self.data:
+            self.data[k].update(*args)
 
-    def update_dict(self, Dict):
-        for key, val in Dict:
-            self.__setitem__(key, val)
-
+	# add a sprite
+    def add(self, key,  var):
+        self.data[key] = var
+	
+	# update the dictionary with sprites
+    def update_dict(self, *args, **kwargs):
+        collections.UserDict.update(self, *args, **kwargs)
 
 def set_background(name):
     this.background = this.data.backgrounds.get_data(name)
-    #self.background_music.play(this.data.sounds.get_data(name))
+    # self.background_music.play(this.data.sounds.get_data(name))
 
 class sprite(pygame.sprite.DirtySprite):
 
@@ -118,7 +93,8 @@ class sprite(pygame.sprite.DirtySprite):
         #    self.sound_names = []
 
         self._imagename = imagename
-
+		
+		#load the image
         self.image = this.data.sprites.get_data(self._imagename)
         self.rect = self.image.get_rect()
         self.rect.x = pos.x
@@ -127,27 +103,28 @@ class sprite(pygame.sprite.DirtySprite):
             if kwargs['battle']:
                 this.battle_sprites.add(imagename, self)
 
-        self.save_vars = [ '_imagename', 'pos' ]
-
     def get_rect(self):
         return self.image.get_rect()
     
     def get_pos(self):
         return position(self.image.get_rect().x, self.image.get_rect().y)
 
+# set position of sprite
     def set_pos(self, pos):
         self.rect.x = pos.x
         self.rect.y = pos.y
 
-    def save_data(self):
-        self.pos = self.get_pos()
-        return {"vars": subset_dict_from_array(self.__dict__, self.save_vars),
-                'classname': self.__class__.__name__}
+"""  was going to be used; now nolonger.
+ #   def save_data(self):
+  #      self.pos = self.get_pos()
+   #     return {"vars": subset_dict_from_array(self.__dict__, self.save_vars),
+               'classname': self.__class__.__name__}"""
 
-
+# updates classes attributes from a dict
     def load_save_data(self, data):
         self.__dict__.update(data)
-
+		
+# function that all sprites will have, there to be overriddern
     def activate(self):
         pass
 
@@ -160,42 +137,27 @@ class door(sprite):
 
         sprite.__init__(self, imagename, pos) #, sounds = ['door_open'])
         self.setting_to = setting_to
-        self.save_vars.append('setting_to')
-
-    def save_data(self):
-        self.pos = self.get_pos()
-        return {"vars": subset_dict_from_array(self.__dict__, self.save_vars),
-                'classname': self.__class__.__name__}
-
-    def __del__(self):
-        this.data_sprites[self._imagename] = self.save_data()
 
     def load_save_data(self, data):
         self.__dict__.update(data)
 
     def activate(self):
         #self.sounds['door_open'].play()
+		
+		#load the new setting stored by the door
         this.settings.load(self.setting_to)
 
+# convenice class for onscreen pick upable items
 class item(sprite):
 
     def __init__(self, pos, item_data, **kwargs):
         sprite.__init__(self, "dropped_item", pos)
         self.item_data = item_data
-        self.save_vars += [ 'item_data', 'setting_from' ]
-
-    def save_data(self):
-        self.pos = self.get_pos()
-        return {"vars": subset_dict_from_array(self.__dict__, self.save_vars),
-                'classname': self.__class__.__name__}
-
-    def __del__(self):
-        this.data_sprites[self._imagename] = self.save_data()
 
     def load_save_data(self, data):
         self.__dict__.update(data)
 
-
+# loads backgrounds and sprites fomr dict
 class settings:
     
     def __init__(self, settings_dict):
@@ -203,44 +165,68 @@ class settings:
         self.__current_setting = ""
 
     def load_data_sprite(self, sprite):
-
+		#closure to get args of the class we are going to init
         def get_data_args(sprite, argtype):
                 args = ordered_subset_dict_from_array(sprite["vars"],
                     this.sprite_classes_args[sprite["classname"]][argtype])
                 for arg in args:
+					# pos is a tuple, not an array as it is defined in the dicts
+					# so we change it to a tuple 
                     if arg == "pos":
                         args[arg] = array_to_pos(args[arg])
+					# we remove that arg so it does not get overwrittern by load_save_data
                     sprite["vars"].pop(arg)
                 return args
-
+		
+		# get *args of class
         args = list(get_data_args(sprite, "args").values())
+		# get **kwargs
         kwargs = get_data_args(sprite, "kwargs")
+		
+		# interpite arg string, creating the class with no need of using an if statment for classname
         Sprite = eval(sprite["classname"]+"(*args, **kwargs)")
+		
+		# load the rest of the values defined in the json by the fun below
         Sprite.load_save_data(sprite["vars"])
         return Sprite
 
     def load(self, setting_name):
+		#stop the thread from drawing so there are no errors
+        this.drawing = False
+        
+		# find if a sprite which is going to be used is used currently, if so update its position to the new one
+		# and remove it from the sprites used dict
         for Sprite in array_and(sorted(this.onscreen_sprites.keys()), self.settings[setting_name]["sprites_used"]):
             this.onscreen_sprites[Sprite].set_pos(array_to_pos(self.settings[setting_name]["sprites_used"][Sprite]))
             self.settings[setting_name]["sprites_used"].pop(Sprite)
 
+		# load the rest of the sprites
         for sprite in self.settings[setting_name]["sprites_used"]:
                 this.data_sprites[sprite]["vars"]["pos"] = array_to_pos(self.settings[setting_name]["sprites_used"][sprite])
 
-        this.onscreen_sprites.update({k: self.load_data_sprite(this.data_sprites[k])
+		# update the onsceen sprites dict
+        this.onscreen_sprites.update_dict({k: self.load_data_sprite(this.data_sprites[k])
                                       for k in self.settings[setting_name]["sprites_used"]})
-                                        
+
+		#set the backgrond
         this.set_background(setting_name)
 
+		#iterate over doors, if they do not have an imagename make thier imagename door
         for k in self.settings[setting_name]["doors"]:
             if self.settings[setting_name]["doors"][k]["imagename"] == "":
                 self.settings[setting_name]["doors"][k]["imagename"] = "door"
-
+			
+			# load the iter door
             Door = door(array_to_pos(self.settings[setting_name]["doors"][k]["pos"]),
                         k, imagename=self.settings[setting_name]["doors"][k]["imagename"])
+			#add iter door
             this.onscreen_sprites.add("door_to_" + k , Door)
 
+		#set the current setting
         self.__current_setting = setting_name
+		
+		#resume the threads drawing process
+        this.drawing = True
 
     def get_current_setting(self):
         return self.__current_setting
@@ -265,30 +251,28 @@ class moveable(sprite):
             self.animation[direction] = this.data.sprites.get_data_array(self._imagename
                     + "_anim_" + direction + "_\d")
 
-        self.facing = "forward"
-        self.save_vars.append('facing')
+        self._facing = "right"
         self.moving = False
 
     def facing(self, direction):
-        self.facing = direction
+        self._facing = direction
+        self.__frame = 0
 
     def move(self, dx, dy , **kwargs):
         rect = self.get_rect()
-        if this.background.get_rect.collidepoint(rect.x+dx, rect.y+dy):
-
-            for sprite in this.onscreen_sprites:
-                if sprite != self:
-                    rect1 = sprite.get_rect()
-                    if rect1.left <= rect.right + dx & rect1.top >= rect.bottom + dy:
-                        if rect1.right >= rect.left + dx & rect1.bottom <= rect.top + dy:
-                            #self.sounds["collide_beep"].play()
-                            self.moving = False
-                            if sprite.__class__.__name__ == "door":
-                                sprite.activate()
-                            return False
+        for sprite in this.onscreen_sprites:
+            if sprite != self._imagename:
+                rect1 = this.onscreen_sprites[sprite].get_rect()
+                if rect.contains(rect1):
+                        #self.sounds["collide_beep"].play()
+                        self.moving = False
+                        print("collsion with sprite:  " + sprite)
+                        if this.onscreen_sprites[sprite].__class__.__name__ == "door":
+                            this.onscreen_sprites[sprite].activate()
+                        return False
 
             if 'move_func' not in sorted(kwargs.keys()):
-                self.rect.move(dx, dy)
+                self.rect = self.rect.move(dx, dy)
             else:
                 kwargs['move_func'](dx, dy)
             self.moving = True
@@ -299,19 +283,26 @@ class moveable(sprite):
 
     def update(self, *args):
         if self.moving:
-            if self.facing == "right" | self.facing == "left":
-                self.image.blit(self.animation["right"][self.__frame])
-                if self.facing == "left":
-                    pygame.transform.flip(self.image, True, False)
+			# clear the image
+            self.image.fill(0)
+            self.__frame += 1
+            if (self._facing == "right") | (self._facing == "left"):
+                self.__frame = self.__frame%len(self.animation["right"])
+				# delay so you can see each frame
+                pygame.time.delay(12)
+                self.image.blit(self.animation["right"][self.__frame], (0,0))
+                if self._facing == "left":
+                    self.image = pygame.transform.flip(self.image, True, False)
 
             else:
-                 self.image.blit(self.animation[self.facing][self.__frame])
+                 pygame.time.delay(12)
+                 self.__frame = self.__frame % len(self.animation[self._facing])
+                 self.image.blit(self.animation[self._facing][self.__frame], (0, 0))
 
             self.dirty = 1
-            self.__frame += 1
-            self.__frame = self.__frame%len(self.animation[self.facing])
             self.moving = False
 
+# tuples to store text related data
 font_data = collections.namedtuple('font_data', ['size', 'name'])
 text_data = collections.namedtuple('text_data', ['text', 'font_size', 'font_name'])
 
@@ -380,12 +371,14 @@ class basic_text_box():
         else:
             return [text]
 
+	# parse newlines into drawable output
     def newline_draw_text(self, txt_data):
         lines = txt_data.text.split('\n')
         for lineNo in range(len(lines)):
             this.fonts.get_data(txt_data.font_name).render_to(self.text_box.image,
                         (6, 6 + 20 * lineNo), lines[lineNo], size=txt_data.font_size, fgcolor=(255, 255, 255))
-
+	
+	# clear the textbox image
     def draw_func(self):
         self.text_box.image.fill((0, 0, 0))
     
@@ -408,6 +401,7 @@ class text_box(basic_text_box):
         basic_text_box.__init__(self, pos, "text_box")
         self.pages_to_render = []
         self.new = True
+        self.frozen = False
  
     def show(self):
         this.text_box_visible = True
@@ -431,17 +425,19 @@ class text_box(basic_text_box):
         basic_text_box.draw_func(self)
         basic_text_box.newline_draw_text(self, self.txt_data)
 
+    def freeze_events_get(self):
+        self.frozen = True
+
+    def unfreeze_events_get(self):
+        self.frozen = False
+		
+	#handle the events for the text_box
     def run(self):
-        if self.new:
-            self.activate()
-            self.new = False
-        while self.visible & (not this.text_menu_visible):
-                events = pygame.event.get()
-                for event in events:
-                    if event.type == pygame.KEYDOWN:
-                        self.activate()
-              
-   
+        while self.visible & (not this.text_menu_visible) & (not self.frozen):
+            event = pygame.event.wait()
+            if event.type == pygame.KEYDOWN:
+                self.activate()
+
     def say(self, text, **kwargs):
         if "[player_name]" in text:
             text = text.replace("[player_name]", this.onscreen_sprites["player"].player_name)
@@ -459,6 +455,11 @@ class text_box(basic_text_box):
 
         for page in self.page_wrap(text, font.name, font.size):
             self.pages_to_render.append(text_data(page, font.size, font.name))
+		
+		# incrmenet the page so the textbox has something to show
+		# if it is the first time of it running say func
+        if self.new:
+            self.activate()
 
         self.show()
         self.run()
@@ -470,20 +471,17 @@ class text_box(basic_text_box):
 class text_menu(basic_text_box):
 
     def hide(self):
-        this.text_menu_visible = False
         basic_text_box.hide(self)
-
-    def show(self):
-        this.text_menu_visible = True
-        basic_text_box.show(self)
-        self.run()
-
+        this.text_menu_visible = False
+	
+	# word and page wrap
     def format(self):
         if self.end_formatting != '\n':
             self.text = self.word_wrap(self.text, self.font.name, self.font.size)
 
         self.render_text = self.page_wrap(self.text, self.font.name, self.font.size)
-
+	
+	# create menu text from the items dict
     def render(self):
         self.text = ""
         self.render_text = []
@@ -507,23 +505,91 @@ class text_menu(basic_text_box):
 
     def select(self, index):
         # self.border.sounds["select_beep"].play()
+        if len(self.items.keys()) != 0:
+            if self.selected != "":
+                self.__deselect()
 
-        if self.selected != "":
-            self.__deselect()
+            self.selected_index = index % len(self.items.keys())
 
-        self.selected_index = index % len(self.items.keys())
+            self.selected = sorted(self.items.keys())[self.selected_index]
 
-        self.selected = sorted(self.items.keys())[self.selected_index]
+            textlist = list(self.text)
 
-        textlist = list(self.text)
+            textlist[re.search(r"\b" + self.selected + r"\b", self.text).start() - 2] = '>'
 
-        textlist[re.search(r"\b" + self.selected + r"\b", self.text).start() - 2] = '>'
+            self.text = list_to_str(textlist)
 
-        self.text = list_to_str(textlist)
+            self.page_number = self.find_page_number_of_item(self.selected)
+            self.format()
 
-        self.page_number = self.find_page_number_of_item(self.selected)
-        self.format()
+    def select_next(self):
+        self.select(self.selected_index + 1)
 
+    def select_previous(self):
+        self.select(self.selected_index - 1)
+
+    def get_selected(self):
+        return self.selected
+
+    def activate(self, *args):
+        if self.items.get(self.selected) is not None:
+            if self.items.get(self.selected).__class__.__name__ != 'dict':
+                if self.items.get(self.selected) != "previous":
+                    output = self.items.get(self.selected)(self.selected)
+                    if output == "previous":
+                        self.previous_menu()
+                    elif output.__class__.__name__ == 'dict':
+                        self.previous = self.items
+                        self.items = output
+                        self.render()
+                    return output
+                else:
+                    self.previous_menu()
+                    return "previous"
+            else:
+                self.previous = self.items
+                self.items = self.items.get(self.selected)
+                self.render()
+        else:
+            self.previous_menu()
+
+    def previous_menu(self):
+        # self.text_box.sounds["back_beep"].play()
+        if self.previous is not None:
+            self.items = self.previous
+            self.previous = None
+            self.render()
+        else:
+            self.hide()
+            print(self.visible)
+
+    def draw_func(self):
+        basic_text_box.draw_func(self)
+        basic_text_box.newline_draw_text(self, text_data(self.render_text[self.page_number],
+                                                         self.font.size, self.font.name))
+
+	#handle the events for the text_menu
+    def run(self):
+        while self.visible:
+            event = pygame.event.wait()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_DOWN:
+                    self.select_previous()
+                elif event.key == pygame.K_LEFT:
+                    self.select_previous()
+                elif event.key == pygame.K_RETURN:
+                    self.activate()
+                elif event.key == pygame.K_z:
+                    self.activate()
+                elif event.key == pygame.K_x:
+                    self.previous_menu()
+                elif event.key == pygame.K_RIGHT:
+                    self.select_next()
+
+    def show(self):
+        this.text_menu_visible = True
+        basic_text_box.show(self)
+        self.run()
 
     def __init__(self, items, pos, **kwargs):
         border = "text_menu"
@@ -552,65 +618,6 @@ class text_menu(basic_text_box):
         self.select(0)
 
         this.text_menus_to_draw.append(self)
-        
-    def select_next(self):
-        self.select(self.selected_index + 1)
-
-    def select_previous(self):
-        self.select(self.selected_index - 1)
-
-    def get_selected(self):
-        return self.selected
-
-    def activate(self, *args):
-        if self.items.get(self.selected) is not None:
-            print(self.items.get(self.selected))
-            if self.items.get(self.selected).__class__.__name__ != 'dict':
-                if self.items.get(self.selected) != "previous":
-                    output = self.items.get(self.selected)(self.selected, *args)
-                    if output == "previous":
-                        self.previous_menu()
-                    return output
-                else:
-                    self.previous_menu()
-                    return "previous"
-            else:
-                self.previous = self.items
-                self.items = self.items.get(self.selected)
-                self.render()
-        else:
-            self.previous_menu()
-
-    def previous_menu(self):
-        #self.text_box.sounds["back_beep"].play()
-        if self.previous is not None:
-            self.items = self.previous
-            self.previous = None
-            self.render()
-        else:
-            self.hide()
-
-    def draw_func(self):
-        basic_text_box.draw_func(self)
-        basic_text_box.newline_draw_text(self, text_data(self.render_text[self.page_number],
-                                                        self.font.size, self.font.name))
-
-    def run(self):
-        while self.visible:
-            event = pygame.event.poll() 
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_DOWN:
-                    self.select_previous()
-                elif event.key == pygame.K_LEFT:
-                    self.select_previous()
-                elif event.key == pygame.K_RETURN:
-                    self.activate()
-                elif event.key == pygame.K_z:
-                    self.activate()
-                elif event.key == pygame.K_x:
-                    self.previous_menu()
-                elif event.key == pygame.K_RIGHT:
-                    self.select_next()
 
 buff = collections.namedtuple('buff', ['stat', 'name'])
 
@@ -635,10 +642,10 @@ class entity(moveable):
     def __init__(self, name, pos, basestat, **kwargs):
         moveable.__init__(self, name, pos, **kwargs)
         self.__stunned = 0
-        self.__basestat = basestat
-        self.__equipped = {}
-        self.__inventory = {}
-        self.__moves = {}
+        self.basestat = basestat
+        self.equipped = {}
+        self.inventory = {}
+        self.moves = {}
         self.__temp_buffs = []
         self.__stats = {}
         self.__persuasion = 0
@@ -647,8 +654,6 @@ class entity(moveable):
         self.__losing_message = "..."
         if 'losing_message' in kwargs:
             self.__losing_message = kwargs['losing_message']
-
-        self.save_vars += ['__moves', '__inventory', '__equipped', '__basestat', '__losing_message' ]
 
     def get_persuasion(self):
         return self.__persuasion
@@ -663,18 +668,33 @@ class entity(moveable):
         buffs = []
         for item in dictbuff:
             buffs.append(item["buffs"])
-        return concat_dicts(*buffs, default = 0)
+        if len(buffs) != 0:
+            pritn(buffs)
+            return concat_dicts(*buffs, default = 0)
+        else:
+            print("else")
+            return {}
+
+    def get_temp_buffs(self):
+        buffs = []
+        for item in self.__temp_buffs:
+            if item != "turns":
+                buffs.append(item)
+        if len(buffs) != 0:
+            return concat_dicts(*buffs, default = 0)
+        else:
+            return {}
 
     def get_basestats(self):
-        return self.__basestat
+        return self.basestat
 
     def __update_stats(self):
-        self.__stats = concat_dicts(self.__basestat,
-                self.get_buffs_from_dict(self.__temp_buffs),
-                    self.get_buffs_from_dict(self.__equipped), default = 0) 
+        self.__stats = concat_dicts(self.basestat,
+                self.get_temp_buffs(),
+                    self.get_buffs_from_dict(self.equipped), default = 0) 
         self.__stats["enlightenment"] *=  self.__stats["focus"] / 2
         self.__stats["enlightenment"] +=  self.__stats["determination"] / 4
-        self.__stats["enlightenment"] *= random.randrange(0.2, 1.1)
+        self.__stats["enlightenment"] *= random.uniform(0.2, 1.1)
         self.__stats["determination"] -= self.__damage_taken
     
     def say(self, text):
@@ -683,7 +703,7 @@ class entity(moveable):
     def is_dead(self):
         stats = self.get_stats()
         return(stats["determination"] - self.__damage_taken <= 0 |
-                self.persuasion > stats["determination"] + stats["focus"])
+                self.get_persuasion() > stats["determination"] + stats["focus"])
     
     def get_stats(self):
         if self.__stats_needs_update:
@@ -692,37 +712,37 @@ class entity(moveable):
         return self.__stats
 
     def add_move(self, move):
-        self.__moves[move["name"]] = move
+        self.moves[move["name"]] = move
 
     def get_moves(self):
-        return self.__moves
+        return self.moves
 
     def unequip(self, itemname):
         self.__stats_needs_update =  True
-        self.inventory[itemname] = self.__equipped[itemname]
-        self.__equipped.pop(itemname)
+        self.inventory[itemname] = self.equipped[itemname]
+        self.equipped.pop(itemname)
 
     def equip(self, itemname):
         self.__stats_needs_update =  True
-        self.__equipped[itemname] = self.__inventory[itemname]
-        self.__inventory.pop(itemname)
+        self.equipped[itemname] = self.inventory[itemname]
+        self.inventory.pop(itemname)
 
     def get_equipped(self):
-        return self.__equipped
+        return self.equipped
 
     def add_to_inventory(self, item):
-        if item["name"] in self.__inventory:
-            self.__inventory[item["name"]] += item["quantity"]
+        if item["name"] in self.inventory:
+            self.inventory[item["name"]] += item["quantity"]
         else:
-            self.__inventory[item["name"]] = item
+            self.inventory[item["name"]] = item
 
     def remove_from_inventory(self, item):
-        self.__inventory[item["name"]] -= item["quantity"]
-        if self.__inventory[item["name"]] <= 0:
-            self.__inventory.pop(item["name"])
+        self.inventory[item["name"]] -= item["quantity"]
+        if self.inventory[item["name"]] <= 0:
+            self.inventory.pop(item["name"])
 
     def get_inventory(self):
-        return self.__inventory
+        return self.inventory
 
     def trade(self, item_to_remove, item_to_gain):
         self.remove_from_inventory(item_to_remove)
@@ -740,20 +760,20 @@ class entity(moveable):
     def use_item(self, itemname):
         self.__stats_needs_update =  True
 
-        for buff in self.__inventory[itemname]["buffs"]:
-           self.basestat[buff] +=  self.__inventory[itemname]["buffs"][buff] * self.inventory[itemname]["potency"]
+        for buff in self.inventory[itemname]["buffs"]:
+           self.basestat[buff] +=  self.inventory[itemname]["buffs"][buff] * self.inventory[itemname]["potency"]
 
-        if self.__inventory[itemname]["effect"] is not None:
-            self.__inventory[itemname]["effect"]()
+        if self.inventory[itemname]["effect"] is not None:
+            self.inventory[itemname]["effect"]()
 
-        if self.__inventory[itemname]["equipabble"]:
+        if self.inventory[itemname]["equipabble"]:
             self.equip(itemname)
 
         if  self.inventory[itemname]["consumable"]:
-            self.remove_from_inventory(self.__inventory[itemname])
+            self.remove_from_inventory(self.inventory[itemname])
 
     def _stun(self, enemy_stats,  NumberOfTurns):
-        enemy_attack = (enemy_stats["enlightenment"]/4) * random.randrange(0 , (0.5 + enemy_stats["focus"]/130))
+        enemy_attack = (enemy_stats["enlightenment"]/4) * random.uniform(0 , (0.5 + enemy_stats["focus"]/130))
 
         if self.get_stats()["wit"] >  enemy_attack:
             this.battlebox.say(self.battle_name+ " was stunned!")
@@ -772,7 +792,7 @@ class entity(moveable):
                 for k in enemy_stats:
                     enemy_stats[k] *= 2
 
-        if stats["wit"] > enemy_stats["enlightenment"] / 4 * random.randrange(0, 0.5 + enemy_stats["focus"] / 55 ):
+        if stats["wit"] > enemy_stats["enlightenment"] / 4 * random.uniform(0, 0.5 + enemy_stats["focus"] / 55 ):
            self.persuasion += enemy_stats["enlightenment"] 
         else:
             this.battlebox.say("your oppenent out witted your attack! You focus on not embarrasing yourself futher.")
@@ -784,7 +804,7 @@ class entity(moveable):
             self.basestat["thought"] =- self.moves[movename]["thought"]
 
             for buff in self.moves[movename]["buffs"]:
-                self.basestat += self.moves[movename]["buffs"][buff]
+                self.basestat[buff] += self.moves[movename]["buffs"][buff]
 
             self.__temp_buffs.append(self.moves[movename]["temporary_buffs"])
             self.__stats_needs_update =  True
@@ -806,6 +826,7 @@ class entity(moveable):
 
         self.__stats_needs_update = True
 
+# a text_menu which is the same size as a text_box and items are ordered horizontally
 def response_menu(items):
     responsebox = text_menu(items, position(0, 0), border = "text_box", end_formatting = '    ')
     responsebox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.height))
@@ -823,15 +844,11 @@ class NPC(entity):
             self.battle_name = kwargs['battle_name']
         else:
             self.battle_name = self._imagename
-        self.save_vars += ['__dialog', '__repeat_dialog' ]
 
     def load_save_data(self, data):
         self.__dict__.update(data)
-
-    def save_data(self):
-        self.pos = self.get_pos()
-        return { "vars" : subset_dict_from_array(self.__dict__, self.save_vars),
-                'classname' :  self.__class__.__name__ }
+        print(self.__dict__)
+        print(self.get_moves())
 
     def sell(self, item_to_sell):
         if this.onscreen_sprites["player"].get_inventory()["sterling"] >= self.item_to_buy["price"]:
@@ -883,7 +900,7 @@ class NPC(entity):
         self.parse_dialog(self.dialog_dict[dialog])
 
     def activate(self):
-        if len(sorted(self.__get_dialog.keys())) != 0:
+        if len(sorted(self._get_dialog().keys())) != 0:
             if sorted(self._get_dialog().keys()[0]) != "":
                 self.say(sorted(self.__dialog.keys())[0])
             
@@ -893,10 +910,10 @@ class NPC(entity):
             self.say(key)
             self.parse_dialog(self.__repeat_dialog[key])
 
-def menu_data(self, data_get, var):
+def menu_data(data_get, var):
     output = {}
 
-    for data in data_get():
+    for data in data_get:
         output[data] = var
 
     return output
@@ -909,20 +926,21 @@ class Player(entity):
     def load_save_data(self, data):
         self.__dict__.update(data)
 
-    def save_data(self):
-        self.pos = self.get_pos()
-        return { "vars" : subset_dict_from_array(self.__dict__, self.save_vars),
-                'classname' :  self.__class__.__name__ }
+#   def save_data(self):
+#       self.pos = self.get_pos()
+#       return { "vars" : subset_dict_from_array(self.__dict__, self.save_vars),
+#              'classname' :  self.__class__.__name__ }
 
-    def get_equipped_menu_data(self):
+    def get_equipped_menu_data(self, *args):
         return menu_data(sorted(self.get_equipped().keys()), self.unequip)
 
-    def get_stats_menu_data(self):
+    def get_stats_menu_data(self, *args):
         output = {}
 
-        for stat, val in self.get_stats():
-            output[stat+"  =  "+val] = None 
-
+        stats = self.get_stats()
+        for stat in stats :
+            output[stat + "  =  " + str(stats[stat])] = None
+        print(output)
         return output
 
     def is_sure_dialog(self, if_sure, **kwargs):
@@ -934,13 +952,13 @@ class Player(entity):
 
     def is_sure_dialog_hook(self, *args, **kwargs):
         if 'dialog' in kwargs:
-            dialog = kwargs['dailog']
+            dialog = kwargs['dialog']
         else:
             dialog = self.sure_dialogs.pop()
-        this.textbox.say(dialog)
+        this.textbox.say(dialog['dialog'])
         def sure(*args):
-            this.text_box.next_page()
-            this.text_box.hide()
+            this.textbox.activate()
+            this.textbox.hide()
             return dialog["if_sure"]()
 
         return response_menu({
@@ -948,23 +966,50 @@ class Player(entity):
             "nope": "previous"
         })
 
-    def save_dialog(self, *args):
-        return self.is_sure_dialog_hook(dialog = {'if_sure': this.save_data, 'dialog': 'do you really want to save and quit?'})
+    def exit_dialog(self, *args):
+        return self.is_sure_dialog_hook(dialog = {'if_sure': this.exit, 'dialog': 'do you really want to quit?'})
 
     def item_description_menu(self, itemname):
-            self.is_sure_dialog(self.use_item, dialog = 'it says "' + self.__inventory[itemname]["description"] + '" eat it?"') 
+            self.is_sure_dialog(self.use_item, dialog = 'it says "' + self.inventory[itemname]["description"] + '" eat it?"')
 
-    def get_inventory_menu_data(self):
+    def get_inventory_menu_data(self, *args):
                return menu_data(sorted(self.get_inventory().keys()), self.item_description_menu)
-
 
     def get_player_menu_items(self):
         return {
                     "inventory" : self.get_inventory_menu_data,
                     "equipped" : self.get_equipped_menu_data,
                     "stats" : self.get_stats_menu_data,
-                    "save and quit" : self.save_dialog
+                    "quit" : self.exit_dialog
                }
+
+    def run(self):
+        while not(this.textbox.visible | this.text_menu_visible | this.inbattle):
+            pygame.time.delay(5)
+            pygame.event.pump()
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_LCTRL]:
+                self.player_menu.show()
+            elif keys[pygame.K_z]:
+                self.activate()
+            elif keys[pygame.K_UP]:
+                self.facing("backward")
+                self.move(0, -1)
+            elif keys[pygame.K_DOWN]:
+                self.facing("forward")
+                self.move(0, 1)
+            elif keys[pygame.K_LEFT]:
+                self.facing("left")
+                self.move(-1, 0)
+            elif keys[pygame.K_RIGHT]:
+                self.facing("right")
+                self.move(1, 0)
+            elif keys[pygame.K_f]:
+                self.add_move(this.moves["Theism"])
+                self.add_move(this.moves["Atheism"])
+                self.add_move(this.moves["Philla"])
+                self.add_move(this.moves["Nihilism"])
+                battle(self, this.onscreen_sprites["Lucidia Bright"])
 
     def __init__(self, name, pos):
         entity.__init__(self, "player", pos,
@@ -983,11 +1028,6 @@ class Player(entity):
         self.player_name = name
         this.player_name = name
         self.battle_name = this.player_name
-        self.save_vars.append('player_name')
-        #self.run()
-    
-    def move(self, dx, dy):
-        return moveable.move(self, dx, dy, this.background.scroll)
 
     def activate_sprite(self, sprite):
         #self.sounds['activate_beep'].play()
@@ -1001,14 +1041,12 @@ class Player(entity):
     def activate(self):
         rect = self.get_rect()
         for sprite in this.onscreen_sprites:
-            rect1 = sprite.get_rect()
-            if (self.facing == "forward" & rect1.y + 3 >= rect.y |
-                    self.facing == "backward" & rect1.y - 3 <= rect.y |
-                    self.facing == "left" & rect1.x + 3 >= rect.x |
-                    self.facing == "right" & rect1.x -3 <= rect.x ):
-                self.activate_sprite()
-            #else:
-                #self.sounds['collide_beep'].play()
+            if sprite != self & (sprite.__class__.__name__ != 'door'):
+                rect1 = this.onscreen_sprites[sprite].get_rect()
+                if rect.colliderect(rect1):
+                    self.activate_sprite(this.onscreen_sprites[sprite])
+                #else:
+                    #self.sounds['collide_beep'].play()
 
     def get_pos(self):
         rect = self.get_rect()
@@ -1021,23 +1059,6 @@ class Player(entity):
         self.player_menu.draw(this.window)
         entity.update(self, *args)
 
-    def run(self):
-        while not(this.text_box.visible | this.player_menu.visible | this.inbattle):
-            event = pygame.event.poll()
-            if event.type == KEYDOWN:
-                if event.key == pygame.K_x:
-                    this.player_menu.show()
-                elif event.key == pygame.K_z:
-                    self.activate()
-                elif event.key == pygame.K_UP:
-                    self.move(0, -1)
-                elif event.key == pygame.K_DOWN:
-                    self.move(0, 1)
-                elif event.key == pygame.K_LEFT:
-                    self.move(-1, 0)
-                elif event.key == pygame.K_RIGHT:
-                    self.move(1, 0)
-
 class battle_player():
 
     def __init__(self, entity, enemy):
@@ -1045,8 +1066,11 @@ class battle_player():
         self.__func_queue = []
         self.enemy = enemy
 
+    def is_dead(self):
+        return self._entity.is_dead()
+
     def get_persuasion(self):
-        return entity.get_persuasion(self)
+        return self._entity.get_persuasion()
 
     def use_item(self, itemname):
         self.__func_queue.append({"func" : self._entity.use_item, "args" : itemname})
@@ -1066,17 +1090,21 @@ class battle_player():
     def get_stats(self):
         return self._entity.get_stats()
 
+    def get_moves(self):
+        return self._entity.get_moves()
+
     def get_losing_message(self):
         return self._entity.get_losing_message()
 
-    def get_item_menu_data(self):
+    def get_item_menu_data(self, *args):
         return menu_data(sorted(self._entity.get_inventory().keys()), self.use_item)
     
     def get_move_is_sure_disc(self, movename):
-        self._entity.is_sure_dialog(self.use_move, dialog = self._entity.get_moves()["discription"] + '". do you want to use this move? "')
+        this.battlebox.say(self.get_moves()[movename]["description"])
+        return self.use_move(movename)
     
-    def get_move_menu_data(self):
-        return menu_data(self._entity.get_moves, self.get_move_is_sure_disc)
+    def get_move_menu_data(self, *args):
+        return menu_data(self._entity.get_moves().keys(), self.get_move_is_sure_disc)
 
     def get_battle_menu(self):
         return response_menu({
@@ -1089,13 +1117,19 @@ class battle_NPC(sprite):
 
     def __init__(self, entity, pos):
         self._entity = entity
-        self.sprite.__init__(self, entity.get_imagename() + "_battle", pos, battle = True)
+        sprite.__init__(self, entity.get_imagename(), pos)
+
+    def is_dead(self):
+        return self._entity.is_dead()
 
     def __del__(self):
         pass
 
     def get_persuasion(self):
-        return entity.get_persuasion(self)
+        return self._entity.get_persuasion()
+
+    def get_stats(self):
+        return self._entity.get_stats()
     
     def do_attack(self):
         stats = self.get_stats()
@@ -1108,7 +1142,7 @@ class battle_NPC(sprite):
                     self._entity.use_item(health_items[sorted(health_items.keys())[-1]])
         else:
             moves = self._entity.get_moves()
-            self._entity.use_move(moves[random.randrange(len(moves))], this.onscreen_sprites["player"])
+            self._entity.use_move(sorted(moves.keys())[random.randrange(0, len(moves))], this.onscreen_sprites["player"])
             
     def get_losing_message(self):
         return self._entity.get_losing_message()
@@ -1117,20 +1151,19 @@ class battle(threading.Thread):
 
     def __init__(self, player, npc):
         threading.Thread.__init__(self)
-        this.battle_npc = battle_NPC(npc, (0,0))
+        this.inbattle = True
+        this.battle_npc = battle_NPC(npc, position(0,0))
         self.player = battle_player(player, npc)
 
         calc_pos = lambda winx, objx: winx/2 - objx/2
-        self.npc.set_pos(position((calc_pos(this.window.get_width(),
-                self.npc.rect.right),
-                    calc_pos(this.window.get_height(), self.npc.rect.bottom))))
+        this.battle_npc.set_pos(position(calc_pos(this.window.get_width(), this.battle_npc.rect.right),
+                                calc_pos(this.window.get_height(), this.battle_npc.rect.bottom)))
     
-        if self.player.get_stats["speed"] > self.npc.get_stats["speed"]:
+        if self.player.get_stats()["focus"] > this.battle_npc.get_stats()["focus"]:
             self.__player_turn= True
         else:
             self.__player_turn= False
 
-        this.set_background("battle")   
         self.start()
     
     def get_player(self):
@@ -1158,46 +1191,73 @@ class battle(threading.Thread):
         return False
 
     def run(self):
-        if not self.battle_end(): 
-            if  self.__player_turn & self.player.ready():
+        while not self.battle_end():
+            if  self.__player_turn:
+                this.battlebox.say("")
                 this.battlebox.say(this.player_name + " DETERMINATION: " + str(self.player.get_stats()["determination"])+"""
-ENEMY DETERMINATION: """ + str(self.npc.get_stats()["determination"]))
-                this.battlebox.say(this.player_name + " PERSUATION: " + str(self.player.get_persuasion()["pers"])+"""
-ENEMY PERSUATION: """ + str(self.npc.get_persuasion()["determination"]))
+ENEMY DETERMINATION: """ + str(this.battle_npc.get_stats()["determination"]) + """
+""" + this.player_name + " PERSUATION: " + str(self.player.get_persuasion())+"""
+ENEMY PERSUATION: """ + str(this.battle_npc.get_persuasion()))
                 self.player.get_battle_menu()
-                self.player.do_queued()
-            elif not self.__player_turn:
-                self.npc.do_attack()
+                if self.player.ready():
+                    self.player.do_queued()
+                self.__player_turn = False
+            else:
+                this.battle_npc.do_attack()
+                self.__player_turn = True
+
+def exit():
+    pygame.quit()
+    sys.exit()
+
 def update():
     while True:
-        if not this.inbattle:
-            if this.background is not None:
-                window.blit(this.background, (0,0))
-                this.onscreen_sprites.clear(this.background, None)
-                this.onscreen_sprites.update()
-                this.onscreen_sprites.draw(this.background)
-                this.textbox.draw(this.background)
-                this.window.blit(this.background, (0, 0))
-            else:
-                this.onscreen_sprites.clear(this.window, None)
-                this.onscreen_sprites.update()
-                this.onscreen_sprites.draw(this.window)
+        if this.drawing:
+            pygame.event.pump()
+
+            this.window.fill(0)
+
+            if not this.inbattle:
+                if this.background is not None:
+                        this.window.blit(this.background, (0,0))
+                        this.window.blit(this.background, (0, 0))
+                        this.onscreen_sprites.update()
+                        this.onscreen_sprites.draw(this.window)
                 this.textbox.draw(this.window)
+            else:
+                this.window.blit(this.battle_npc.image, this.battle_npc.rect)
+                this.battlebox.draw(this.window)
+
             for menu in this.text_menus_to_draw:
                 menu.draw(this.window)
-        else:
-            this.window.blit(this.battle_npc)
-            this.battlebox.draw(this.window)
-        pygame.display.flip()
 
-def save_data():
-   json.dumps({
-       "sprites":this.data_sprites,
-       "setting":this.settings.get_current_setting()
-    })
+            pygame.display.flip()
+
+#def save_data():
+#   json.dumps({
+#    "sprites":this.data_sprites,
+#    "setting":this.settings.get_current_setting()
+# })
+
+def get_name():
+    this.textbox.freeze_events_get()
+    name = ""
+    iterate = True
+    while iterate:
+        this.textbox.visible = True
+        event = pygame.event.wait()
+        if event.type == pygame.KEYDOWN:
+            char = pygame.key.name(event.key)
+            if char == "space": char =  '  '
+            elif char == "backspace": name = re.match(r'(.*).', name).group(1)
+            elif char == "return": iterate = False
+            else: name+=char
+            this.textbox.say(name)
+            this.textbox.activate()
+    this.textbox.unfreeze_events_get()
+    return name
 
 def start_screen():
-
     this.textbox.say("""Press ANY key.""")
     this.textbox.say("""thank you for accepting our not so binding agreement for you to play this game.""")
 
@@ -1206,8 +1266,9 @@ You need a name, due to budget cuts from the education system
 we can only give you a few, choose well!
 with the power of the arrow keys to select and the z key to confirm!""")
     this.textbox.hide()
+
     response_menu({"bob": None, "bobett": None, "bobafett": None})
-    this.textbox.activate()
+
     this.textbox.show()
     this.textbox.say("great Choice! ...")
 
@@ -1216,51 +1277,37 @@ with the power of the arrow keys to select and the z key to confirm!""")
     this.textbox.say("""YOU HAVE BEEN SECTIONED ON RESTRICTING HUMAN EXPRESSION.
 ENTER YOUR NAME BEFORE HE STARTS WRITING YOU DESTINY.
 PRESS ENTER ONCE YOU HAVE COMPLETED YOUR NAME.""")
+    this.textbox.activate()
 
-    lastkey = ""
-    name = ""
-    loop = True
-    while loop:
-       pygame.event.pump()
-       event = pygame.event.wait()
-       if event.type == pygame.KEYDOWN:
-           newkey = pygame.key.name(event.key)
-           if newkey == "return":
-               loop = False
-           if newkey == "backspace":
-               print("back")
-               name=-lastkey
-           else:
-               name += newkey
-               lastkey = newkey
-           this.textbox.say(name)
+    name = get_name()
 
     this.textbox.say("oh so your name is " + name + ". I guess we could use that.")
 
-    this.onscreen_sprites.add("player", Player(name, position(this.window.get_width()/2,this.window.get_height()/2)))
+    this.onscreen_sprites["player"] = Player(name, position(0,0))
 
     this.settings.load("overworld")
 
+    print(this.background)
+
     this.textbox.say("""ERM... HERE ILL HELP YOU UP, CALL ME RICHARD.
 USE YOU'RE ARROW KEYS TO MOVE,
-X TO OPEN THE MENU AND THE Z TO ACTIVATE THINGS IN FRONT OF YOU
-WHATEVER THAT MEANS. 
-WEIRD THAT YOU CAME WITH AN OPERATION MANUAL""", speaker = "Poor Richard")
+CTRL TO OPEN THE MENU AND X TO CLOSE.
+THE Z TO ACTIVATE THINGS IN FRONT OF YOU WHATEVER THAT MEANS. WEIRD THAT YOU CAME WITH AN OPERATION MANUAL""", speaker = "Poor Richard")
 
     this.textbox.say("""ha.. just kidding! you're the new guy who just moved in, 
 well yours is the one right in front of you, have a nice day!""", speaker = "Poor Richard")
 
+    this.onscreen_sprites["player"].run()
 
 def __init__():
-
-    this.event_hooks = []
-    
+    this.drawing = True
     this.text_menu_visible = False
     this.text_box_visible= False
     this.inbattle = False
     this.player_name = "player"
 
     this.window = pygame.display.set_mode([640, 480])
+    pygame.display.toggle_fullscreen()
  
     this.data = game_data.game_data("data")
     this.fonts = game_data.font_data(os.path.join("data", "fonts"))
@@ -1281,45 +1328,42 @@ def __init__():
     this.battlebox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.bottom))
 
     this.data_sprites = {}
-    this.onscreen_sprites = LayeredDirtyDict()
+    this.onscreen_sprites = SpriteDict()
     this.text_menus_to_draw = []
 
     #pygame.mixer.init()
     #this.background_music = pygame.mixer.Channel(0)
     this.background = None
-    this.draw_process = threading.Thread(target=update).start()
+
     try:
-      data = json.load(open("save.json"))
+        this.items = object_loader.load_objects("items.json")
+        this.moves = object_loader.load_objects("moves.json")
     except (OSError, IOError, FileNotFoundError):
-        try:
-            this.items = object_loader.load_objects("items.json")
-            this.moves = object_loader.load_objects("moves.json")
-        except (OSError, IOError, FileNotFoundError):
-            print("cannot load items.json or moves.json, Fatal Error. Exiting")
-            sys.exit(404)
+        print("cannot load items.json or moves.json, Fatal Error. Exiting")
+        sys.exit(404)
 
-        for sprite in json.load(open("npcs.json")):
-           this.data_sprites[sprite["name"]] =  {
-                "classname":"NPC",
-                "vars" : {
-                    "_imagename": sprite["name"],
-                    "__inventory" : subset_dict_from_array(this.items, sprite["items"]),
-                    "__equipped" : subset_dict_from_array(this.items, sprite["equipped"]),
-                    "__moves" : subset_dict_from_array(this.moves, sprite["moves"]),
-                    "__dialog" : sprite["dialog"],
-                    "__repeat_dialog": sprite["repeat_dialog"],
-                    "__basestat" : sprite["stats"],
-                    "losing_message": sprite["losing_message"]
-                }
+    for sprite in json.load(open("npcs.json")):
+        this.data_sprites[sprite["name"]] =  {
+            "classname":"NPC",
+            "vars" : {
+                "_imagename": sprite["name"],
+                "inventory" : subset_dict_from_array(this.items, sprite["items"]),
+                "equipped" : subset_dict_from_array(this.items, sprite["equipped"]),
+                "moves" : subset_dict_from_array(this.moves, sprite["moves"]),
+                "__dialog" : sprite["dialog"],
+                "__repeat_dialog": sprite["repeat_dialog"],
+                "basestat" : sprite["stats"],
+                "losing_message": sprite["losing_message"]
             }
+        }
 
-        for sprite in json.load(open("sprites.json")):
-                this.data_sprites[sprite['name']] = { 'classname': sprite["classname"], 'vars': sprite }
+    for sprite in json.load(open("sprites.json")):
+        this.data_sprites[sprite['name']] = { 'classname': sprite["classname"], 'vars': sprite }
 
-        start_screen()
-    else:
-            this.data_sprites = data["sprites"]
-            this.settings.load(data["setting"])
+    this.draw_thread = threading.Thread(target=update)
+    this.draw_thread.start()
+
+    start_screen()
 
 if __name__ == '__main__':
     __init__()
