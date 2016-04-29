@@ -1,0 +1,33 @@
+Index: game.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- game.py	(revision 402e474a0afbee092269f337a618532a5197752e)
++++ game.py	(revision )
+@@ -1166,7 +1166,7 @@
+             this.onscreen_sprites.draw(this.window)
+             this.textbox.draw(this.window)
+             if this.background is not None:
+-                window.blit(this.background, (0,0))
++                this.window.blit(this.background, (0,0))
+             for menu in this.text_menus_to_draw:
+                 menu.draw(this.window)
+         else:
+@@ -1174,11 +1174,11 @@
+             this.battlebox.draw(this.window)
+         pygame.display.flip()
+ 
+-def save_data():
+-   json.dumps({
+-       "sprites":this.data_sprites,
+-       "setting":this.settings.get_current_setting()
+-    })
++#def save_data():
++#   json.dumps({
++#    "sprites":this.data_sprites,
++#    "setting":this.settings.get_current_setting()
++# })
+ 
+ def start_screen():
+ 

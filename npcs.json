@@ -74,6 +74,49 @@
 			}
 		},
 		"repeat_dialog": { "..." : ""}
+	},
+	{
+		"name": "Cooper Black",
+		"items":[],
+		"equipped":[],
+		"moves":[
+			"Form theory",
+			"Agape",
+			"Theism",
+			"Libertarianism"
+		],
+		"stats":{
+			"determination": 300,
+			"enlightenment": 75,
+			"focus": 5,
+			"hope": 20,
+			"control": 5
+		},
+		"losing_message": "Why? lord...",
+		"dialog":{
+			"battle_lost":{
+				"moonlight-scene":{
+					"nevermind, it may be only negative emotions have the will to kill":""
+				},
+				"default":{}
+			},
+			"battle_won":{
+				"moonlight-scene":{
+					"another night ruined, no matter.":""
+				},
+				"default":{}
+			},
+			"battle_none":{
+				"house2-interior":{
+					"you may not belive this, but there is no way of not putting it bluntly": "",
+                    "strong emotions become real and attack us, you may have expereced it in the test you had before": ""
+				},
+				"overworld":{
+					"...":""
+				}
+			}
+		},
+		"repeat_dialog": { "..." : ""}
 	}
 ]
 
