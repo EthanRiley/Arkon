@@ -71,8 +71,9 @@
 				"sprites_used":{
 					"player": [59, 83],
 					"Lucidia Bright": [76, 30],
+					"Cooper Black": [88, 24],
 					"table":[83, 69],
-					"house_wall": [0, 0]
+					"house-wall": [0, 0]
 				},
 				"doors":{
 					"overworld":{
@@ -87,8 +88,7 @@
 		},
 		"doors":{
 			"overworld":{
-				"pos":[51, 89],
-				"imagename": ""
+				"pos":[51, 89]
 			}
 		}
 	},
