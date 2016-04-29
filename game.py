@@ -847,9 +847,8 @@ class NPC(entity):
 
     def load_save_data(self, data):
         self.__dict__.update(data)
-        print(self.__dict__)
-        print(self.get_moves())
-
+	
+	# trade an item for stering(in game money)
     def sell(self, item_to_sell):
         if this.onscreen_sprites["player"].get_inventory()["sterling"] >= self.item_to_buy["price"]:
             self.trade( item_to_sell, {"name": "sterling", "quantity": item_to_sell["price"]})
@@ -858,10 +857,12 @@ class NPC(entity):
             return True
         else:
             return False
-
+	
+	# menu items dict for loading in a menu
     def _get_sell_menu_data(self):
         return self.get_iventory_menu_data(do_func=self.sell)
    
+   # get the correct dialog tree
     def _get_dialog(self):
         get_setting_dict  = lambda dict: dict.getdefault(dict[this.settings.get_current_setting()], dict["default"])
         if self.player_battle_won:
@@ -876,6 +877,7 @@ class NPC(entity):
         pos_from = self.get_pos()
         self.move(pos_from.x - pos_to.x - 1, pos_from.y - pos_to.y - 1 )
 
+	# parses dialog string
     def parse_dialog(self, dialog):
         if dialog != "" | dialog is not None:
             if dialog.__class__.__name__ == 'dict':
@@ -982,7 +984,8 @@ class Player(entity):
                     "stats" : self.get_stats_menu_data,
                     "quit" : self.exit_dialog
                }
-
+	
+	#player event handling
     def run(self):
         while not(this.textbox.visible | this.text_menu_visible | this.inbattle):
             pygame.time.delay(5)
@@ -1005,6 +1008,7 @@ class Player(entity):
                 self.facing("right")
                 self.move(1, 0)
             elif keys[pygame.K_f]:
+				#quick testing key to find if the battles work has to be with a background where lucidia bright is present.
                 self.add_move(this.moves["Theism"])
                 self.add_move(this.moves["Atheism"])
                 self.add_move(this.moves["Philla"])
@@ -1193,7 +1197,9 @@ class battle(threading.Thread):
     def run(self):
         while not self.battle_end():
             if  self.__player_turn:
+				# fix werid battlebox bug
                 this.battlebox.say("")
+				# show stats
                 this.battlebox.say(this.player_name + " DETERMINATION: " + str(self.player.get_stats()["determination"])+"""
 ENEMY DETERMINATION: """ + str(this.battle_npc.get_stats()["determination"]) + """
 """ + this.player_name + " PERSUATION: " + str(self.player.get_persuasion())+"""
@@ -1206,15 +1212,20 @@ ENEMY PERSUATION: """ + str(this.battle_npc.get_persuasion()))
                 this.battle_npc.do_attack()
                 self.__player_turn = True
 
+# quit function
 def exit():
     pygame.quit()
     sys.exit()
 
+# draw all sprites and background, menus, textboxes etc...
 def update():
     while True:
+		# if statement allows drawing to be stopped
         if this.drawing:
+			# pump an event, stops the program from not responding when it is not getting events
             pygame.event.pump()
-
+			
+			# clear window so we don't get horrible screen
             this.window.fill(0)
 
             if not this.inbattle:
@@ -1230,7 +1241,8 @@ def update():
 
             for menu in this.text_menus_to_draw:
                 menu.draw(this.window)
-
+			
+			# update dislplay
             pygame.display.flip()
 
 #def save_data():
@@ -1239,6 +1251,7 @@ def update():
 #    "setting":this.settings.get_current_setting()
 # })
 
+# gets name input
 def get_name():
     this.textbox.freeze_events_get()
     name = ""
@@ -1257,10 +1270,12 @@ def get_name():
     this.textbox.unfreeze_events_get()
     return name
 
+#start procedure
 def start_screen():
     this.textbox.say("""Press ANY key.""")
     this.textbox.say("""thank you for accepting our not so binding agreement for you to play this game.""")
 
+	#joke tutorial element to help player
     this.textbox.say("""hello. Welcome to the world of Earth(R) 
 You need a name, due to budget cuts from the education system
 we can only give you a few, choose well!
@@ -1279,15 +1294,15 @@ ENTER YOUR NAME BEFORE HE STARTS WRITING YOU DESTINY.
 PRESS ENTER ONCE YOU HAVE COMPLETED YOUR NAME.""")
     this.textbox.activate()
 
+	# get the players name
     name = get_name()
 
     this.textbox.say("oh so your name is " + name + ". I guess we could use that.")
 
     this.onscreen_sprites["player"] = Player(name, position(0,0))
-
+	
+	#load the starting background
     this.settings.load("overworld")
-
-    print(this.background)
 
     this.textbox.say("""ERM... HERE ILL HELP YOU UP, CALL ME RICHARD.
 USE YOU'RE ARROW KEYS TO MOVE,
@@ -1297,9 +1312,11 @@ THE Z TO ACTIVATE THINGS IN FRONT OF YOU WHATEVER THAT MEANS. WEIRD THAT YOU CAM
     this.textbox.say("""ha.. just kidding! you're the new guy who just moved in, 
 well yours is the one right in front of you, have a nice day!""", speaker = "Poor Richard")
 
+	#start the player event system
     this.onscreen_sprites["player"].run()
 
 def __init__():
+	# load all variables needed that are used moudle-wide
     this.drawing = True
     this.text_menu_visible = False
     this.text_box_visible= False
@@ -1320,13 +1337,18 @@ def __init__():
     except(OSError, IOError):
         print("cannot find the sprite_classes_args.json or settings.json file, Exiting.")
         sys.exit(404)
-
+	
+	#textbox which is used throughout game
     this.textbox = text_box(position(0 , 0))
+	
+	# have to do this as textbox rect was not defined before
     this.textbox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.height))
 
+	#battle box textbox for when in battle.
     this.battlebox = text_box(position(0 , 0))
     this.battlebox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.bottom))
 
+	# load vars
     this.data_sprites = {}
     this.onscreen_sprites = SpriteDict()
     this.text_menus_to_draw = []
@@ -1335,13 +1357,15 @@ def __init__():
     #this.background_music = pygame.mixer.Channel(0)
     this.background = None
 
+	# try to get resouces quit if can't
     try:
         this.items = object_loader.load_objects("items.json")
         this.moves = object_loader.load_objects("moves.json")
     except (OSError, IOError, FileNotFoundError):
         print("cannot load items.json or moves.json, Fatal Error. Exiting")
         sys.exit(404)
-
+	
+	# load NPCs from npc.json
     for sprite in json.load(open("npcs.json")):
         this.data_sprites[sprite["name"]] =  {
             "classname":"NPC",
@@ -1356,14 +1380,18 @@ def __init__():
                 "losing_message": sprite["losing_message"]
             }
         }
-
+	
+	# load sprites from sprite.json
     for sprite in json.load(open("sprites.json")):
         this.data_sprites[sprite['name']] = { 'classname': sprite["classname"], 'vars': sprite }
-
+	
+	# set drawing thread function to update and start it
     this.draw_thread = threading.Thread(target=update)
     this.draw_thread.start()
 
+	# run the start precudre
     start_screen()
 
+#only run init if not being imported
 if __name__ == '__main__':
     __init__()
