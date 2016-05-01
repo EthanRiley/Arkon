@@ -22,19 +22,20 @@
 		"repeat_dialog":{
 			"hi, do you wanna buy something?": "_trade"
 		},
-		"dialog":{},
+		"dialog":{"battle_none":{}, "battle_won":{}, "battle_lost":{}},
 		"stats":{
 			"determination": 100,
 			"enlightenment": 50,
 			"focus": 15,
 			"hope": 25,
-			"control": 30
+			"control": 30,
+			"thought": 100
 		},
 		"losing_message": "dammit",
 		"battle_name": "Eras Bold"
 	},
 	{
-		"name": "Lucidia Bright",
+		"name": "Lucida Bright",
 		"items":[],
 		"equipped":[],
 		"moves":[
@@ -48,9 +49,11 @@
 			"enlightenment": 75,
 			"focus": 5,
 			"hope": 20,
-			"control": 5
+			"control": 5,
+			"thought": 250
 		},
 		"losing_message": "I.. Am.. Not.. Your.... ",
+		"battle_name": "beauty",
 		"dialog":{
 			"battle_lost":{
 				"moonlight-scene":{
@@ -85,15 +88,14 @@
 			"enlightenment": 100,
 			"focus": 10,
 			"hope": 10,
-			"control": 20
+			"control": 20,
+			"thought": 100
 		},
 		"losing_message": "...as we forgive those who trespassed against us",
 		"dialog":{
 			"battle_lost":{
-				"default":{}
 			},
 			"battle_won":{
-				"default":{}
 			},
 			"no_battle":{
 				"house2-interior":{
@@ -117,7 +119,8 @@
 			"enlightenment": 75,
 			"focus": 5,
 			"hope": 20,
-			"control": 5
+			"control": 5,
+			"thought": 100
 		},
 		"losing_message": "...",
 		"dialog":{
@@ -134,6 +137,7 @@
 	},
 	{
 		"name": "Candara",
+		"battle_name": "Panic",
 		"items":[],
 		"equipped":[],
 		"moves":[],
@@ -142,7 +146,8 @@
 			"enlightenment": 75,
 			"focus": 5,
 			"hope": 20,
-			"control": 5
+			"control": 5,
+			"thought": 200
 		},
 		"losing_message": "...",
 		"dialog":{

@@ -1,37 +1,23 @@
 [
 	{
-		"name":"text_box",
-		"classname":"sprite",
-		"vars":{
-			"_imagename":"text_box"
-		}
+		"_imagename":"text_box",
+		"classname":"sprite"
 	},
 	{
-		"name":"sofa",
-		"classname": "sprite",
-		"vars":{
-			"_imagename":"sofa"
-		}
+		"_imagename":"sofa",
+		"classname": "sprite"
 	},
 	{
-		"name":"table",
-		"classname": "sprite",
-		"vars":{
-			"_imagename":"table"
-		}
+		"_imagename":"table",
+		"classname": "sprite"
+
 	},
 	{
-		"name": "text_menu",
-		"classname":"sprite",
-		"vars":{
-			"_imagename":"text_menu"
-		}
+		"_imagename": "text_menu",
+		"classname":"sprite"
 	},
 	{
-		"name": "house_wall",
-		"classname":"sprite",
-		"vars":{
-			"_imagename":"house_wall"
-		}
+		"_imagename": "house_wall",
+		"classname":"sprite"
 	}
 ]

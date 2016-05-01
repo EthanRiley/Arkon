@@ -3,7 +3,7 @@
 # sound loading has been commented out as i had no time for sounds.
 
 # we import everything we need  object_loader and game_data refer to thier files
-import threading, random, collections, sys, json, pygame, os, re
+import threading, random, collections, sys, json, pygame, os, re, copy
 import object_loader, game_data
 from pygame.locals import *
 
@@ -113,10 +113,13 @@ class sprite(pygame.sprite.DirtySprite):
         self.rect.y = pos.y
 
     def get_rect(self):
-        return self.image.get_rect()
+        return self.rect
 
     def get_pos(self):
-        return position(self.image.get_rect().x, self.image.get_rect().y)
+        return position(self.rect.x, self.rect.y)
+
+    def get_imagename(self):
+        return self._imagename
 
     # set position of sprite
     def set_pos(self, pos):
@@ -153,11 +156,16 @@ class door(sprite):
     def activate(self):
         # self.sounds['door_open'].play()
 
+        setting_from = this.settings.get_current_setting()
+
         # load the new setting stored by the door
         this.settings.load(self.setting_to)
 
+        if self.setting_to == "overworld":
+            rect = this.onscreen_sprites["door_to_" + setting_from].rect.copy()
+            this.onscreen_sprites["player"].set_pos(rect.move(rect.width/2, rect.height + 1))
 
-# convenice class for onscreen pick upable items
+# convenience class for onscreen pick up-able items
 class item(sprite):
     def __init__(self, pos, item_data, **kwargs):
         sprite.__init__(self, "dropped_item", pos)
@@ -175,23 +183,26 @@ class settings:
 
     def load_data_sprite(self, sprite_data):
         # closure to get args of the class we are going to init
-        print(sprite_data["vars"])
-        def get_data_args(sprite_data, argtype):
-            args = ordered_subset_dict_from_array(sprite_data["vars"],
-                                                  this.sprite_classes_args[sprite_data["classname"]][argtype])
+        def get_data_args(data, argtype):
+            args = ordered_subset_dict_from_array(data["vars"],
+                                                  this.sprite_classes_args[data["classname"]][argtype])
             for arg in args:
                 # pos is a tuple, not an array as it is defined in the dicts
                 # so we change it to a tuple
                 if arg == "pos":
                     args[arg] = array_to_pos(args[arg])
                 # we remove that arg so it does not get overwrittern by load_save_data
-                sprite_data["vars"].pop(arg)
+                data["vars"].pop(arg)
             return args
 
+        # we don't want to edit the sprite_data, annoying as this should be refrenced as a copy in C++
+        # no a pointer.
+        data = copy.deepcopy(sprite_data)
+
         # get *args of class
-        args = list(get_data_args(sprite_data, "args").values())
+        args = list(get_data_args(data, "args").values())
         # get **kwargs
-        kwargs = get_data_args(sprite_data, "kwargs")
+        kwargs = get_data_args(data, "kwargs")
 
         # interpite arg string, creating the class with no need of using an if statment for classname
         Sprite = eval(sprite_data["classname"] + "(*args, **kwargs)")
@@ -201,25 +212,28 @@ class settings:
         return Sprite
 
     def load(self, setting_name):
-        # stop the thread from drawing so there are no errors
+        # stop the thread so we have no errs.
         this.drawing = False
+        this.draw_thread.join()
+
+        sprites_used = copy.deepcopy(self.settings[setting_name]["sprites_used"])
 
         # find if a sprite which is going to be used is used currently, if so update its position to the new one
         # and remove it from the sprites used dict
         for sprite_key in sorted(this.onscreen_sprites.keys()):
-            if sprite_key in self.settings[setting_name]["sprites_used"]:
-                this.onscreen_sprites[sprite_key].set_pos(array_to_pos(self.settings[setting_name]["sprites_used"][sprite_key]))
-                self.settings[setting_name]["sprites_used"].pop(sprite_key)
+            if sprite_key in sprites_used:
+                this.onscreen_sprites[sprite_key].set_pos(array_to_pos(sprites_used[sprite_key]))
+                sprites_used.pop(sprite_key)
             else:
                 this.onscreen_sprites.pop(sprite_key)
 
         # load the rest of the sprites
-        for sprite in self.settings[setting_name]["sprites_used"]:
-            this.data_sprites[sprite]["vars"]["pos"] = array_to_pos(self.settings[setting_name]["sprites_used"][sprite])
+        for Sprite in sprites_used:
+            this.data_sprites[Sprite]["vars"]["pos"] = array_to_pos(sprites_used[Sprite])
 
         # update the on screen sprites dict
         this.onscreen_sprites.update_dict({k: self.load_data_sprite(this.data_sprites[k])
-                                           for k in self.settings[setting_name]["sprites_used"]})
+                                           for k in sprites_used})
 
         # set the background
         this.set_background(setting_name)
@@ -238,8 +252,10 @@ class settings:
         # set the current setting
         self.__current_setting = setting_name
 
-        # resume the threads drawing process
+        # restart the thread
         this.drawing = True
+        this.draw_thread = threading.Thread(target=update)
+        this.draw_thread.start()
 
     def get_current_setting(self):
         return self.__current_setting
@@ -281,58 +297,68 @@ class moveable(sprite):
 
     # move the sprite.
     def move(self, dx, dy, **kwargs):
-        rect = self.get_rect()
+        rect = self.rect.move(dx, dy)
 
-        # check the collision between each sprite
-        for sprite in this.onscreen_sprites:
-            # don't check the same sprite as it self as it will allways collide
-            if sprite != self:
-                if rect.colliderect(this.onscreen_sprites[sprite].get_rect()):
-                    # self.sounds["collide_beep"].play()
-                    self.moving = False
-                    print(sprite)
-                    # check weither the collided sprite is a door.
-                    if this.onscreen_sprites[sprite].__class__.__name__ == "door":
-                        # if so activate that sprite, making the setting change
-                        this.onscreen_sprites[sprite].activate()
+        # don't let the sprite get out of the background
+        if this.background.get_rect().contains(rect):
+            # check the collision between each sprite
+            for sprite in this.onscreen_sprites:
+                # don't check the same sprite as it self as it will allways collide
+                if sprite != self._imagename:
+                    # incorrect col. dunno why.
+                    if rect.colliderect(this.onscreen_sprites[sprite].rect):
+                        # self.sounds["collide_beep"].play()
+                        self.moving = False
+                        # check whether the collided sprite is a door.
+                        if this.onscreen_sprites[sprite].__class__.__name__ == "door":
+                            # if so activate that sprite, making the setting change
+                            this.onscreen_sprites[sprite].activate()
 
-                    # exit func and return false as not moving
-                    return False
+                        # exit func and return false as not moving
+                        return False
 
-        # if there is a customized move_func use it
-        # if not use the rect.move func
-        if 'move_func' not in sorted(kwargs.keys()):
-            self.rect = self.rect.move(dx, dy)
+            # if there is a customized move_func use it
+            # if not use the rect.move func
+            if 'move_func' not in sorted(kwargs.keys()):
+                self.rect = self.rect.move(dx, dy)
+            else:
+                kwargs['move_func'](dx, dy)
+
+            # set moveing as true and return true
+            self.moving = True
+            return True
+
         else:
-            kwargs['move_func'](dx, dy)
-
-        # set moveing as true and return true
-        self.moving = True
-        return True
+            self.moveing = False
+            return False
 
     def update(self, *args):
         if self.moving:
             # clear the image
-            self.image.fill(0)
+            self.image.fill((0, 0, 0, 1))
 
             #inc. frame
             self.__frame += 1
 
+            pygame.time.delay(5)
+
+            # stops errs when changing facing in movement
+            # errs happern as we are using threads
+            facing = self._facing
+
             # right and left image is the same
-            if (self._facing == "right") | (self._facing == "left"):
+            if (facing == "right") | (facing == "left"):
                 # modulo over the length of the frames available to our frame counter
                 self.__frame %= len(self.animation["right"])
                 # delay so you can see each frame
-                pygame.time.delay(5)
                 self.image.blit(self.animation["right"][self.__frame], (0, 0))
-                if self._facing == "left":
+                if facing == "left":
                     # left direction is a flipped image of right. so we flip it instead of making a copy
                     self.image = pygame.transform.flip(self.image, True, False)
 
             else:
-                pygame.time.delay(5)
-                self.__frame %= len(self.animation[self._facing])
-                self.image.blit(self.animation[self._facing][self.__frame], (0, 0))
+                self.__frame %= len(self.animation[facing])
+                self.image.blit(self.animation[facing][self.__frame], (0, 0))
 
             # make pygame redraw the sprite
             self.dirty = 1
@@ -349,7 +375,7 @@ class basic_text_box():
         #  sounds = ['activate_beep']
 
         self.border = sprite(border, pos)
-        self.rect = self.border.get_rect()
+        self.rect = self.border.rect
 
         #  if 'sounds' in sorted(kwargs.keys()):
         #     sounds += kwargs['sounds']
@@ -478,18 +504,18 @@ class text_box(basic_text_box):
         basic_text_box.draw_func(self)
         basic_text_box.newline_draw_text(self, self.txt_data)
 
-    def freeze_events_get(self):
+    def freeze(self):
         self.frozen = True
 
-    def unfreeze_events_get(self):
+    def unfreeze(self):
         self.frozen = False
 
     # handle the events for the text_box
     def run(self):
         while self.visible & (not this.text_menu_visible) & (not self.frozen):
-            event = pygame.event.wait()
-            if event.type == pygame.KEYDOWN:
-                self.activate()
+                event = pygame.event.wait()
+                if event.type == pygame.KEYDOWN:
+                    self.activate()
 
     def say(self, text, **kwargs):
         if "[player_name]" in text:
@@ -617,7 +643,6 @@ class text_menu(basic_text_box):
             self.render()
         else:
             self.hide()
-            print(self.visible)
 
     def draw_func(self):
         basic_text_box.draw_func(self)
@@ -626,7 +651,7 @@ class text_menu(basic_text_box):
 
     # handle the events for the text_menu
     def run(self):
-        while self.visible:
+        while self.visible & this.drawing:
             # wait for event
             event = pygame.event.wait()
             if event.type == pygame.KEYDOWN:
@@ -722,9 +747,6 @@ class entity(moveable):
     def get_losing_message(self):
         return self.__losing_message
 
-    def get_imagename(self):
-        return self._imagename
-
     # utitly get funcs.
     def get_buffs_from_dict(self, dictbuff):
         buffs = []
@@ -733,7 +755,6 @@ class entity(moveable):
         if len(buffs) != 0:
             return concat_dicts(*buffs, default=0)
         else:
-            print("else")
             return {}
 
     def get_temp_buffs(self):
@@ -835,7 +856,7 @@ class entity(moveable):
 
         if self.get_stats()["wit"] > enemy_attack:
             this.battlebox.say(self.battle_name + " was stunned!")
-            self.stunned = NumberOfTurns
+            self.__stunned = NumberOfTurns
 
     def is_hopeful(self):
         if self.get_stats()["hope"] > random.randrange(0, 500):
@@ -864,7 +885,9 @@ class entity(moveable):
             for buff in self.moves[movename]["buffs"]:
                 self.basestat[buff] += self.moves[movename]["buffs"][buff]
 
-            self.__temp_buffs.append(self.moves[movename]["temporary_buffs"])
+            if len(list(self.moves[movename]["temporary_buffs"].keys())) != 0:
+                self.__temp_buffs.append(self.moves[movename]["temporary_buffs"])
+
             self.__stats_needs_update = True
 
             if self.moves[movename]["stun_effect"] > 0:
@@ -877,7 +900,7 @@ class entity(moveable):
 
     # dec. a temporary status effects turn number, if they are 0 remove them.
     def next_turn(self):
-        self.stunned -= 1
+        self.__stunned -= 1
         for buff in self.__temp_buffs:
             buff["turns"] -= 1
             if buff["turns"] < 0:
@@ -887,9 +910,13 @@ class entity(moveable):
 
 
 # a text_menu which is the same size as a text_box and items are ordered horizontally
-def response_menu(items):
+def battle_menu(items):
     responsebox = text_menu(items, position(0, 0), border="text_box", end_formatting='    ')
     responsebox.set_pos(position(0, this.window.get_height() - this.textbox.border.rect.height))
+    return responsebox
+
+def response_menu(items):
+    responsebox = battle_menu(items)
     responsebox.show()
     return responsebox
 
@@ -906,15 +933,15 @@ class NPC(entity):
             self.battle_name = self._imagename
 
     def is_dead(self):
-        entity.is_dead(self)
         self.__battle_won = False
+        return entity.is_dead(self)
 
     def won_battle(self):
         self.__battle_won = True
 
     # wrapper for text to say.
     def say(self, text):
-        this.textbox.say(text, font=self._imagename, speaker=self._imagename)
+        this.textbox.say(text, font=font_data(20, self._imagename), speaker=self._imagename)
 
     def load_save_data(self, data):
         self.__dict__.update(data)
@@ -939,7 +966,7 @@ class NPC(entity):
     # gets the correct dialog tree
     def _get_dialog(self):
         def get_setting_dict(setting_dict):
-            setting_dict.getdefault(setting_dict[this.settings.get_current_setting()], setting_dict["default"])
+            return setting_dict.get(this.settings.get_current_setting(), self.__repeat_dialog)
 
         if self.__battle_won is not None:
             if self.__battle_won:
@@ -970,7 +997,7 @@ class NPC(entity):
             elif '_move_player_to' in dialog:
                 this.onscreen_sprites["player"].move_to(re.match('_move_to (\w+)').group(1))
             elif dialog == "_trade":
-                text_menu(self._get_sell_menu_data, position(0, 0))
+                text_menu(self._get_sell_menu_data(), position(0, 0))
             elif dialog == "_attack_player":
                 self.__player_battle_won = battle(this.onscreen_sprites["player"], self)
             else:
@@ -978,13 +1005,14 @@ class NPC(entity):
 
     # activation, will be activated by players activation function/key.
     def activate(self):
-        if len(sorted(self._get_dialog().keys())) != 0:
-            if sorted(self._get_dialog().keys()[0]) != "":
-                self.say(sorted(self.__dialog.keys())[0])
+        sorted_keys = sorted(self._get_dialog().keys())
+        if len(sorted_keys) != 0:
+            if sorted_keys[0] != "":
+                self.say(sorted_keys[0])
 
-            self.parse_dialog(self._get_dialog().pop())
+            self.parse_dialog(self._get_dialog().pop(sorted_keys[0]))
         else:
-            key = sorted(self.__repeat_dialog.keys()[0])
+            key = sorted(self.__repeat_dialog.keys())[0]
             self.say(key)
             self.parse_dialog(self.__repeat_dialog[key])
 
@@ -1070,8 +1098,9 @@ class Player(entity):
     # player event handling
     def run(self):
         # while no other GUI elements are visible or not in battle
-        while not (this.textbox.visible | this.text_menu_visible | this.inbattle):
+        while this.drawing & (not (this.text_box_visible | this.text_menu_visible | this.inbattle)):
             pygame.event.pump()
+            pygame.time.delay(5)
             # get keys pressed using pygame.key.get_pressed() as it is more continous than events.
             keys = pygame.key.get_pressed()
             if keys[pygame.K_LCTRL]:
@@ -1098,7 +1127,7 @@ class Player(entity):
                 self.add_move(this.moves["Atheism"])
                 self.add_move(this.moves["Philla"])
                 self.add_move(this.moves["Nihilism"])
-                battle(self, this.onscreen_sprites["Lucidia Bright"])
+                battle(self, this.onscreen_sprites["Lucida Bright"])
 
     def __init__(self, name, pos):
         # lowest stats set.
@@ -1131,25 +1160,23 @@ class Player(entity):
 
     # check for a sprite is in range, if so activate it.
     def activate(self):
-        rect = self.get_rect()
-        rect.width += 3
-        rect.height += 3
-
+        rect = self.rect
+        rect.width += 6
+        rect.height += 6
+        rect.x -= 3
+        rect.y -= 3
         # really there should be different rect's for each different direction but player will not notice as it
         # is a short range.
         for Sprite in this.onscreen_sprites:
             # make sure its not a door that we are activating, maybe unexpected for player.
-            if (Sprite != self) & (Sprite.__class__.__name__ != 'door'):
-                print(Sprite._imagename)
-                rect1 = this.onscreen_sprites[Sprite].get_rect()
-                if rect.colliderect(rect1):
+            if (Sprite != self._imagename) & (Sprite.__class__.__name__ != 'door'):
+                if self.rect.colliderect( this.onscreen_sprites[Sprite].rect):
                     self.activate_sprite(this.onscreen_sprites[Sprite])
                 # else:
                     # self.sounds['collide_beep'].play()
 
     def get_pos(self):
-        rect = self.get_rect()
-        return position(rect.x, rect.y)
+        return position(self.rect.x, self.rect.y)
 
     def get_menu(self):
         return self.menu
@@ -1160,10 +1187,6 @@ class Player(entity):
 
 
 class battle_player():
-    def __init__(self, entity, enemy):
-        self._entity = entity
-        self.__func_queue = []
-        self.enemy = enemy
 
     # wrapper funcs.
     def is_dead(self):
@@ -1174,9 +1197,11 @@ class battle_player():
 
     # funcs which are added to queue
     def use_item(self, itemname):
+        self.battle_menu.hide()
         self.__func_queue.append({"func": self._entity.use_item, "args": itemname})
 
     def use_move(self, movename):
+        self.battle_menu.hide()
         self.__func_queue.append({"func": self._entity.use_move, "args": [movename, self.enemy]})
 
     # func that calls theese queued functions
@@ -1184,7 +1209,6 @@ class battle_player():
         function = self.__func_queue.pop()
         out = function["func"](*function["args"])
         self._entity.next_turn()
-        self._entity.battle_menu.hide()
         return out
 
     def ready(self):
@@ -1208,6 +1232,15 @@ class battle_player():
 
     def get_move_menu_data(self, *args):
         return menu_data(self._entity.get_moves().keys(), self.get_move_is_sure_disc)
+
+    def __init__(self, entity, enemy):
+        self._entity = entity
+        self.__func_queue = []
+        self.enemy = enemy
+        self.battle_menu = battle_menu({
+            'items': self.get_item_menu_data,
+            'moves': self.get_move_menu_data
+        })
 
 
 class battle_NPC(sprite):
@@ -1266,17 +1299,13 @@ class battle:
 
         self.run()
 
-    def get_player(self):
-        return self.player
-
-    def get_npc(self):
-        return this.battle_npc
-
     def battle_end(self):
         if this.battle_npc.is_dead() | self.player.is_dead():
+            # closure for transferring inv.
             def transfer_inventory(e1, e2):
                 for item in e2._entity.get_inventory(): e1.add_to_inventory(item)
 
+            # transfer losers inventory to winner.
             if this.battle_npc.is_dead():
                 transfer_inventory(self.player, this.battle_npc)
                 this.battle.box.say(this.battle_npc.get_losing_message())
@@ -1295,8 +1324,6 @@ class battle:
     def run(self):
         while not self.battle_end():
             if self.__player_turn:
-                # fix bug.
-                this.battlebox.say("")
                 # show stats
                 this.battlebox.say(
                     this.player_name + " DETERMINATION: " + str(self.player.get_stats()["determination"]) + """
@@ -1304,19 +1331,27 @@ ENEMY DETERMINATION: """ + str(this.battle_npc.get_stats()["determination"]) + "
 """ + this.player_name + " PERSUATION: " + str(self.player.get_persuasion()) + """
 ENEMY PERSUATION: """ + str(this.battle_npc.get_persuasion()))
 
+                # show menu
+                self.player.battle_menu.show()
+
+                # do queued if ready
                 if self.player.ready():
                     self.player.do_queued()
+                # no longer players turn
                 self.__player_turn = False
             else:
+                # calc. attack and do it.
                 this.battle_npc.do_attack()
+                # now players turn
                 self.__player_turn = True
+        # there is no need for this object; the battle has ended.
         del self
 
 
 # quit function really should be __del__ but might interfere in module destruction when imported.
 def exit():
     # stop the thread safely
-    this.quitting = True
+    this.drawing = False
     this.draw_thread.join()
 
     # quit.
@@ -1325,10 +1360,9 @@ def exit():
 
 
 # draw all sprites and background, menus, textboxes etc...
+# was going be in a thread but was too complex for such a simple program.
 def update():
-    while not this.quitting:
-        # if statement allows drawing to be stopped
-        if this.drawing:
+    while this.drawing:
             # pump an event, stops the program from not responding when it is not getting events
             pygame.event.pump()
 
@@ -1355,17 +1389,17 @@ def update():
             # update dislplay
             pygame.display.flip()
 
-
 # def save_data():
 #   json.dumps({
 #    "sprites":this.data_sprites,
 #    "setting":this.settings.get_current_setting()
 # })
 
+
 # gets name input
 def get_name():
     # freeze event checking by textbox so there is no competetion
-    this.textbox.freeze_events_get()
+    this.textbox.freeze()
 
     name = ""
     iterate = True
@@ -1402,7 +1436,7 @@ def get_name():
             this.textbox.activate()
 
     # resume textbox events
-    this.textbox.unfreeze_events_get()
+    this.textbox.unfreeze()
     return name
 
 
@@ -1459,10 +1493,9 @@ well yours is the one right in front of you, have a nice day!""", speaker="Poor 
     # start the player event system
     this.onscreen_sprites["player"].run()
 
-
 def __init__():
     # load all variables needed that are used moudle-wide
-    this.quitting = False
+    this.background_x_only = False
     this.drawing = True
     this.text_menu_visible = False
     this.text_box_visible = False
@@ -1520,8 +1553,8 @@ def __init__():
                 "inventory": subset_dict_from_array(this.items, sprite["items"]),
                 "equipped": subset_dict_from_array(this.items, sprite["equipped"]),
                 "moves": subset_dict_from_array(this.moves, sprite["moves"]),
-                "__dialog": sprite["dialog"],
-                "__repeat_dialog": sprite["repeat_dialog"],
+                "_NPC__dialog": sprite["dialog"],
+                "_NPC__repeat_dialog": sprite["repeat_dialog"],
                 "basestat": sprite["stats"],
                 "losing_message": sprite["losing_message"]
             }
@@ -1529,13 +1562,14 @@ def __init__():
 
     # load sprites from sprite.json
     for sprite in json.load(open("sprites.json")):
-        this.data_sprites[sprite['name']] = {'classname': sprite["classname"], 'vars': sprite}
+        classname = sprite['classname']
+        this.data_sprites[sprite['_imagename']] = {'classname': classname, 'vars':sprite}
 
-    # set drawing thread function to update and start it
+    # startup draw(update) thread.
     this.draw_thread = threading.Thread(target=update)
     this.draw_thread.start()
 
-    # run the start precudre
+    # run the start procedure
     start_screen()
 
 
