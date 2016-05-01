@@ -38,7 +38,8 @@
 		},
 		"doors":{
 			"overworld":{
-				"pos":[51, 89]
+				"pos":[51, 89],
+				"imagename":""
 			}
 		}
 	},
@@ -47,11 +48,12 @@
 				"player": [59, 83],
 				"Poor Richard": [42, 86],
 				"table":[83, 69],
-				"house-wall": [0, 0]
+				"house_wall": [0, 0]
 			},
 			"doors":{
 				"overworld":{
-					"pos":[51, 89]
+					"pos":[51, 89],
+                    "imagename":""
 				}
 			}
 	},
@@ -59,11 +61,12 @@
 				"sprites_used":{
 					"player": [59, 83],
 					"table":[83, 69],
-					"house-wall": [0, 0]
+					"house_wall": [0, 0]
 				},
 				"doors":{
 					"overworld":{
-						"pos":[51, 89]
+						"pos":[51, 89],
+                        "imagename":""
 					}
 				}
 	},
@@ -73,11 +76,12 @@
 					"Lucidia Bright": [76, 30],
 					"Cooper Black": [88, 24],
 					"table":[83, 69],
-					"house-wall": [0, 0]
+					"house_wall": [0, 0]
 				},
 				"doors":{
 					"overworld":{
-						"pos":[51, 89]
+						"pos":[51, 89],
+                        "imagename":""
 					}
 				}
 	},
@@ -88,7 +92,8 @@
 		},
 		"doors":{
 			"overworld":{
-				"pos":[51, 89]
+				"pos":[51, 89],
+                "imagename":""
 			}
 		}
 	},

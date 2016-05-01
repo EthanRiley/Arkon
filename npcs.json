@@ -74,6 +74,88 @@
 			}
 		},
 		"repeat_dialog": { "..." : ""}
+	},
+	{
+		"name": "Cooper Black",
+		"items":[],
+		"equipped":[],
+		"moves":[],
+		"stats":{
+			"determination": 150,
+			"enlightenment": 100,
+			"focus": 10,
+			"hope": 10,
+			"control": 20
+		},
+		"losing_message": "...as we forgive those who trespassed against us",
+		"dialog":{
+			"battle_lost":{
+				"default":{}
+			},
+			"battle_won":{
+				"default":{}
+			},
+			"no_battle":{
+				"house2-interior":{
+					"ah hello, I am Cooper black, nice to meet you." : " i welcome you to the village of lleh",
+					"in this village due to a dark magic, emotions manifest themselves as human" : "and fight us until we only become that emotion"
+				},
+				"moonlight-scene":{
+					"Well, that was uncalled for." : "you know you could of just turned the off switch at the back"
+				}
+			}
+		},
+		"repeat_dialog": { "..." : ""}
+	},
+	{
+		"name": "Poor Richard",
+		"items":[],
+		"equipped":[],
+		"moves":[],
+		"stats":{
+			"determination": 200,
+			"enlightenment": 75,
+			"focus": 5,
+			"hope": 20,
+			"control": 5
+		},
+		"losing_message": "...",
+		"dialog":{
+			"battle_lost":{
+				"default":{}
+			},
+			"battle_won":{
+				"default":{}
+			},
+			"battle_none":{
+			}
+		},
+		"repeat_dialog": { "..." : ""}
+	},
+	{
+		"name": "Candara",
+		"items":[],
+		"equipped":[],
+		"moves":[],
+		"stats":{
+			"determination": 200,
+			"enlightenment": 75,
+			"focus": 5,
+			"hope": 20,
+			"control": 5
+		},
+		"losing_message": "...",
+		"dialog":{
+			"battle_lost":{
+				"default":{}
+			},
+			"battle_won":{
+				"default":{}
+			},
+			"battle_none":{
+			}
+		},
+		"repeat_dialog": { "..." : ""}
 	}
 ]
 
