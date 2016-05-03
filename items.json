@@ -2,7 +2,8 @@
 	"default":{ 
 			"consumable": true,
 			"equipabble": false,
-			"move": false
+			"move": false,
+			"quantity": 1
 	},
 	"types" : [
 		{
@@ -11,11 +12,16 @@
 			"consumable": false
 		},
 		{
+			"type": "money",
+			"consumable": false,
+			"buffs": {}
+		},
+		{
 			"type": "alcohol",
 			"buffs": {
-				"speed" : -5,
+				"wit" : -5,
 				"determination": 5,
-				"enligtenment": -5
+				"enlightenment": -5
 			}
 		},
 		{
@@ -25,9 +31,9 @@
 			}
 		},
 		{
-			"type": "speed",
+			"type": "wit",
 			"buffs": { 
-				"speed": 5
+				"wit": 5
 			}
 		},
 		{
@@ -44,6 +50,12 @@
 			}
 		}
 	],		
+	"money":[
+		{
+			"name": "sterling",
+			"potency": 1
+		}
+	],
 
 	"alcohol":[
 		{
@@ -87,7 +99,7 @@
 		}
 	],
 
-	"speed":[
+	"wit":[
 		{
 			"name": "coffie",
 			"potency": 2,

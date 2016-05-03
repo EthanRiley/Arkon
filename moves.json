@@ -41,7 +41,7 @@
 			},
 			"temporary_buffs" : {
 				"hope" : -10,
-				"determintion" : -5,
+				"determination" : -5,
 				"enlightenment" : 15,
 				"turns": 10
 			}
@@ -52,7 +52,6 @@
 			"thought": 5,
 			"buffs" : {
 				"enlightenment": 5,
-				"determination" : 5,
 				"hope" : 10
 			},
 			"temporary_buffs" : {}
@@ -63,7 +62,6 @@
 			"thought": 10,
 			"buffs" : {
 				"hope": 5,
-				"determination": 5,
 				"enlightenment": 5
 			},
 			"temporary_buffs" : {
@@ -81,7 +79,6 @@
 				"hope" : 5
 			},
 			"temporary_buffs" : {
-				"determintaion" : 50,
 				"enlightenment" :  35,
 				"hope" : 15,
 				"turns" : 5
@@ -91,6 +88,7 @@
 			"name" : "Eightfold Path",
 			"description" : "see things as they truly are.",
 			"thought": 40,
+			"buffs":{},
 			"temporary_buffs" : {
 				"enlightenment" : 100,
 				"turns" : 2
@@ -102,7 +100,6 @@
 			"thought": 10,
 			"buffs" : {
 				"hope" : 10,
-				"determination" : 20,
 				"enlightenment" : 5
 			},
 			"temporary_buffs" : {}
@@ -125,12 +122,10 @@
 			"description" : "only I can tell me what to do!",
 			"thought": 45,
 			"buffs" : {
-				"determination" : 10,
 				"enlightenment" : 15,
 				"control" : 5
 			},
 			"temporary_buffs" : {
-				"determination" : 40,
 				"enlightenment" : 10,
 				"control" : 10,
 				"turns" : 3
@@ -141,12 +136,10 @@
 			"description" : "rejecting soceity and its norms you open your mind to a larger world.",
 			"thought": 30,
 			"buffs" : {
-				"determination" : 5,
 				"hope" : 15,
 				"enlightenment" : 20
 			},
 			"temporary_buffs" : {
-				"determination" : 15,
 				"hope" : 35,
 				"enlightenment" : 5,
 				"turns" : 4
@@ -174,8 +167,7 @@
 			"description" : "you set it as your primary objective to defeat the enemy", 
 			"thought": 20,
 			"buffs":{
-				"focus" : 5,
-				"determination": 5
+				"focus" : 5
 			},
 			"temporary_buffs":{
 				"focus" : 10,

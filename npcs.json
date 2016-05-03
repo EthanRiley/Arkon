@@ -7,9 +7,7 @@
 			"chocolate",
 			"darth vader armor",
 			"clothes",
-			"nice clothes",
 			"liquid joy",
-			"hot chocolate",
 			"herbal tea",
 			"headphones",
 			"coffie",
@@ -29,31 +27,33 @@
 			"focus": 15,
 			"hope": 25,
 			"control": 30,
-			"thought": 100
+			"wit": 20,
+			"thought": 500
 		},
 		"losing_message": "dammit",
 		"battle_name": "Eras Bold"
 	},
 	{
 		"name": "Lucida Bright",
+		"battle_name": "beauty",
 		"items":[],
 		"equipped":[],
 		"moves":[
 			"Form theory",
 			"Agape",
-			"mission statment",
+			"Eightfold Path",
 			"Libertarianism"
 		],
 		"stats":{
 			"determination": 200,
 			"enlightenment": 75,
+			"wit": 10,
 			"focus": 5,
 			"hope": 20,
 			"control": 5,
-			"thought": 250
+			"thought": 10000
 		},
 		"losing_message": "I.. Am.. Not.. Your.... ",
-		"battle_name": "beauty",
 		"dialog":{
 			"battle_lost":{
 				"moonlight-scene":{
@@ -69,10 +69,14 @@
 			},
 			"battle_none":{
 				"house2-interior":{
-					"me and richard are going on a walk do you want to come?": { "yup": "okay see you there!", "no thanks": "well if you carry on left, you'll find us."}
+					"wow you're really taking the amnesia thing to a the next level, no this is NOT a game.":""
 				},
 				"overworld":{
-					"hi Im Lucidia, You Okay? it looked like you blacked out for a bit.":""
+					"Hi Im Lucidia, You Okay? it looked like you blacked out for a bit.":""
+				},
+				"moonlight-scene":{
+					"ins't it beautiful?" : "",
+					"i think we better get home now.": "_attack_player"
 				}
 			}
 		},
@@ -80,16 +84,18 @@
 	},
 	{
 		"name": "Cooper Black",
+		"battle_name": "Shia debuff",
 		"items":[],
 		"equipped":[],
 		"moves":[],
 		"stats":{
 			"determination": 150,
-			"enlightenment": 100,
-			"focus": 10,
+			"enlightenment": 150,
+			"focus": 20,
 			"hope": 10,
+			"wit": 100,
 			"control": 20,
-			"thought": 100
+			"thought": 1000
 		},
 		"losing_message": "...as we forgive those who trespassed against us",
 		"dialog":{
@@ -97,13 +103,12 @@
 			},
 			"battle_won":{
 			},
-			"no_battle":{
+			"battle_none":{
 				"house2-interior":{
-					"ah hello, I am Cooper black, nice to meet you." : " i welcome you to the village of lleh",
-					"in this village due to a dark magic, emotions manifest themselves as human" : "and fight us until we only become that emotion"
+					"Ah hello, I am Cooper black, nice to meet you. I guess that you have found out by now, in this world, when you fight your emotions, you fight them literally.": "anyway I going for a walk care to join me? its just from the left of here..."
 				},
 				"moonlight-scene":{
-					"Well, that was uncalled for." : "you know you could of just turned the off switch at the back"
+					"Well, that was uncalled for." : "..."
 				}
 			}
 		},
@@ -111,6 +116,7 @@
 	},
 	{
 		"name": "Poor Richard",
+		"battle_name": "Poor Richard",
 		"items":[],
 		"equipped":[],
 		"moves":[],
@@ -120,7 +126,8 @@
 			"focus": 5,
 			"hope": 20,
 			"control": 5,
-			"thought": 100
+			"thought": 1000,
+			"wit": 15
 		},
 		"losing_message": "...",
 		"dialog":{
@@ -131,43 +138,49 @@
 				"default":{}
 			},
 			"battle_none":{
+				"overworld": {
+					"there is a shop in the village if you're hungry" : "it's the blue torn down looking one.",
+					"huh? you want to be read out the controls again urgh... no. you can read can't you?": ""
+				}
 			}
 		},
-		"repeat_dialog": { "..." : ""}
+		"repeat_dialog": { "OI! I know im just an NPC but please stop spamming me!":"<sighes> players."}
 	},
 	{
 		"name": "Candara",
 		"battle_name": "Panic",
 		"items":[],
 		"equipped":[],
-		"moves":[],
+		"moves":[
+			"Realism",
+			"Anticonformism",
+			"Cartiasiain doubt",
+			"backup plan"
+
+		],
 		"stats":{
-			"determination": 200,
+			"determination": 100,
 			"enlightenment": 75,
 			"focus": 5,
 			"hope": 20,
 			"control": 5,
-			"thought": 200
+			"thought": 250,
+			"wit": 5
 		},
-		"losing_message": "...",
+		"losing_message": "you stopped panicing",
 		"dialog":{
 			"battle_lost":{
 				"default":{}
 			},
 			"battle_won":{
-				"default":{}
+				"well you completed the test.": ""
 			},
 			"battle_none":{
+				"school-interior":{
+					"you're late. for the EXAM. please sit quietly while i get a paper for you." : "_attack_player"
+				}
 			}
 		},
-		"repeat_dialog": { "..." : ""}
+		"repeat_dialog": { "bloody emotions wrecking the place." : "at least the EXAM was not disturbed."}
 	}
 ]
-
-
-	
-
-
-
-
-

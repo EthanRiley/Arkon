@@ -195,8 +195,8 @@ class settings:
                 data["vars"].pop(arg)
             return args
 
-        # we don't want to edit the sprite_data, annoying as this should be refrenced as a copy in C++
-        # no a pointer.
+        # we don't want to edit the sprite_data, annoying as this should a copy in C++
+        # not a pointer. and as i have came from C++ expected python to follow this rule also.
         data = copy.deepcopy(sprite_data)
 
         # get *args of class
@@ -215,6 +215,9 @@ class settings:
         # stop the thread so we have no errs.
         this.drawing = False
         this.draw_thread.join()
+
+        # wait for all event loops to fin
+        pygame.time.delay(5)
 
         sprites_used = copy.deepcopy(self.settings[setting_name]["sprites_used"])
 
@@ -307,15 +310,19 @@ class moveable(sprite):
                 if sprite != self._imagename:
                     # incorrect col. dunno why.
                     if rect.colliderect(this.onscreen_sprites[sprite].rect):
-                        # self.sounds["collide_beep"].play()
-                        self.moving = False
                         # check whether the collided sprite is a door.
                         if this.onscreen_sprites[sprite].__class__.__name__ == "door":
                             # if so activate that sprite, making the setting change
                             this.onscreen_sprites[sprite].activate()
-
-                        # exit func and return false as not moving
-                        return False
+                            # self.sounds["collide_beep"].play()
+                            self.moving = False
+                            # exit func and return false as not moving
+                            return False
+                        elif this.settings.get_current_setting() != "moonlight-scene":
+                            # self.sounds["collide_beep"].play()
+                            self.moving = False
+                            # exit func and return false as not moving
+                            return False
 
             # if there is a customized move_func use it
             # if not use the rect.move func
@@ -496,9 +503,7 @@ class text_box(basic_text_box):
             self.txt_data = self.pages_to_render.pop()
             if 'func' in sorted(kwargs):
                 kwargs['func']()
-            return True
-        else:
-            self.hide()
+        self.hide()
 
     def draw_func(self):
         basic_text_box.draw_func(self)
@@ -537,8 +542,8 @@ class text_box(basic_text_box):
 
         # inc. the page so the textbox has something to show
         # if it is the first time of it running say func
-        if self.new:
-            self.activate()
+        self.activate()
+
 
         self.show()
         self.run()
@@ -565,8 +570,12 @@ class text_menu(basic_text_box):
         self.text = ""
         self.render_text = []
 
-        for item_name in self.items.keys():
-            self.text += "    " + item_name + self.end_formatting
+        for item_name in list(self.items.keys()):
+            if item_name != "reload_func":
+                self.text += "    " + item_name + self.end_formatting
+            else:
+                self.reload_func = self.items[item_name]
+                self.items.pop(item_name)
 
         self.format()
 
@@ -612,28 +621,46 @@ class text_menu(basic_text_box):
     def get_selected(self):
         return self.selected
 
+    def reload_menu(self):
+        if self.reload_func is not None:
+            self.items = self.reload_func()
+            self.render()
+            if self.selected not in self.items.keys():
+                self.select(0)
+
     # activate selected
     def activate(self, *args):
-        if self.items.get(self.selected) is not None:
-            if self.items.get(self.selected).__class__.__name__ != 'dict':
-                if self.items.get(self.selected) != "previous":
-                    output = self.items.get(self.selected)(self.selected)
+        selected = self.selected
+        item_selected = self.items.get(selected)
+
+        if item_selected is not None:
+            if item_selected.__class__.__name__ != 'dict':
+                if item_selected != "previous":
+                    output = item_selected(selected)
+                    self.reload_menu()
                     if output == "previous":
                         self.previous_menu()
                     elif output.__class__.__name__ == 'dict':
                         self.previous = self.items
+                        self.previous["reload_func"] = self.reload_func
+                        self.selected = ""
                         self.items = output
                         self.render()
+                        self.select(0)
                     return output
                 else:
                     self.previous_menu()
                     return "previous"
             else:
+                self.items["reload_func"] = self.reload_func
                 self.previous = self.items
-                self.items = self.items.get(self.selected)
+                self.items = item_selected
+                self.selected = ""
                 self.render()
+                self.select(0)
         else:
             self.previous_menu()
+
 
     def previous_menu(self):
         # self.text_box.sounds["back_beep"].play()
@@ -641,6 +668,8 @@ class text_menu(basic_text_box):
             self.items = self.previous
             self.previous = None
             self.render()
+            self.selected = ""
+            self.select(0)
         else:
             self.hide()
 
@@ -676,9 +705,14 @@ class text_menu(basic_text_box):
 
     def __init__(self, items, pos, **kwargs):
         border = "text_menu"
+        self.reload_func = None
 
         if 'border' in kwargs:
             border = kwargs['border']
+
+        # reload func reloads menu when something may have changed e.g. a item removed from inv.
+        if 'reload_func' in kwargs:
+            self.reload_func = kwargs['reload_func']
 
         basic_text_box.__init__(self, pos, border)  # , sounds = ['select_beep', 'back_beep'])
         self.items = orderd_dict_from_dict(items)
@@ -723,10 +757,22 @@ def deconcat_dicts(*dicts, **kwargs):
     return output
 
 
+
+# convenience function for creating item data for text_menus
+def menu_data(data_get, var):
+    output = {}
+
+    for data in data_get:
+        output[data] = var
+
+    return output
+
+
 class entity(moveable):
     def __init__(self, name, pos, basestat, **kwargs):
         moveable.__init__(self, name, pos, **kwargs)
         self.__stunned = 0
+        self.max_determination = basestat["determination"]
         self.basestat = basestat
         self.equipped = {}
         self.inventory = {}
@@ -777,12 +823,17 @@ class entity(moveable):
         self.__stats["enlightenment"] *= self.__stats["focus"] / 2
         self.__stats["enlightenment"] += self.__stats["determination"] / 4
         self.__stats["enlightenment"] *= random.uniform(0.2, 1.1)
-        self.__stats["determination"] -= self.__damage_taken
+
+        if self.__stats["determination"] < self.max_determination:
+            self.__stats["determination"] = self.max_determination
+
+        if self.__damage_taken > 0:
+            self.__stats["determination"] -= self.__damage_taken
 
     def is_dead(self):
         stats = self.get_stats()
-        return (stats["determination"] - self.__damage_taken <= 0 |
-                self.get_persuasion() > stats["determination"] + stats["focus"])
+        return (stats["determination"] - self.__damage_taken <= 0) | \
+               (self.get_persuasion() > stats["determination"] + stats["focus"])
 
     def get_stats(self):
         if self.__stats_needs_update:
@@ -811,36 +862,37 @@ class entity(moveable):
 
     def add_to_inventory(self, item):
         if item["name"] in self.inventory:
-            self.inventory[item["name"]] += item["quantity"]
+            self.inventory[item["name"]]["quantity"] += item["quantity"]
         else:
             self.inventory[item["name"]] = item
 
     def remove_from_inventory(self, item):
-        self.inventory[item["name"]] -= item["quantity"]
-        if self.inventory[item["name"]] <= 0:
+        self.inventory[item["name"]]["quantity"] -= item["quantity"]
+        if self.inventory[item["name"]]["quantity"] <= 0:
             self.inventory.pop(item["name"])
 
     def get_inventory(self):
         return self.inventory
 
+    def get_inventory_menu_data(self, *args):
+        if len(self.inventory) > 0:
+            out = menu_data(sorted(self.get_inventory().keys()), self.use_item)
+            out["reload_func"] = self.get_inventory_menu_data
+            return out
+        else:
+            return {}
+
     def trade(self, item_to_remove, item_to_gain):
         self.remove_from_inventory(item_to_remove)
         self.add_to_inventory(item_to_gain)
 
-    def get_inventory_menu_data(self, **kwargs):
-        output = {}
-        for item_name in sorted(self.get_inventory().keys()):
-            if 'do_func' not in kwargs:
-                output[item_name] = self.use_item
-            else:
-                output[item_name] = kwargs['do_func']
-        return output
-
     def use_item(self, itemname):
         self.__stats_needs_update = True
-
         for buff in self.inventory[itemname]["buffs"]:
-            self.basestat[buff] += self.inventory[itemname]["buffs"][buff] * self.inventory[itemname]["potency"]
+            if buff != "determination":
+                self.basestat[buff] += self.inventory[itemname]["buffs"][buff] * self.inventory[itemname]["potency"]
+            else:
+                self.max_determination += self.inventory[itemname]["buffs"][buff] * self.inventory[itemname]["potency"]
 
         if self.inventory[itemname]["effect"] is not None:
             self.inventory[itemname]["effect"]()
@@ -849,7 +901,7 @@ class entity(moveable):
             self.equip(itemname)
 
         if self.inventory[itemname]["consumable"]:
-            self.remove_from_inventory(self.inventory[itemname])
+            self.remove_from_inventory({"name": itemname, "quantity": 1})
 
     def _stun(self, enemy_stats, NumberOfTurns):
         enemy_attack = (enemy_stats["enlightenment"] / 4) * random.uniform(0, (0.5 + enemy_stats["focus"] / 130))
@@ -864,25 +916,29 @@ class entity(moveable):
         else:
             return False
 
-    def _take_damage(self, enemy_stats, is_hopeful):
+    def take_damage(self, enemy):
         stats = self.get_stats()
+        enemy_stats = enemy.get_stats()
 
-        if is_hopeful:
+        if enemy.is_hopeful():
             for k in enemy_stats:
                 enemy_stats[k] *= 2
 
         if stats["wit"] > enemy_stats["enlightenment"] / 4 * random.uniform(0, 0.5 + enemy_stats["focus"] / 55):
             self.__persuasion += enemy_stats["enlightenment"]
         else:
-            this.battlebox.say("your oppenent out witted your attack! You focus on not embarrasing yourself futher.")
+            this.battlebox.say(self.battle_name + " out witted the attack! " +
+                               enemy.battle_name + " focuses on not embarrasing themselves futher.")
 
         self.__damage_taken = self.__damage_taken + enemy_stats["focus"] - stats["control"]
 
     def use_move(self, movename, enemy):
-        if self.basestat["thought"] - self.moves[movename]["thought"] > 0 ^ self.__stunned == 0:
-            self.basestat["thought"] = - self.moves[movename]["thought"]
+        if (self.basestat["thought"] - self.moves[movename]["thought"] > 0) | (self.__stunned <= 0):
+            self.basestat["thought"] =- self.moves[movename]["thought"]
 
             for buff in self.moves[movename]["buffs"]:
+                if buff == "determination":
+                    self.max_determination += self.moves[movename]["buffs"][buff]
                 self.basestat[buff] += self.moves[movename]["buffs"][buff]
 
             if len(list(self.moves[movename]["temporary_buffs"].keys())) != 0:
@@ -894,13 +950,17 @@ class entity(moveable):
                 enemy.stun(self.get_stats(),
                            self.moves[movename]["stun_effect"])
 
+            enemy.take_damage(self)
+
             return True
         else:
+            this.battlebox.say("but " + self.battle_name + " does not have enough thought to preform that move!")
             return False
 
     # dec. a temporary status effects turn number, if they are 0 remove them.
     def next_turn(self):
-        self.__stunned -= 1
+        if self.__stunned != 0:
+            self.__stunned -= 1
         for buff in self.__temp_buffs:
             buff["turns"] -= 1
             if buff["turns"] < 0:
@@ -949,82 +1009,99 @@ class NPC(entity):
     # trade an item for stering(in game money)
     def sell(self, item_to_sell):
         # check if the player has enough money.
-        if this.onscreen_sprites["player"].get_inventory()["sterling"] >= self.item_to_sell["price"]:
-            self.trade(item_to_sell, {"name": "sterling", "quantity": item_to_sell["price"]})
-            this.onscreen_sprites["player"].trade({"name": "sterling", "quantity": item_to_sell["price"]},
-                                                  item_to_sell)
-            return True
-        else:
-            # if not notify player.
-            self.say("you don't have enough money. get some and ask again.")
-            return False
+        if "sterling" in this.onscreen_sprites["player"].inventory:
+            if this.onscreen_sprites["player"].inventory["sterling"]["quantity"] >= self.inventory[item_to_sell]["price"]:
+                this.onscreen_sprites["player"].trade(
+                    {"name": "sterling", "quantity": self.inventory[item_to_sell]["price"]},
+                    this.items[item_to_sell])
+                self.trade(this.items[item_to_sell], {"name": "sterling", "quantity":self.inventory[item_to_sell]["price"]})
+            else:
+                # if not notify player.
+                self.say("you don't have enough money. get some and ask again.")
+        # else:
+            # self.say("you have no money, how are you going to buy something without money?")
+        return "previous"
 
     # menu for selling items
     def _get_sell_menu_data(self):
-        return self.get_inventory_menu_data(do_func=self.sell)
+        if len(self.inventory) > 0:
+            out = menu_data(sorted(self.get_inventory().keys()), self.sell)
+            out["reload_func"] = self._get_sell_menu_data
+            return out
+        else:
+            self.say("I'm out of goods sorry")
+            return None
 
     # gets the correct dialog tree
     def _get_dialog(self):
-        def get_setting_dict(setting_dict):
-            return setting_dict.get(this.settings.get_current_setting(), self.__repeat_dialog)
-
         if self.__battle_won is not None:
             if self.__battle_won:
-                return get_setting_dict(self.__dialog["battle_won"])
+                return self.__dialog["battle_won"].get(this.settings.get_current_setting())
             else:
-                return get_setting_dict(self.__dialog["battle_lost"])
+               return self.__dialog["battle_lost"].get(this.settings.get_current_setting())
         else:
             # no battle has occurred.
-            return get_setting_dict(self.__dialog["battle_none"])
+            return self.__dialog["battle_none"].get(this.settings.get_current_setting())
+
+    # emulate players movement.
+    def move(self, dx, dy):
+        for i in range(abs(dx)):
+            pygame.time.delay(7)
+            if dx != abs(dx):
+                moveable.move(self, -1, 0)
+            else:
+                moveable.move(self, 1, 0)
+        for i in range(abs(dy)):
+            pygame.time.delay(7)
+            if dy != abs(dy):
+                moveable.move(self, 0, -1)
+            else:
+                moveable.move(self, 0, 1)
 
     def move_to(self, sprite_name):
         pos_to = this.onscreen_sprites[sprite_name].get_pos()
         pos_from = self.get_pos()
-        self.move(pos_from.x - pos_to.x - 1, pos_from.y - pos_to.y - 1)
+        self.move(pos_to.x - pos_from.x - 1, pos_to.y - pos_from.y - 1)
 
     # parses dialog string
     def parse_dialog(self, dialog):
-        if (dialog != "") | (dialog is not None):
+        if dialog != "":
             if dialog.__class__.__name__ == 'dict':
                 self.dialog_dict = dialog
                 response_menu({k: self.menu_dialog for k in dialog.keys()})
             if '_give_item' in dialog:
-                this.onscreen_sprites["player"].add_to_inventory(re.match('_give_item (\w+)').group(1))
+                this.onscreen_sprites["player"].add_to_inventory(this.items[re.match('_give_item (.+)', dialog).group(1)])
             elif '_give_move' in dialog:
-                this.onscreen_sprites["player"].add_move(re.match('_give_move (\w+)').group(1))
+                this.onscreen_sprites["player"].add_move(this.moves[re.match('_give_move (.+)', dialog).group(1)])
             elif '_move_to' in dialog:
-                self.move_to(re.match('_move_to (\w+)').group(1))
+                self.move_to(re.match('_move_to (.+)', dialog).group(1))
             elif '_move_player_to' in dialog:
-                this.onscreen_sprites["player"].move_to(re.match('_move_to (\w+)').group(1))
+                NPC.move_to(this.onscreen_sprites["player"], (re.match('_move_player_to (.+)', dialog).group(1)))
             elif dialog == "_trade":
-                text_menu(self._get_sell_menu_data(), position(0, 0))
+                menu = text_menu(self._get_sell_menu_data(), position(0, 0))
+                menu.show()
             elif dialog == "_attack_player":
-                self.__player_battle_won = battle(this.onscreen_sprites["player"], self)
+                self.__battle_won = battle(this.onscreen_sprites["player"], self)
             else:
                 self.say(dialog)
 
     # activation, will be activated by players activation function/key.
     def activate(self):
-        sorted_keys = sorted(self._get_dialog().keys())
-        if len(sorted_keys) != 0:
-            if sorted_keys[0] != "":
-                self.say(sorted_keys[0])
-
-            self.parse_dialog(self._get_dialog().pop(sorted_keys[0]))
+        dialog = self._get_dialog()
+        if dialog is not None:
+            sorted_keys = sorted(self._get_dialog().keys())
+            if len(sorted_keys) != 0:
+                if sorted_keys[0] != "":
+                    self.say(sorted_keys[0])
+                self.parse_dialog(self._get_dialog().pop(sorted_keys[0]))
+            else:
+                key = sorted(self.__repeat_dialog.keys())[0]
+                self.say(key)
+                self.parse_dialog(self.__repeat_dialog[key])
         else:
             key = sorted(self.__repeat_dialog.keys())[0]
             self.say(key)
             self.parse_dialog(self.__repeat_dialog[key])
-
-
-# convenience function for creating item data for text_menus
-def menu_data(data_get, var):
-    output = {}
-
-    for data in data_get:
-        output[data] = var
-
-    return output
 
 
 class Player(entity):
@@ -1046,10 +1123,9 @@ class Player(entity):
     def get_stats_menu_data(self, *args):
         output = {}
 
-        # print stats.
         stats = self.get_stats()
         for stat in stats:
-            output[stat + "  =  " + str(stats[stat])] = None
+            output[stat + "  =  " + str(int(stats[stat]))] = None
         return output
 
     # confirmation dialogs.
@@ -1065,6 +1141,7 @@ class Player(entity):
             dialog = kwargs['dialog']
         else:
             dialog = self.sure_dialogs.pop()
+
         this.textbox.say(dialog['dialog'])
 
         def sure(*args):
@@ -1082,10 +1159,7 @@ class Player(entity):
         return self.is_sure_dialog_hook(dialog={'if_sure': this.exit, 'dialog': 'do you really want to quit?'})
 
     def item_description_menu(self, itemname):
-        self.is_sure_dialog(self.use_item, dialog='it says "' + self.inventory[itemname]["description"] + '" eat it?"')
-
-    def get_inventory_menu_data(self, *args):
-        return menu_data(sorted(self.get_inventory().keys()), self.item_description_menu)
+        return self.is_sure_dialog(self.use_item, dialog='it says "' + self.inventory[itemname]["description"] + '" eat it?"')
 
     def get_player_menu_items(self):
         return {
@@ -1100,15 +1174,26 @@ class Player(entity):
         # while no other GUI elements are visible or not in battle
         while this.drawing & (not (this.text_box_visible | this.text_menu_visible | this.inbattle)):
             pygame.event.pump()
+
+            event = pygame.event.poll()
+
+            if event.type == pygame.KEYDOWN:
+                # get keys pressed using pygame.key.get_pressed() as it is more continous than events.
+                if event.key == pygame.K_LCTRL:
+                    # seperate hide and show buttons as they would counteract eachother.
+                    self.player_menu.show()
+                elif event.key == pygame.K_z:
+                    self.activate()
+                elif event.key == pygame.K_f:
+                    # quick testing key to find if the battles work has to be with a background
+                    #  where Lucidia Bright is present.
+                    battle(self, this.onscreen_sprites["Lucida Bright"])
+
             pygame.time.delay(5)
-            # get keys pressed using pygame.key.get_pressed() as it is more continous than events.
+
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_LCTRL]:
-                # seperate hide and show buttons as they would counteract eachother.
-                self.player_menu.show()
-            elif keys[pygame.K_z]:
-                self.activate()
-            elif keys[pygame.K_UP]:
+
+            if keys[pygame.K_UP]:
                 self.facing("backward")
                 self.move(0, -1)
             elif keys[pygame.K_DOWN]:
@@ -1120,14 +1205,6 @@ class Player(entity):
             elif keys[pygame.K_RIGHT]:
                 self.facing("right")
                 self.move(1, 0)
-            elif keys[pygame.K_f]:
-                # quick testing key to find if the battles work has to be with a background
-                #  where Lucidia Bright is present.
-                self.add_move(this.moves["Theism"])
-                self.add_move(this.moves["Atheism"])
-                self.add_move(this.moves["Philla"])
-                self.add_move(this.moves["Nihilism"])
-                battle(self, this.onscreen_sprites["Lucida Bright"])
 
     def __init__(self, name, pos):
         # lowest stats set.
@@ -1138,15 +1215,25 @@ class Player(entity):
                             'hope': 10,
                             'focus': 1,
                             'wit': 10,
-                            'thought': 100
+                            'thought': 500,
+                            'control': 5
                         }, losing_message="you lost...")  # , sounds = ["activate_beep"] )
 
         self.sure_dialogs = []
+
+        self.add_move(this.moves["Libertarianism"])
+        self.add_move(this.moves["Realism"])
+        self.add_move(this.moves["Philla"])
+        self.add_move(this.moves["Anticonformism"])
 
         self.player_menu = text_menu(self.get_player_menu_items(), position(0, 0))
         self.player_name = name
         this.player_name = name
         self.battle_name = this.player_name
+
+        money = this.items["sterling"]
+        money["quantity"] = 100
+        self.add_to_inventory(money)
 
     # check if it is an dropped item, if so put the item_data in the inventory and del. it
     def activate_sprite(self, sprite):
@@ -1160,7 +1247,7 @@ class Player(entity):
 
     # check for a sprite is in range, if so activate it.
     def activate(self):
-        rect = self.rect
+        rect = self.rect.copy()
         rect.width += 6
         rect.height += 6
         rect.x -= 3
@@ -1170,7 +1257,7 @@ class Player(entity):
         for Sprite in this.onscreen_sprites:
             # make sure its not a door that we are activating, maybe unexpected for player.
             if (Sprite != self._imagename) & (Sprite.__class__.__name__ != 'door'):
-                if self.rect.colliderect( this.onscreen_sprites[Sprite].rect):
+                if rect.colliderect(this.onscreen_sprites[Sprite].rect):
                     self.activate_sprite(this.onscreen_sprites[Sprite])
                 # else:
                     # self.sounds['collide_beep'].play()
@@ -1198,7 +1285,7 @@ class battle_player():
     # funcs which are added to queue
     def use_item(self, itemname):
         self.battle_menu.hide()
-        self.__func_queue.append({"func": self._entity.use_item, "args": itemname})
+        self.__func_queue.append({"func": self._entity.use_item, "args": [itemname]})
 
     def use_move(self, movename):
         self.battle_menu.hide()
@@ -1231,7 +1318,7 @@ class battle_player():
         return self.use_move(movename)
 
     def get_move_menu_data(self, *args):
-        return menu_data(self._entity.get_moves().keys(), self.get_move_is_sure_disc)
+        return menu_data(self._entity.get_moves().keys(), self.use_move)
 
     def __init__(self, entity, enemy):
         self._entity = entity
@@ -1246,7 +1333,7 @@ class battle_player():
 class battle_NPC(sprite):
     def __init__(self, entity, pos):
         self._entity = entity
-        sprite.__init__(self, entity.get_imagename(), pos)
+        sprite.__init__(self, entity.battle_name, pos)
 
     def is_dead(self):
         return self._entity.is_dead()
@@ -1274,8 +1361,10 @@ class battle_NPC(sprite):
                 self._entity.use_item(health_items[sorted(health_items.keys())[-1]])
         else:
             moves = self._entity.get_moves()
-            self._entity.use_move(sorted(moves.keys())[random.randrange(0, len(moves))],
-                                  this.onscreen_sprites["player"])
+            move = sorted(moves.keys())[random.randrange(0, len(moves))]
+            this.battlebox.say(self._entity.battle_name + " used " + move)
+            self._entity.use_move(move, this.onscreen_sprites["player"])
+            self._entity.next_turn()
 
     def get_losing_message(self):
         return self._entity.get_losing_message()
@@ -1299,37 +1388,50 @@ class battle:
 
         self.run()
 
+    def __del__(self):
+        this.first_battle = False
+
     def battle_end(self):
         if this.battle_npc.is_dead() | self.player.is_dead():
             # closure for transferring inv.
             def transfer_inventory(e1, e2):
-                for item in e2._entity.get_inventory(): e1.add_to_inventory(item)
+                inv = e2._entity.get_inventory()
+                for item in list(inv.keys()) :
+                    e1._entity.add_to_inventory(inv[item])
+                    e2._entity.remove_from_inventory(inv[item])
 
             # transfer losers inventory to winner.
             if this.battle_npc.is_dead():
                 transfer_inventory(self.player, this.battle_npc)
-                this.battle.box.say(this.battle_npc.get_losing_message())
+                this.battlebox.say(this.battle_npc.get_losing_message())
             else:
                 this.battle_npc.won()
                 transfer_inventory(this.battle_npc, self.player)
-                this.battle.box.say(self.player.get_losing_message())
+                this.battlebox.say(self.player.get_losing_message())
 
             this.inbattle = False
             del this.battle_npc
+            self.__del__()
 
             # stop the battle
             return True
         return False
 
     def run(self):
+        if this.first_battle:
+            this.battlebox.say("Welcome to a battle.")
+            this.battlebox.say("you win by lowering your openents determination to 0 or persuading them until they are pesuaded")
+            this.battlebox.say("you do this by either selecting a move, which will lower an oppenents stats")
+            this.battlebox.say("or use an item which will heal yourself or give a boost to your stats giving you an advantage.")
+
         while not self.battle_end():
             if self.__player_turn:
                 # show stats
                 this.battlebox.say(
-                    this.player_name + " DETERMINATION: " + str(self.player.get_stats()["determination"]) + """
-ENEMY DETERMINATION: """ + str(this.battle_npc.get_stats()["determination"]) + """
-""" + this.player_name + " PERSUATION: " + str(self.player.get_persuasion()) + """
-ENEMY PERSUATION: """ + str(this.battle_npc.get_persuasion()))
+                    this.player_name + " DETERMINATION: " + str(int(self.player.get_stats()["determination"])) + """
+                    """ + this.battle_npc._entity.battle_name + "DETERMINATION: " + str(int(this.battle_npc.get_stats()["determination"])) + """
+""" + this.player_name + " PERSUATION: " + str(int(self.player.get_persuasion())) + """
+""" + this.battle_npc._entity.battle_name +" PERSUATION: " + str(int(this.battle_npc.get_persuasion())))
 
                 # show menu
                 self.player.battle_menu.show()
@@ -1337,8 +1439,10 @@ ENEMY PERSUATION: """ + str(this.battle_npc.get_persuasion()))
                 # do queued if ready
                 if self.player.ready():
                     self.player.do_queued()
+
                 # no longer players turn
                 self.__player_turn = False
+
             else:
                 # calc. attack and do it.
                 this.battle_npc.do_attack()
@@ -1447,7 +1551,7 @@ def start_screen():
     this.textbox.say("""thank you for accepting our not so binding agreement for you to play this game.""")
 
     # joke tutorial element to help player
-    this.textbox.say("""hello. Welcome to the world of Earth(R) 
+    this.textbox.say("""hello. Welcome to the world of Earth(R)
 You need a name, due to budget cuts from the education system
 we can only give you a few, choose well!
 with the power of the arrow keys to select and the z key to confirm!""")
@@ -1487,15 +1591,21 @@ CTRL TO OPEN THE MENU AND X TO CLOSE.
 THE Z TO ACTIVATE THINGS IN FRONT OF YOU WHATEVER THAT MEANS. WEIRD THAT YOU CAME WITH AN OPERATION MANUAL""",
                      speaker="Poor Richard")
 
-    this.textbox.say("""ha.. just kidding! you're the new guy who just moved in, 
+    this.textbox.say("""ha.. just kidding! you're the new guy who just moved in,
 well yours is the one right in front of you, have a nice day!""", speaker="Poor Richard")
+
+    this.textbox.say("""anyway don't forget that you have got an exam, just telling you if you have a suddern bout of amnesia!""",
+                     speaker="Poor Richard")
+
+    this.textbox.say("""after that the vicor said that he wanted me to come to tea, he's in the rightmost house he said that he
+        wanted to welcome me(give exposition) into the neighbourghood.""")
 
     # start the player event system
     this.onscreen_sprites["player"].run()
 
 def __init__():
     # load all variables needed that are used moudle-wide
-    this.background_x_only = False
+    this.first_battle = True
     this.drawing = True
     this.text_menu_visible = False
     this.text_box_visible = False
@@ -1555,6 +1665,7 @@ def __init__():
                 "moves": subset_dict_from_array(this.moves, sprite["moves"]),
                 "_NPC__dialog": sprite["dialog"],
                 "_NPC__repeat_dialog": sprite["repeat_dialog"],
+                "battle_name": sprite["battle_name"],
                 "basestat": sprite["stats"],
                 "losing_message": sprite["losing_message"]
             }
@@ -1576,3 +1687,31 @@ def __init__():
 # only run init if not being imported
 if __name__ == '__main__':
     __init__()
+
+
+"""
+    a critique of the game: it's awful.
+    code wise and gameplay wise. thats it.
+
+    code wise the event system is dire, dure to the use of threads and the run() functions.
+    also the game does not apply to pep8 standards.
+
+    another major problem is the inability to have dialog that is more than two textboxes full worth of dialog in one activation
+    and that NPC's do not really interact with each other.
+
+    the text menu selection is muddled as dicts maintain no order.
+    also there is no showing of the description of moves, as is sure_dialogs
+    did not work and i did not have enough time to fix them.
+
+    really most of the errors came from the expectation that pythons arguments
+    we're copies of the objects instead of pointers.
+
+    the rest of the errors came from bad autocomplete and little linting power
+    along with the large scale codebase which was not runnable in the instant
+    as they could have been nipped in the bud easly e.g. not adding a key to the dict variable would give a similar error.
+
+    due to this also in build testing has also been hampered. and most of the original code has been corrected.
+
+    oh and the story uses *all* the cliches. and is just. strange.
+    play it for youself and see.
+"""
